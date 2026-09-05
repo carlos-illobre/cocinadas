@@ -1,0 +1,21 @@
+# Configuración real: nunca al repositorio (ver docs/SECURITY.md)
+.env
+deployment/*/.env
+
+# Dependencias y artefactos de build de cada servicio
+node_modules/
+dist/
+coverage/
+reports/
+.stryker-tmp/
+*.tsbuildinfo
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Temporales de la sesión de Claude
+.claude/settings.local.json
