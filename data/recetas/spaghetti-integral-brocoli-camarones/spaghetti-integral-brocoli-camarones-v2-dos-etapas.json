@@ -1,0 +1,330 @@
+{
+  "esquema": 1,
+  "plato": "spaghetti-integral-brocoli-camarones",
+  "version": {
+    "numero": 2,
+    "clave": "dos-etapas",
+    "titulo": "Dos etapas",
+    "resumen": "Etapa 1 de preparación sin vigilancia y etapa 2 de cocción con vigilancia; entre ambas puede haber pausa."
+  },
+  "nombre": "Spaghetti integral con brócoli, champiñones y camarones al limón",
+  "momento": "cena",
+  "porciones": 1,
+  "sal_agregada_g": 0,
+  "tiempo_total_s": 1260,
+  "tiempo_total_texto": "11 min de preparación + 10 min de cocción",
+  "nutricion": { "kcal": 720, "proteina_g": 38, "fibra_g": 17, "sodio_mg": 250 },
+  "fuentes": {
+    "html": "spaghetti-integral-brocoli-camarones-v2-dos-etapas.html",
+    "pdf": "spaghetti-integral-brocoli-camarones-v2-dos-etapas.pdf",
+    "foto": "spaghetti-integral-brocoli-camarones.jpg"
+  },
+  "ingredientes": [
+    { "id": "tallarines-en-paquete", "nombre": "Spaghetti integral Matarazzo", "cantidad": "100 g", "preparacion": "Seco" },
+    { "id": "brocoli-entero", "nombre": "Brócoli fresco entero", "cantidad": "½ pieza (~250 g)", "preparacion": "Flores, tallo y hojas" },
+    { "id": "camarones-congelados", "nombre": "Camarones cocidos congelados Superbe", "cantidad": "125 g (½ bolsa)", "preparacion": "Congelados; se descongelan en la etapa 1, paso 0:00" },
+    { "id": "champinones-blancos-el-mercado-200g", "nombre": "Champiñones blancos El Mercado", "cantidad": "100 g (½ bandeja)", "preparacion": "Laminados 5 mm" },
+    { "id": "tomates-cherry-sueno-verde-250g", "nombre": "Tomates cherry Sueño Verde", "cantidad": "125 g (½ bandeja)", "preparacion": "Partidos al medio" },
+    { "id": "ajo-picado-congelado", "nombre": "Ajo picado congelado", "cantidad": "1 cdta (5 g)", "preparacion": "Congelado, directo al wok" },
+    { "id": "jengibre-entero-120g", "nombre": "Jengibre fresco", "cantidad": "5 g (1 cm)", "preparacion": "Rallado sin pelar sobre el wok" },
+    { "id": "limon-entero", "nombre": "Limón", "cantidad": "½ unidad", "preparacion": "Ralladura + jugo, directo al wok" },
+    { "id": "aceite-oliva-oliovita-extra-virgen-500cc", "nombre": "Aceite de oliva extra virgen Oliovita", "cantidad": "1½ cda (22 ml)", "preparacion": "½ cda cocción + 1 cda crudo" },
+    { "id": "curcuma-molida-la-parmesana-15g", "nombre": "Cúrcuma molida", "cantidad": "¼ cdta", "preparacion": "Al sofrito" },
+    { "id": "pimienta-negra-alicante-25g", "nombre": "Pimienta negra molida", "cantidad": "¼ cdta", "preparacion": "Al emplatar" },
+    { "id": "perejil-deshidratado-50g", "nombre": "Perejil deshidratado", "cantidad": "½ cdta", "preparacion": "Al emplatar" },
+    { "id": null, "nombre": "Agua", "cantidad": "0,8 L", "preparacion": "Para la pasta (8:1)" }
+  ],
+  "utensilios": [
+    { "id": "wok-eternity-copper-30cm", "nombre": "Wok Eternity 30 cm con su tapa", "uso": "Champiñones, sofrito, brócoli al vapor, camarones y mantecatura. Nada metálico adentro: el antiadherente se raya" },
+    { "id": "cuchara-madera-ferpa-60cm", "nombre": "Cuchara de madera FERPA 60 cm", "uso": "Todo lo que se revuelve, corre, saltea o mezcla dentro del wok, y el emplatado" },
+    { "id": "jarro-slow-fire-2l", "nombre": "Jarro hervidor Slow Fire 2 L", "uso": "Hervir 0,8 L y cocinar la pasta; volcar agua hirviendo al wok por el asa" },
+    { "id": "pinza-parrillera-carol-30cm", "nombre": "Pinza parrillera Carol 30 cm", "uso": "Solo dentro del jarro (acero): revolver la pasta y pasarla al wok sin tocar el wok" },
+    { "id": "balanza-masuya-sf400", "nombre": "Balanza Masuya SF400", "uso": "Pesar camarones (125 g) y pasta (100 g)" },
+    { "id": "tablas-tramontina-mix-25099940", "nombre": "Tabla de corte verde", "uso": "Todo lo que se corta es vegetal" },
+    { "id": "cuchillo-boker-arbolito-chef-ii-8308", "nombre": "Cuchillo chef Böker Arbolito 8308", "uso": "Brócoli, champiñones, cherry, limón" },
+    { "id": "rallador-zester-20cm", "nombre": "Rallador zester", "uso": "Jengibre y cáscara de limón, rallados directamente sobre el wok" },
+    { "id": null, "nombre": "1 bol mediano", "uso": "Pesar, descongelar y luego secar los camarones" },
+    { "id": null, "nombre": "1 plato hondo", "uso": "Servicio" },
+    { "id": "rollo-cocina-carrefour-essential-200-panos", "nombre": "Papel de cocina (3 paños)", "uso": "Limpiar los champiñones y secar los camarones" },
+    { "id": "cocina-4-hornallas-a-gas", "nombre": "Cocina a gas de 4 hornallas", "uso": "Dos hornallas grandes: jarro y wok" }
+  ],
+  "sobrantes": "Medio brócoli, medio limón, champiñones y cherry a la heladera para repetir el plato al día siguiente; la media bolsa de camarones vuelve cerrada al freezer.",
+  "etapas": [
+    {
+      "id": "e1",
+      "numero": 1,
+      "nombre": "Etapa 1 · Preparación",
+      "vigilancia": false,
+      "duracion_s": 660,
+      "arranque": "Al abrir el freezer.",
+      "cierre": "Termina a 11:00. La etapa 2 empieza cuando el agua del jarro rompe hervor.",
+      "pausa_despues": "Puede haber pausa. Si supera 30 min: bol de camarones sin agua y tapado con film, brócoli, champiñones y cherry a la heladera; el agua del jarro se enciende recién al empezar la etapa 2 (sumar 5 min).",
+      "procesos": [
+        { "id": "e1-camarones", "nombre": "Camarones en agua fría", "tipo": "frio", "inicio_s": 0, "fin_s": 600, "critico": false, "ingrediente": "camarones-congelados", "nota": "Listos a las 10:00. No usar agua tibia. Si tarda más, no pasa nada: pueden esperar en el agua fría.", "al_terminar": "e1-p9" },
+        { "id": "e1-brocoli-reposo", "nombre": "Brócoli cortado en reposo", "tipo": "reposo", "inicio_s": 180, "fin_s": 660, "critico": false, "ingrediente": "brocoli-entero", "nota": "Reposo ≥5 min para que se forme sulforafano; más reposo no perjudica. Sigue en la etapa 2.", "al_terminar": null },
+        { "id": "e1-agua", "nombre": "Agua del jarro calentando", "tipo": "calor", "inicio_s": 360, "fin_s": 660, "critico": false, "ingrediente": null, "utensilio": "jarro-slow-fire-2l", "nota": "Rompe hervor alrededor de 11:00. Si hierve antes de que estés listo, bajarlo a fuego medio.", "al_terminar": null }
+      ],
+      "pasos": [
+        {
+          "id": "e1-p1", "inicio_s": 0, "duracion_s": 30, "critico": false, "espera": false,
+          "titulo": "Pesar y poner a descongelar los camarones",
+          "acciones": [
+            "Poner el bol vacío en la balanza y tarar.",
+            "Sacar la bolsa del freezer, volcar camarones hasta leer 125 g y devolver la bolsa cerrada al freezer de inmediato.",
+            "Cubrir con agua fría de la canilla (nunca tibia) y dejar el bol sobre la mesada 10 min, hasta 10:00."
+          ],
+          "ingredientes": ["camarones-congelados"], "utensilios": ["balanza-masuya-sf400"],
+          "inicia_procesos": ["e1-camarones"],
+          "por_que": { "etiquetas": ["SEGURIDAD", "DESPERDICIO"], "texto": "En agua fría el producto se mantiene por debajo de 5 °C mientras descongela. Si tarda más, no pasa nada: puede esperar en el agua fría. Se descongela solo lo que se cocina." }
+        },
+        {
+          "id": "e1-p2", "inicio_s": 30, "duracion_s": 150, "critico": false, "espera": false,
+          "titulo": "Lavar y cortar el brócoli entero",
+          "acciones": [
+            "Lavar la mitad del brócoli bajo la canilla.",
+            "Sobre la tabla verde, con el cuchillo chef: separar las flores en bocados de 3 cm; pelar del tallo solo la piel dura (1–2 mm) y cortarlo en rodajas de 4 mm; reservar las hojas enteras.",
+            "Dejar todo junto en un extremo de la tabla."
+          ],
+          "ingredientes": ["brocoli-entero"], "utensilios": ["tablas-tramontina-mix-25099940", "cuchillo-boker-arbolito-chef-ii-8308"],
+          "inicia_procesos": ["e1-brocoli-reposo"],
+          "por_que": { "etiquetas": ["DESPERDICIO", "NUTRICIÓN"], "texto": "El tallo es el 40 % de la pieza. El corte activa la mirosinasa: con ≥5 min de reposo se forma sulforafano estable a la cocción; más reposo no perjudica, por eso el brócoli va primero." }
+        },
+        {
+          "id": "e1-p3", "inicio_s": 180, "duracion_s": 90, "critico": false, "espera": false,
+          "titulo": "Limpiar y laminar los champiñones",
+          "acciones": [
+            "Frotar cada champiñón con un paño de papel de cocina apenas húmedo (no sumergir).",
+            "En la misma tabla verde, con el cuchillo chef, cortar en láminas de 5 mm, tallo incluido.",
+            "Dejarlos en otro extremo de la tabla."
+          ],
+          "ingredientes": ["champinones-blancos-el-mercado-200g"], "utensilios": ["rollo-cocina-carrefour-essential-200-panos", "tablas-tramontina-mix-25099940", "cuchillo-boker-arbolito-chef-ii-8308"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["SABOR", "DESPERDICIO"], "texto": "Un champiñón empapado hierve en vez de dorarse; seco se carameliza (umami que reemplaza la sal). El tallo es comestible." }
+        },
+        {
+          "id": "e1-p4", "inicio_s": 270, "duracion_s": 30, "critico": false, "espera": false,
+          "titulo": "Partir los cherry",
+          "acciones": [
+            "En la misma tabla, con el cuchillo chef, partir los cherry al medio.",
+            "Dejarlos junto a los champiñones."
+          ],
+          "ingredientes": ["tomates-cherry-sueno-verde-250g"], "utensilios": ["tablas-tramontina-mix-25099940", "cuchillo-boker-arbolito-chef-ii-8308"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["SABOR"], "texto": "Se cortan últimos para que su jugo no moje el resto. No hay nada que vigilar: cortados aguantan horas en la heladera." }
+        },
+        {
+          "id": "e1-p5", "inicio_s": 300, "duracion_s": 60, "critico": false, "espera": false,
+          "titulo": "Lavar limón y jengibre; pesar la pasta",
+          "acciones": [
+            "Lavar el limón bajo la canilla y fregar el jengibre con agua.",
+            "Pesar 100 g de spaghetti en la balanza y dejarlos sobre su propio paquete, junto al jarro."
+          ],
+          "ingredientes": ["limon-entero", "jengibre-entero-120g", "tallarines-en-paquete"], "utensilios": ["balanza-masuya-sf400"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["TIEMPO", "DESPERDICIO"], "texto": "Nada se ralla ni se exprime todavía: se hace directo sobre el wok en la etapa 2, sin recipiente intermedio." }
+        },
+        {
+          "id": "e1-p6", "inicio_s": 360, "duracion_s": 30, "critico": false, "espera": false,
+          "titulo": "Agua al fuego",
+          "acciones": [
+            "Poner 0,8 L de agua fría en el jarro hervidor y llevarlo a la hornalla grande a llama máxima, sin sal.",
+            "Rompe hervor alrededor de 11:00."
+          ],
+          "ingredientes": [], "utensilios": ["jarro-slow-fire-2l", "cocina-4-hornallas-a-gas"],
+          "inicia_procesos": ["e1-agua"],
+          "por_que": { "etiquetas": ["TIEMPO", "SABOR"], "texto": "Relación 8:1: el jarro angosto y alto cubre la pasta con 0,8 L, hierve en ~5 min y concentra el almidón. Si hierve antes de que estés listo, solo hay que bajarlo a fuego medio: no es un paso de vigilancia." }
+        },
+        {
+          "id": "e1-p7", "inicio_s": 390, "duracion_s": 60, "critico": false, "espera": false,
+          "titulo": "Ordenar el puesto de cocción",
+          "acciones": [
+            "Junto a la hornalla del wok: el wok con su tapa, la cuchara de madera, el zester, el limón, el jengibre, el aceite, la cúrcuma, la pimienta, el perejil, la tabla con los vegetales y el plato hondo.",
+            "Junto al jarro: la pinza parrillera.",
+            "El ajo queda en el freezer hasta usarlo."
+          ],
+          "ingredientes": [], "utensilios": ["wok-eternity-copper-30cm", "cuchara-madera-ferpa-60cm", "rallador-zester-20cm", "pinza-parrillera-carol-30cm"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["TIEMPO"], "texto": "En la etapa 2 no se busca nada: cada cosa está al alcance de la mano en el orden en que se usa." }
+        },
+        {
+          "id": "e1-p8", "inicio_s": 450, "duracion_s": 150, "critico": false, "espera": true,
+          "titulo": "Espera libre",
+          "acciones": [
+            "No hay ninguna tarea hasta 10:00.",
+            "Nada que vigilar."
+          ],
+          "ingredientes": [], "utensilios": [],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["TIEMPO"], "texto": "Es el único hueco del proceso: lo impone el descongelado de 10 min y no se puede acortar sin usar agua tibia (inseguro)." }
+        },
+        {
+          "id": "e1-p9", "inicio_s": 600, "duracion_s": 60, "critico": false, "espera": false,
+          "titulo": "Escurrir y secar los camarones",
+          "acciones": [
+            "Comprobar que estén descongelados: flexibles y sin hielo (si queda hielo, cambiar el agua y esperar 2 min más).",
+            "Volcar el agua del bol, secar los camarones con dos paños de papel de cocina y dejarlos en el bol junto al wok.",
+            "Fin de la etapa 1 (11:00). La etapa 2 empieza cuando el agua del jarro rompe hervor."
+          ],
+          "ingredientes": ["camarones-congelados"], "utensilios": ["rollo-cocina-carrefour-essential-200-panos"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["SEGURIDAD", "TIEMPO"], "texto": "Camarones secos se calientan sin enfriar el wok ni hervir en su agua. Si la etapa 2 no arranca enseguida, van a la heladera." }
+        }
+      ]
+    },
+    {
+      "id": "e2",
+      "numero": 2,
+      "nombre": "Etapa 2 · Cocción y plato",
+      "vigilancia": true,
+      "duracion_s": 600,
+      "arranque": "El reloj arranca cuando el agua rompe hervor y todo lo de la etapa 1 está junto al wok.",
+      "cierre": "Listo a 10:00.",
+      "pausa_despues": null,
+      "procesos": [
+        { "id": "e2-jarro", "nombre": "Jarro a hervor sostenido", "tipo": "hervor", "inicio_s": 0, "fin_s": 75, "critico": false, "ingrediente": null, "utensilio": "jarro-slow-fire-2l", "nota": "Fuego medio hasta que entre la pasta.", "al_terminar": null },
+        { "id": "e2-champinones", "nombre": "Champiñones dorando · no mover", "tipo": "calor", "inicio_s": 30, "fin_s": 150, "critico": true, "ingrediente": "champinones-blancos-el-mercado-200g", "nota": "Una sola capa, sin tocar, hasta 2:30.", "al_terminar": "e2-p4" },
+        { "id": "e2-pasta", "nombre": "Spaghetti en el jarro", "tipo": "hervor", "inicio_s": 75, "fin_s": 495, "critico": true, "ingrediente": "tallarines-en-paquete", "utensilio": "jarro-slow-fire-2l", "nota": "7 min: al dente a las 8:15, justo para la mantecatura.", "al_terminar": "e2-p9" },
+        { "id": "e2-brocoli-tapado", "nombre": "Brócoli tapado · no destapar", "tipo": "tapado", "inicio_s": 270, "fin_s": 450, "critico": true, "ingrediente": "brocoli-entero", "utensilio": "wok-eternity-copper-30cm", "nota": "3 min de vapor a fuego medio. Más tiempo lo pasa: pierde el verde y la vitamina C.", "al_terminar": "e2-p8" }
+      ],
+      "pasos": [
+        {
+          "id": "e2-p1", "inicio_s": 0, "duracion_s": 30, "critico": false, "espera": false,
+          "titulo": "Wok al fuego; jarro a fuego medio",
+          "acciones": [
+            "Con el agua del jarro a borbotón, bajarlo a fuego medio (hervor sostenido).",
+            "Poner el wok en la otra hornalla grande a fuego medio-alto con ½ cda de aceite."
+          ],
+          "ingredientes": ["aceite-oliva-oliovita-extra-virgen-500cc"], "utensilios": ["wok-eternity-copper-30cm", "jarro-slow-fire-2l", "cocina-4-hornallas-a-gas"],
+          "inicia_procesos": ["e2-jarro"],
+          "por_que": { "etiquetas": ["TIEMPO"], "texto": "Desde acá todo tiene tiempo: el reloj de esta etapa arranca con el hervor." }
+        },
+        {
+          "id": "e2-p2", "inicio_s": 30, "duracion_s": 45, "critico": true, "espera": false,
+          "titulo": "Champiñones al wok",
+          "acciones": [
+            "Volcar los champiñones desde la tabla y acomodarlos en una sola capa con la cuchara de madera.",
+            "No moverlos hasta 2:30."
+          ],
+          "ingredientes": ["champinones-blancos-el-mercado-200g"], "utensilios": ["wok-eternity-copper-30cm", "cuchara-madera-ferpa-60cm"],
+          "inicia_procesos": ["e2-champinones"],
+          "por_que": { "etiquetas": ["SABOR"], "texto": "Sin sal el champiñón no suelta agua de golpe y dora mejor si no se toca (Maillard, umami)." }
+        },
+        {
+          "id": "e2-p3", "inicio_s": 75, "duracion_s": 45, "critico": true, "espera": false,
+          "titulo": "Pasta al jarro",
+          "acciones": [
+            "Subir el jarro a llama máxima y poner los 100 g de spaghetti (quedan parados y se hunden al ablandarse).",
+            "A los 30 s (1:45), hundirlos y revolver 10 s con la pinza parrillera para que no se peguen.",
+            "7 min, hasta 8:15."
+          ],
+          "ingredientes": ["tallarines-en-paquete"], "utensilios": ["jarro-slow-fire-2l", "pinza-parrillera-carol-30cm"],
+          "inicia_procesos": ["e2-pasta"],
+          "por_que": { "etiquetas": ["NUTRICIÓN"], "texto": "7 min deja la pasta integral al dente y la hace coincidir con el final de los camarones. Con poca agua el revuelto inicial es obligatorio." }
+        },
+        {
+          "id": "e2-p4", "inicio_s": 150, "duracion_s": 15, "critico": true, "espera": false,
+          "titulo": "Revolver los champiñones",
+          "acciones": [
+            "Revolver una sola vez con la cuchara de madera y dejarlos dorar hasta 3:15."
+          ],
+          "ingredientes": ["champinones-blancos-el-mercado-200g"], "utensilios": ["cuchara-madera-ferpa-60cm"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["SABOR"], "texto": "Un solo revuelto: más manipulación enfría el wok y frena el dorado." }
+        },
+        {
+          "id": "e2-p5", "inicio_s": 195, "duracion_s": 45, "critico": true, "espera": false,
+          "titulo": "Sofrito aromático",
+          "acciones": [
+            "Con la cuchara de madera, correr los champiñones hacia un lado del wok.",
+            "En el centro, sobre el aceite que quedó, rallar con el zester 5 g de jengibre (1 cm, sin pelar) directamente sobre el wok; sacar del freezer 1 cdta de ajo picado y agregarla sin descongelar, más la cúrcuma.",
+            "Revolver con la cuchara de madera 45 s a fuego medio, hasta 4:00."
+          ],
+          "ingredientes": ["jengibre-entero-120g", "ajo-picado-congelado", "curcuma-molida-la-parmesana-15g"], "utensilios": ["rallador-zester-20cm", "cuchara-madera-ferpa-60cm"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["NUTRICIÓN", "SABOR"], "texto": "La curcumina es liposoluble: tostarla en aceite la libera. El ajo congelado directo al calor no se oxida ni amarga." }
+        },
+        {
+          "id": "e2-p6", "inicio_s": 240, "duracion_s": 45, "critico": true, "espera": false,
+          "titulo": "Brócoli: saltear y luego vapor en el wok",
+          "acciones": [
+            "Volcar flores, rodajas de tallo y hojas desde la tabla sobre el sofrito y saltear 30 s con la cuchara de madera a fuego medio-alto.",
+            "A las 4:30, tomar el jarro por el asa y volcar sobre los bordes del wok un chorro de agua hirviendo de unos 80 ml (3 segundos de chorro).",
+            "Tapar de inmediato, fuego medio, 3 min, hasta 7:30.",
+            "No destapar antes."
+          ],
+          "ingredientes": ["brocoli-entero"], "utensilios": ["cuchara-madera-ferpa-60cm", "jarro-slow-fire-2l", "wok-eternity-copper-30cm"],
+          "inicia_procesos": ["e2-brocoli-tapado"],
+          "por_que": { "etiquetas": ["NUTRICIÓN", "TIEMPO", "SABOR"], "texto": "Saltear primero: el brócoli toma el aceite aromático antes de que el agua enfríe el wok. 3 min tapado: tallo tierno-crocante, flores verde intenso, máxima retención de vitamina C y sulforafano. Más tiempo lo pasa." }
+        },
+        {
+          "id": "e2-p7", "inicio_s": 300, "duracion_s": 15, "critico": false, "espera": false,
+          "titulo": "Revolver la pasta",
+          "acciones": [
+            "Revolver la pasta una vez con la pinza parrillera dentro del jarro.",
+            "Acercar el plato hondo al wok."
+          ],
+          "ingredientes": ["tallarines-en-paquete"], "utensilios": ["pinza-parrillera-carol-30cm"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["TIEMPO"], "texto": "Tiempo muerto de fuego aprovechado; la pinza no entra al wok." }
+        },
+        {
+          "id": "e2-p7b", "inicio_s": 315, "duracion_s": 135, "critico": false, "espera": true,
+          "titulo": "Esperar el vapor del brócoli",
+          "acciones": [
+            "No destapar hasta 7:30.",
+            "Tener el bol de camarones en la mano para volcarlos al sonar."
+          ],
+          "ingredientes": ["camarones-congelados"], "utensilios": [],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["TIEMPO"], "texto": "Espera impuesta por los 3 min de vapor. Paso derivado del HTML (no figura como fila propia) para que la app muestre qué preparar mientras tanto." }
+        },
+        {
+          "id": "e2-p8", "inicio_s": 450, "duracion_s": 45, "critico": true, "espera": false,
+          "titulo": "Camarones al wok",
+          "acciones": [
+            "Destapar, subir a fuego alto y volcar los camarones desde el bol.",
+            "Revolver con la cuchara de madera 45 s, hasta 8:15, hasta verlos opacos y con vapor."
+          ],
+          "ingredientes": ["camarones-congelados"], "utensilios": ["wok-eternity-copper-30cm", "cuchara-madera-ferpa-60cm"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["SEGURIDAD", "SABOR"], "texto": "Aunque vienen cocidos, fueron manipulados en frío: deben llegar bien calientes al centro (≥ 74 °C). Solo 45 s a fuego directo: más de ~2 min los pone gomosos." }
+        },
+        {
+          "id": "e2-p9", "inicio_s": 495, "duracion_s": 60, "critico": true, "espera": false,
+          "titulo": "Apagar y mantecar: pasta, limón, cherry y aceite",
+          "acciones": [
+            "Apagar el wok.",
+            "Con la pinza parrillera, pasar los spaghetti del jarro al wok sin escurrirlos del todo y sin apoyar la pinza en el wok.",
+            "Cerrar el gas del jarro.",
+            "Rallar con el zester la cáscara de una mitad del limón sobre la pasta; cortar el limón al medio y exprimir esa mitad sobre el wok con la mano en cuenco para retener las semillas.",
+            "Agregar los cherry y 1 cda de aceite en crudo.",
+            "Mezclar con la cuchara de madera, con movimiento circular enérgico, durante 1 min fuera del fuego, hasta 9:15."
+          ],
+          "ingredientes": ["tallarines-en-paquete", "limon-entero", "tomates-cherry-sueno-verde-250g", "aceite-oliva-oliovita-extra-virgen-500cc"], "utensilios": ["pinza-parrillera-carol-30cm", "rallador-zester-20cm", "cuchillo-boker-arbolito-chef-ii-8308", "cuchara-madera-ferpa-60cm"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["DESPERDICIO", "NUTRICIÓN", "SABOR"], "texto": "El almidón que arrastra la pasta liga aceite y jugo (mantecatura); sin fuego la emulsión no se rompe y los camarones terminan de calentarse con el calor residual sin endurecerse. El limón fuera del fuego conserva la vitamina C; el aceite crudo, sus polifenoles." }
+        },
+        {
+          "id": "e2-p10", "inicio_s": 555, "duracion_s": 45, "critico": false, "espera": false,
+          "titulo": "Emplatar",
+          "acciones": [
+            "Pasar todo al plato hondo con la cuchara de madera, inclinando el wok por las asas con un paño; camarones y tomates arriba.",
+            "Espolvorear ¼ cdta de pimienta negra y ½ cdta de perejil deshidratado.",
+            "Listo a 10:00."
+          ],
+          "ingredientes": ["pimienta-negra-alicante-25g", "perejil-deshidratado-50g"], "utensilios": ["cuchara-madera-ferpa-60cm"],
+          "inicia_procesos": [],
+          "por_que": { "etiquetas": ["NUTRICIÓN", "SABOR", "DESPERDICIO"], "texto": "La pimienta al final aporta piperina, que multiplica la absorción de la curcumina. El perejil seco al plato no se quema." }
+        }
+      ]
+    }
+  ],
+  "seguridad": [
+    "Tabla y cuchillo solo tocan vegetales; los camarones van del bol al wok volcándolos, sin utensilio.",
+    "Dentro del wok solo entra la cuchara de madera (nunca la pinza): el antiadherente rayado se desprende y termina en el plato.",
+    "Descongelar solo en agua fría y solo la porción a cocinar; la bolsa vuelve al freezer cerrada.",
+    "Sobrantes frescos (medio brócoli, medio limón, champiñones, cherry): heladera a ≤ 5 °C, usar al día siguiente.",
+    "Si entre la etapa 1 y la 2 pasan más de 30 min: bol de camarones (sin agua, tapado con film), brócoli, champiñones y cherry a la heladera, y el agua del jarro se enciende recién al empezar la etapa 2 (sumar 5 min).",
+    "Si sobra plato: enfriar en menos de 2 h, heladera, consumir en 24 h y recalentar hasta que humee."
+  ]
+}

@@ -1,0 +1,183 @@
+# Único compose del proyecto (ADR-001). Todo lo que cambia entre ambientes sale del .env;
+# lo que no cambia va literal acá. Una variable ausente corta el arranque (`:?`) en vez de
+# caer en un valor por omisión: fallar al arrancar es el único momento en que el error de
+# configuración todavía es barato.
+#
+# Levantar en local:   docker compose up -d --build
+# Producción:          deployment/oracle-single/deploy.sh (trae las imágenes por SHA)
+
+name: templa
+
+x-node: &node
+  # Los servicios Node comparten el mismo techo de memoria y la misma política de
+  # reinicio; lo que los distingue va en cada uno.
+  restart: unless-stopped
+  mem_limit: ${MEM_LIMIT_NODE:?falta MEM_LIMIT_NODE en el .env}
+  environment: &node-env
+    LOG_LEVEL: ${LOG_LEVEL:?falta LOG_LEVEL en el .env}
+    # El host y el puerto del broker no cambian entre ambientes: van literales.
+    NATS_URL: nats://nats:4222
+
+services:
+  reverse-proxy:
+    # Caddy sirve el frontend, enruta /api/<servicio>/ y emite y renueva el TLS (ADR-009).
+    image: caddy:2-alpine
+    restart: unless-stopped
+    mem_limit: ${MEM_LIMIT_PROXY:?falta MEM_LIMIT_PROXY en el .env}
+    environment:
+      # `http://localhost` en desarrollo (sin TLS); el dominio a secas en producción, y
+      # Caddy pide el certificado a Let's Encrypt solo.
+      SITE_ADDRESS: ${SITE_ADDRESS:?falta SITE_ADDRESS en el .env}
+    ports:
+      # El proxy es lo único que escucha en la interfaz pública. Los demás servicios se
+      # publican en PUBLISH_ADDR, que en producción es 127.0.0.1.
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./infrastructure/reverse-proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-datos:/data
+      - caddy-config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+      catalogo:
+        condition: service_healthy
+      usuarios:
+        condition: service_healthy
+      cocinadas:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:2019/metrics"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    # La SPA React compilada, servida por su propio Caddy en modo file server (ADR-013).
+    image: ${REGISTRO:?falta REGISTRO en el .env}/templa-frontend:${TAG:?falta TAG en el .env}
+    build:
+      context: ./microservices/frontend
+    restart: unless-stopped
+    mem_limit: ${MEM_LIMIT_PROXY:?falta MEM_LIMIT_PROXY en el .env}
+    ports:
+      - "${PUBLISH_ADDR:?falta PUBLISH_ADDR en el .env}:8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  catalogo:
+    # Recetas, ingredientes y utensilios. Solo lectura: los datos van dentro de la imagen,
+    # tomados de las carpetas data/recetas/, data/ingredientes/ y data/utencillos/ del repositorio, así
+    # que la versión del catálogo es la del commit desplegado (ADR-006).
+    <<: *node
+    image: ${REGISTRO:?falta REGISTRO en el .env}/templa-catalogo:${TAG:?falta TAG en el .env}
+    build:
+      # Contexto en la raíz porque la imagen empaqueta las carpetas de datos. Lo que entra
+      # lo limita el .dockerignore de la raíz.
+      context: .
+      dockerfile: microservices/catalogo/Dockerfile
+    environment:
+      <<: *node-env
+      PUERTO: "3001"
+      DIRECTORIO_DATOS: /datos
+    ports:
+      - "${PUBLISH_ADDR:?falta PUBLISH_ADDR en el .env}:3001:3001"
+    depends_on:
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  usuarios:
+    # Registro, inicio de sesión y perfil. Emite los JWT que verifican los demás (ADR-012).
+    <<: *node
+    image: ${REGISTRO:?falta REGISTRO en el .env}/templa-usuarios:${TAG:?falta TAG en el .env}
+    build:
+      context: ./microservices/usuarios
+    environment:
+      <<: *node-env
+      PUERTO: "3002"
+      DATABASE_URL: postgres://${POSTGRES_USER:?falta POSTGRES_USER en el .env}:${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en el .env}@postgres:5432/${POSTGRES_DB:?falta POSTGRES_DB en el .env}
+      JWT_SECRET: ${JWT_SECRET:?falta JWT_SECRET en el .env}
+    ports:
+      - "${PUBLISH_ADDR:?falta PUBLISH_ADDR en el .env}:3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3002/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  cocinadas:
+    # Tiempos registrados por paso en cada cocinada y el progreso por receta (ADR-005).
+    <<: *node
+    image: ${REGISTRO:?falta REGISTRO en el .env}/templa-cocinadas:${TAG:?falta TAG en el .env}
+    build:
+      context: ./microservices/cocinadas
+    environment:
+      <<: *node-env
+      PUERTO: "3003"
+      DATABASE_URL: postgres://${POSTGRES_USER:?falta POSTGRES_USER en el .env}:${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en el .env}@postgres:5432/${POSTGRES_DB:?falta POSTGRES_DB en el .env}
+      JWT_SECRET: ${JWT_SECRET:?falta JWT_SECRET en el .env}
+    ports:
+      - "${PUBLISH_ADDR:?falta PUBLISH_ADDR en el .env}:3003:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3003/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    # Una sola instancia para usuarios y cocinadas, cada servicio con su propio esquema
+    # (ADR-005). No publica puerto: se entra con `docker compose exec postgres psql`.
+    image: postgres:17-alpine
+    restart: unless-stopped
+    mem_limit: ${MEM_LIMIT_POSTGRES:?falta MEM_LIMIT_POSTGRES en el .env}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?falta POSTGRES_USER en el .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en el .env}
+      POSTGRES_DB: ${POSTGRES_DB:?falta POSTGRES_DB en el .env}
+    volumes:
+      - postgres-datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  nats:
+    # Broker de eventos con JetStream para persistir los streams (ADR-003). El puerto de
+    # monitoreo 8222 queda interno: se mira por túnel SSH si hace falta.
+    image: nats:2-alpine
+    restart: unless-stopped
+    mem_limit: ${MEM_LIMIT_NATS:?falta MEM_LIMIT_NATS en el .env}
+    command: ["--jetstream", "--store_dir", "/data", "--http_port", "8222"]
+    volumes:
+      - nats-datos:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  # Qué se pierde si se pierde cada uno (ver docs/DEPLOYMENT.md, sección Respaldo):
+  postgres-datos: {}   # usuarios registrados y todas las cocinadas: es el que importa
+  nats-datos: {}       # eventos pendientes de consumir; se regenera con el uso
+  caddy-datos: {}      # certificados TLS; perderlo obliga a reemitir
+  caddy-config: {}     # configuración derivada de Caddy; se regenera al arrancar

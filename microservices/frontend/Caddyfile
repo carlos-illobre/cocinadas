@@ -1,0 +1,25 @@
+# File server de la SPA (ADR-013). Escucha en 8080 sin TLS: el TLS lo termina el reverse
+# proxy del sistema (infrastructure/reverse-proxy/Caddyfile).
+{
+	# Sin TLS ni puerto de administración: esta instancia solo sirve archivos.
+	auto_https off
+	admin off
+}
+
+:8080 {
+	root * /srv
+	encode zstd gzip
+
+	# Para el healthcheck del compose y del deploy: 200 sin tocar el disco.
+	respond /health 200
+
+	# Las rutas del navegador (/receta/..., /cocinando/...) no existen como archivo: se
+	# devuelve index.html y la SPA las resuelve.
+	try_files {path} /index.html
+	file_server
+
+	# Los assets llevan hash en el nombre: se pueden cachear sin límite. index.html no.
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+	header /index.html Cache-Control "no-cache"
+}

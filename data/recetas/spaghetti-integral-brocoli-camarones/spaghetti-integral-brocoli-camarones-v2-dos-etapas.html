@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spaghetti integral con brócoli, champiñones y camarones al limón · versión en dos etapas</title>
+<style>
+  @page { size: A4 portrait; margin: 8mm 11mm; }
+  @page apaisada { size: A4 landscape; margin: 10mm 12mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; color: #111;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 9.6pt; line-height: 1.2; }
+  body { max-width: 190mm; margin: 0 auto; padding: 10mm 6mm; }
+  h1 { font-size: 20pt; margin: 0 0 6px; line-height: 1.15; }
+  h2 { font-size: 12.5pt; break-after: avoid; page-break-after: avoid; margin: 10px 0 5px; padding-bottom: 3px; border-bottom: 2px solid #111; text-transform: uppercase; letter-spacing: .05em; }
+  h3 { font-size: 11pt; break-after: avoid; margin: 8px 0 4px; text-transform: uppercase; letter-spacing: .04em; color: #333; }
+  .stats { display: grid; grid-template-columns: 1.3fr 1fr 1.2fr; gap: 8px; margin: 8px 0 4px; }
+  .stat { border: 2px solid #111; border-radius: 6px; padding: 6px 10px; }
+  .stat .big { font-size: 22pt; font-weight: 800; line-height: 1.05; letter-spacing: -.01em; }
+  .stat .cap { font-size: 8.8pt; color: #333; margin-top: 3px; line-height: 1.25; }
+  .meta { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 10.5pt; color: #333; margin-bottom: 4px; }
+  .meta b { color: #111; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border-bottom: 1px solid #cfcfcf; padding: 2px 5px; vertical-align: top; text-align: left; }
+  th { background: #e9e9e9; font-size: 9.5pt; text-transform: uppercase; letter-spacing: .03em; color: #222; }
+  td.n { text-align: right; white-space: nowrap; }
+  .box { background: #f1f1f1; border: 1px solid #d5d5d5; border-radius: 5px; padding: 8px 12px; }
+  .box p { margin: 0 0 7px; } .box p:last-child { margin: 0; }
+  .tl td.min { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 11.5pt; }
+  .tl td.what > b:first-child { display: block; font-size: 11.5pt; }
+  .tl ul.sub { margin: 2px 0 0 0; padding-left: 15px; }
+  .tl ul.sub li { margin: 0 0 1px; }
+  .tl td.why { font-size: 8.8pt; color: #333; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 700; padding: 0 4px; border: 1px solid #111; border-radius: 2px;
+         margin-right: 3px; vertical-align: middle; letter-spacing: .03em; color: #111; background: #fff; line-height: 1.4; }
+  .tag.k { background: #111; color: #fff; }
+  .legend { font-size: 10pt; color: #333; margin: 2px 0 6px; }
+  .small { font-size: 10pt; color: #333; }
+  .pg-gantt { page: apaisada; }
+  .gantt { width: 100%; height: 162mm; display: block; }
+  .gwrap { height: 164mm; overflow: hidden; break-inside: avoid; }
+  .brk { break-before: page; }
+  .pv { page: auto; }
+  @media print {
+    body { padding: 0; max-width: none; }
+    tr { page-break-inside: avoid; break-inside: avoid; }
+    .brk { page-break-before: always; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Spaghetti integral con brócoli, champiñones y camarones al limón <span style="font-weight:400;font-size:14pt">· versión en dos etapas</span></h1>
+<div class="stats">
+  <div class="stat"><div class="big">21 min</div><div class="cap"><b>Tiempo total de reloj</b>: 11 min de preparación + 10 min de cocción, desde abrir el freezer hasta emplatar (incluye el descongelado, en paralelo). Entre etapas puede haber pausa.</div></div>
+  <div class="stat"><div class="big">1 porción</div><div class="cap"><b>Rinde.</b> Lo que sobra se guarda para repetir el plato al día siguiente</div></div>
+  <div class="stat"><div class="big">0 g</div><div class="cap"><b>Sal agregada.</b> Medidas: cdta = cucharadita de té (5 ml) · cda = cuchara sopera (15 ml)</div></div>
+</div>
+
+<h2>Mise en place: qué tener listo antes de empezar</h2>
+<h3>Utensilios (10) e insumos</h3>
+<table>
+<colgroup><col style="width:40%"><col></colgroup>
+<thead><tr><th>Utensilio</th><th>Para qué se usa y cómo</th></tr></thead>
+<tbody>
+<tr><td>Wok Eternity 30 cm con su tapa</td><td>Champiñones, sofrito, brócoli al vapor, camarones y mantecatura. <b>Nada metálico adentro</b>: el antiadherente se raya</td></tr>
+<tr><td>Cuchara de madera FERPA 60 cm</td><td>Todo lo que se revuelve, corre, saltea o mezcla dentro del wok, y el emplatado</td></tr>
+<tr><td>Jarro hervidor Slow Fire 2 L</td><td>Hervir 0,8 L y cocinar la pasta; volcar agua hirviendo al wok por el asa</td></tr>
+<tr><td>Pinza parrillera Carol 30 cm</td><td>Solo dentro del jarro (acero): revolver la pasta y pasarla al wok sin tocar el wok</td></tr>
+<tr><td>Balanza Masuya SF400</td><td>Pesar camarones (125 g) y pasta (100 g)</td></tr>
+<tr><td>Tabla de corte verde</td><td>Todo lo que se corta es vegetal</td></tr>
+<tr><td>Cuchillo chef Böker Arbolito 8308</td><td>Brócoli, champiñones, cherry, limón</td></tr>
+<tr><td>Rallador zester</td><td>Jengibre y cáscara de limón, rallados directamente sobre el wok</td></tr>
+<tr><td>1 bol mediano</td><td>Pesar, descongelar y luego secar los camarones</td></tr>
+<tr><td>1 plato hondo</td><td>Servicio</td></tr>
+<tr><td>Papel de cocina (3 paños)</td><td>Limpiar los champiñones y secar los camarones</td></tr>
+</tbody>
+</table>
+<h3>Ingredientes (1 porción)</h3>
+<table>
+<colgroup><col style="width:44%"><col style="width:24%"><col></colgroup>
+<thead><tr><th>Ingrediente</th><th class="n">Cantidad</th><th>Estado / preparación</th></tr></thead>
+<tbody>
+<tr><td>Spaghetti integral Matarazzo</td><td class="n">100 g</td><td>Seco</td></tr>
+<tr><td>Brócoli fresco entero</td><td class="n">½ pieza (~250 g)</td><td>Flores, tallo y hojas</td></tr>
+<tr><td>Camarones cocidos congelados Superbe</td><td class="n">125 g (½ bolsa)</td><td>Congelados; se descongelan en la etapa 1, paso 0:00</td></tr>
+<tr><td>Champiñones blancos El Mercado</td><td class="n">100 g (½ bandeja)</td><td>Laminados 5 mm</td></tr>
+<tr><td>Tomates cherry Sueño Verde</td><td class="n">125 g (½ bandeja)</td><td>Partidos al medio</td></tr>
+<tr><td>Ajo picado congelado</td><td class="n">1 cdta (5 g)</td><td>Congelado, directo al wok</td></tr>
+<tr><td>Jengibre fresco</td><td class="n">5 g (1 cm)</td><td>Rallado sin pelar sobre el wok</td></tr>
+<tr><td>Limón</td><td class="n">½ unidad</td><td>Ralladura + jugo, directo al wok</td></tr>
+<tr><td>Aceite de oliva extra virgen Oliovita</td><td class="n">1½ cda (22 ml)</td><td>½ cda cocción + 1 cda crudo</td></tr>
+<tr><td>Cúrcuma molida</td><td class="n">¼ cdta</td><td>Al sofrito</td></tr>
+<tr><td>Pimienta negra molida</td><td class="n">¼ cdta</td><td>Al emplatar</td></tr>
+<tr><td>Perejil deshidratado</td><td class="n">½ cdta</td><td>Al emplatar</td></tr>
+<tr><td>Agua</td><td class="n">0,8 L</td><td>Para la pasta (8:1)</td></tr>
+</tbody>
+</table>
+<p class="small" style="margin:6px 0 0">Aprox. por porción: 720 kcal · 38 g proteína · 17 g fibra · 250 mg sodio. Lo que sobra sirve para repetir el plato al día siguiente: medio brócoli, medio limón, champiñones y cherry a la heladera; la media bolsa de camarones vuelve cerrada al freezer.</p>
+
+
+<h2 class="brk">Etapa 1 · Preparación (sin vigilancia) · 11 min</h2>
+<p class="legend">La columna "Qué hacer" es el procedimiento completo. La columna "Por qué" es solo referencia:
+<span class="tag k">NUTRICIÓN</span><span class="tag">DESPERDICIO</span><span class="tag">TIEMPO</span><span class="tag k">SEGURIDAD</span><span class="tag">SABOR</span></p>
+<table class="tl">
+<colgroup><col style="width:7.5%"><col style="width:63%"><col></colgroup>
+<thead><tr><th>Min</th><th>Qué hacer (y cómo)</th><th>Por qué</th></tr></thead>
+<tbody>
+<tr><td class="min">0:00</td><td class="what"><b>Pesar y poner a descongelar los camarones</b><ul class="sub"><li>Poner el bol vacío en la balanza y tarar.</li><li>Sacar la bolsa del freezer, volcar camarones hasta leer 125 g y devolver la bolsa cerrada al freezer de inmediato.</li><li>Cubrir con agua fría de la canilla (nunca tibia) y dejar el bol sobre la mesada <b>10 min, hasta 10:00</b>.</li></ul></td>
+<td class="why"><span class="tag k">SEGURIDAD</span><span class="tag">DESPERDICIO</span>En agua fría el producto se mantiene por debajo de 5 °C mientras descongela. Si tarda más, no pasa nada: puede esperar en el agua fría. Se descongela solo lo que se cocina.</td></tr>
+<tr><td class="min">0:30</td><td class="what"><b>Lavar y cortar el brócoli entero</b><ul class="sub"><li>Lavar la mitad del brócoli bajo la canilla.</li><li>Sobre la tabla verde, con el cuchillo chef: separar las flores en bocados de 3 cm; pelar del tallo solo la piel dura (1–2 mm) y cortarlo en rodajas de 4 mm; reservar las hojas enteras.</li><li>Dejar todo junto en un extremo de la tabla.</li></ul></td>
+<td class="why"><span class="tag">DESPERDICIO</span><span class="tag k">NUTRICIÓN</span>El tallo es el 40 % de la pieza. El corte activa la mirosinasa: con ≥5 min de reposo se forma sulforafano estable a la cocción; más reposo no perjudica, por eso el brócoli va primero.</td></tr>
+<tr><td class="min">3:00</td><td class="what"><b>Limpiar y laminar los champiñones</b><ul class="sub"><li>Frotar cada champiñón con un paño de papel de cocina apenas húmedo (no sumergir).</li><li>En la misma tabla verde, con el cuchillo chef, cortar en láminas de 5 mm, tallo incluido.</li><li>Dejarlos en otro extremo de la tabla.</li></ul></td>
+<td class="why"><span class="tag">SABOR</span><span class="tag">DESPERDICIO</span>Un champiñón empapado hierve en vez de dorarse; seco se carameliza (umami que reemplaza la sal). El tallo es comestible.</td></tr>
+<tr><td class="min">4:30</td><td class="what"><b>Partir los cherry</b><ul class="sub"><li>En la misma tabla, con el cuchillo chef, partir los cherry al medio.</li><li>Dejarlos junto a los champiñones.</li></ul></td>
+<td class="why"><span class="tag">SABOR</span>Se cortan últimos para que su jugo no moje el resto. No hay nada que vigilar: cortados aguantan horas en la heladera.</td></tr>
+<tr><td class="min">5:00</td><td class="what"><b>Lavar limón y jengibre; pesar la pasta</b><ul class="sub"><li>Lavar el limón bajo la canilla y fregar el jengibre con agua.</li><li>Pesar 100 g de spaghetti en la balanza y dejarlos sobre su propio paquete, junto al jarro.</li></ul></td>
+<td class="why"><span class="tag">TIEMPO</span><span class="tag">DESPERDICIO</span>Nada se ralla ni se exprime todavía: se hace directo sobre el wok en la etapa 2, sin recipiente intermedio.</td></tr>
+<tr><td class="min">6:00</td><td class="what"><b>Agua al fuego</b><ul class="sub"><li>Poner 0,8 L de agua fría en el jarro hervidor y llevarlo a la hornalla grande a llama máxima, sin sal.</li><li>Rompe hervor alrededor de 11:00.</li></ul></td>
+<td class="why"><span class="tag">TIEMPO</span><span class="tag">SABOR</span>Relación 8:1: el jarro angosto y alto cubre la pasta con 0,8 L, hierve en ~5 min y concentra el almidón. Si hierve antes de que estés listo, solo hay que bajarlo a fuego medio: no es un paso de vigilancia.</td></tr>
+<tr><td class="min">6:30</td><td class="what"><b>Ordenar el puesto de cocción</b><ul class="sub"><li>Junto a la hornalla del wok: el wok con su tapa, la cuchara de madera, el zester, el limón, el jengibre, el aceite, la cúrcuma, la pimienta, el perejil, la tabla con los vegetales y el plato hondo.</li><li>Junto al jarro: la pinza parrillera.</li><li>El ajo queda en el freezer hasta usarlo.</li></ul></td>
+<td class="why"><span class="tag">TIEMPO</span>En la etapa 2 no se busca nada: cada cosa está al alcance de la mano en el orden en que se usa.</td></tr>
+<tr><td class="min">7:30</td><td class="what"><b>Espera libre</b><ul class="sub"><li>No hay ninguna tarea hasta 10:00.</li><li>Nada que vigilar.</li></ul></td>
+<td class="why"><span class="tag">TIEMPO</span>Es el único hueco del proceso: lo impone el descongelado de 10 min y no se puede acortar sin usar agua tibia (inseguro).</td></tr>
+<tr><td class="min">10:00</td><td class="what"><b>Escurrir y secar los camarones</b><ul class="sub"><li>Comprobar que estén descongelados: flexibles y sin hielo (si queda hielo, cambiar el agua y esperar 2 min más).</li><li>Volcar el agua del bol, secar los camarones con dos paños de papel de cocina y dejarlos en el bol junto al wok.</li><li><b>Fin de la etapa 1 (11:00).</b></li><li>La etapa 2 empieza cuando el agua del jarro rompe hervor.</li></ul></td>
+<td class="why"><span class="tag k">SEGURIDAD</span><span class="tag">TIEMPO</span>Camarones secos se calientan sin enfriar el wok ni hervir en su agua. Si la etapa 2 no arranca enseguida, van a la heladera (ver Seguridad).</td></tr>
+</tbody>
+</table>
+
+<h2 class="brk">Etapa 2 · Cocción y plato (con vigilancia) · 10 min</h2>
+<p class="legend" style="margin-bottom:3px">El reloj arranca cuando el agua rompe hervor y todo lo de la etapa 1 está junto al wok.</p>
+<table class="tl">
+<colgroup><col style="width:7.5%"><col style="width:63%"><col></colgroup>
+<thead><tr><th>Min</th><th>Qué hacer (y cómo)</th><th>Por qué</th></tr></thead>
+<tbody>
+<tr><td class="min">0:00</td><td class="what"><b>Wok al fuego; jarro a fuego medio</b><ul class="sub"><li>Con el agua del jarro a borbotón, bajarlo a fuego medio (hervor sostenido).</li><li>Poner el wok en la otra hornalla grande a fuego medio-alto con ½ cda de aceite.</li></ul></td>
+<td class="why"><span class="tag">TIEMPO</span>Desde acá todo tiene tiempo: el reloj de esta etapa arranca con el hervor.</td></tr>
+<tr><td class="min">0:30</td><td class="what"><b>Champiñones al wok</b><ul class="sub"><li>Volcar los champiñones desde la tabla y acomodarlos en una sola capa con la cuchara de madera.</li><li><b>No moverlos hasta 2:30.</b></li></ul></td>
+<td class="why"><span class="tag">SABOR</span>Sin sal el champiñón no suelta agua de golpe y dora mejor si no se toca (Maillard, umami).</td></tr>
+<tr><td class="min">1:15</td><td class="what"><b>Pasta al jarro</b><ul class="sub"><li>Subir el jarro a llama máxima y poner los 100 g de spaghetti (quedan parados y se hunden al ablandarse).</li><li>A los 30 s (1:45), hundirlos y revolver 10 s con la pinza parrillera para que no se peguen.</li><li><b>7 min, hasta 8:15.</b></li></ul></td>
+<td class="why"><span class="tag k">NUTRICIÓN</span>7 min deja la pasta integral al dente y la hace coincidir con el final de los camarones. Con poca agua el revuelto inicial es obligatorio.</td></tr>
+<tr><td class="min">2:30</td><td class="what"><b>Revolver los champiñones</b>Revolver una sola vez con la cuchara de madera y dejarlos dorar hasta 3:15.</td>
+<td class="why"><span class="tag">SABOR</span>Un solo revuelto: más manipulación enfría el wok y frena el dorado.</td></tr>
+<tr><td class="min">3:15</td><td class="what"><b>Sofrito aromático</b><ul class="sub"><li>Con la cuchara de madera, correr los champiñones hacia un lado del wok.</li><li>En el centro, sobre el aceite que quedó, rallar con el zester 5 g de jengibre (1 cm, sin pelar) directamente sobre el wok; sacar del freezer 1 cdta de ajo picado y agregarla sin descongelar, más la cúrcuma.</li><li>Revolver con la cuchara de madera 45 s a fuego medio, hasta 4:00.</li></ul></td>
+<td class="why"><span class="tag k">NUTRICIÓN</span><span class="tag">SABOR</span>La curcumina es liposoluble: tostarla en aceite la libera. El ajo congelado directo al calor no se oxida ni amarga.</td></tr>
+<tr><td class="min">4:00</td><td class="what"><b>Brócoli: saltear y luego vapor en el wok</b><ul class="sub"><li>Volcar flores, rodajas de tallo y hojas desde la tabla sobre el sofrito y saltear 30 s con la cuchara de madera a fuego medio-alto.</li><li>A las 4:30, tomar el jarro por el asa y volcar sobre los bordes del wok un chorro de agua hirviendo de unos 80 ml (3 segundos de chorro).</li><li><b>Tapar de inmediato, fuego medio, 3 min, hasta 7:30.</b></li><li>No destapar antes.</li></ul></td>
+<td class="why"><span class="tag k">NUTRICIÓN</span><span class="tag">TIEMPO</span><span class="tag">SABOR</span>Saltear primero: el brócoli toma el aceite aromático antes de que el agua enfríe el wok. 3 min tapado: tallo tierno-crocante, flores verde intenso, máxima retención de vitamina C y sulforafano. Más tiempo lo pasa.</td></tr>
+<tr><td class="min">5:00</td><td class="what"><b>Revolver la pasta</b><ul class="sub"><li>Revolver la pasta una vez con la pinza parrillera dentro del jarro.</li><li>Acercar el plato hondo al wok.</li></ul></td>
+<td class="why"><span class="tag">TIEMPO</span>Tiempo muerto de fuego aprovechado; la pinza no entra al wok.</td></tr>
+<tr><td class="min">7:30</td><td class="what"><b>Camarones al wok</b><ul class="sub"><li>Destapar, subir a fuego alto y volcar los camarones desde el bol.</li><li>Revolver con la cuchara de madera 45 s, hasta 8:15, hasta verlos opacos y con vapor.</li></ul></td>
+<td class="why"><span class="tag k">SEGURIDAD</span><span class="tag">SABOR</span>Aunque vienen cocidos, fueron manipulados en frío: deben llegar bien calientes al centro (≥ 74 °C). Solo 45 s a fuego directo: más de ~2 min los pone gomosos.</td></tr>
+<tr><td class="min">8:15</td><td class="what"><b>Apagar y mantecar: pasta, limón, cherry y aceite</b><ul class="sub"><li>Apagar el wok.</li><li>Con la pinza parrillera, pasar los spaghetti del jarro al wok sin escurrirlos del todo y sin apoyar la pinza en el wok.</li><li>Cerrar el gas del jarro.</li><li>Rallar con el zester la cáscara de una mitad del limón sobre la pasta; cortar el limón al medio y exprimir esa mitad sobre el wok con la mano en cuenco para retener las semillas.</li><li>Agregar los cherry y 1 cda de aceite en crudo.</li><li>Mezclar con la cuchara de madera, con movimiento circular enérgico, durante 1 min fuera del fuego, hasta 9:15.</li></ul></td>
+<td class="why"><span class="tag">DESPERDICIO</span><span class="tag k">NUTRICIÓN</span><span class="tag">SABOR</span>El almidón que arrastra la pasta liga aceite y jugo (mantecatura); sin fuego la emulsión no se rompe y los camarones terminan de calentarse con el calor residual sin endurecerse. El limón fuera del fuego conserva la vitamina C; el aceite crudo, sus polifenoles.</td></tr>
+<tr><td class="min">9:15</td><td class="what"><b>Emplatar</b><ul class="sub"><li>Pasar todo al plato hondo con la cuchara de madera, inclinando el wok por las asas con un paño; camarones y tomates arriba.</li><li>Espolvorear ¼ cdta de pimienta negra y ½ cdta de perejil deshidratado.</li><li><b>Listo a 10:00.</b></li></ul></td>
+<td class="why"><span class="tag k">NUTRICIÓN</span><span class="tag">SABOR</span><span class="tag">DESPERDICIO</span>La pimienta al final aporta piperina, que multiplica la absorción de la curcumina. El perejil seco al plato no se quema.</td></tr>
+</tbody>
+</table>
+
+<section class="pg-gantt brk">
+<h2 style="margin-top:0">Diagramas de Gantt: las dos etapas</h2>
+<p class="legend" style="margin-bottom:2px">Negro = cocción activa · rayado = tapado · gris claro = calentamiento · punteado = espera pasiva · gris medio = manos.</p>
+<div class="gwrap">
+<svg class="gantt" viewBox="0 0 1120 936" xmlns="http://www.w3.org/2000/svg" role="img"><defs><pattern id="hat" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#555"/><line x1="0" y1="0" x2="0" y2="7" stroke="#fff" stroke-width="2.2"/></pattern><style>
+.ax{stroke:#bbb;stroke-width:1.2} .axm{stroke:#e2e2e2;stroke-width:1} .sep{stroke:#777;stroke-width:1.2;stroke-dasharray:3 4}
+.ttl{font:700 16px "Segoe UI",Arial,sans-serif;fill:#111}
+.lbl{font:600 13px "Segoe UI",Arial,sans-serif;fill:#111} .tick{font:12px "Segoe UI",Arial,sans-serif;fill:#333}
+.grp{font:700 11px "Segoe UI",Arial,sans-serif;fill:#444;letter-spacing:.1em}
+.tw{font:600 12px "Segoe UI",Arial,sans-serif;fill:#fff;paint-order:stroke;stroke:#2b2b2b;stroke-width:3px;stroke-linejoin:round} .tk{font:600 12px "Segoe UI",Arial,sans-serif;fill:#111}
+.bf{fill:#2b2b2b} .bp{fill:#bdbdbd} .bh{fill:url(#hat)} .bw{fill:#fff;stroke:#666;stroke-width:1.3;stroke-dasharray:4 3} .bm{fill:#666}
+</style></defs><g>
+<line class="ax" x1="250.0" y1="28" x2="250.0" y2="434"/><text class="tick" x="250.0" y="452" text-anchor="middle">0</text><line class="axm" x1="325.5" y1="28" x2="325.5" y2="434"/><line class="ax" x1="400.9" y1="28" x2="400.9" y2="434"/><text class="tick" x="400.9" y="452" text-anchor="middle">2</text><line class="axm" x1="476.4" y1="28" x2="476.4" y2="434"/><line class="ax" x1="551.8" y1="28" x2="551.8" y2="434"/><text class="tick" x="551.8" y="452" text-anchor="middle">4</text><line class="axm" x1="627.3" y1="28" x2="627.3" y2="434"/><line class="ax" x1="702.7" y1="28" x2="702.7" y2="434"/><text class="tick" x="702.7" y="452" text-anchor="middle">6</text><line class="axm" x1="778.2" y1="28" x2="778.2" y2="434"/><line class="ax" x1="853.6" y1="28" x2="853.6" y2="434"/><text class="tick" x="853.6" y="452" text-anchor="middle">8</text><line class="axm" x1="929.1" y1="28" x2="929.1" y2="434"/><line class="ax" x1="1004.5" y1="28" x2="1004.5" y2="434"/><text class="tick" x="1004.5" y="452" text-anchor="middle">10</text><line class="axm" x1="1080.0" y1="28" x2="1080.0" y2="434"/><text class="ttl" x="10" y="22">ETAPA 1 · PREPARACIÓN (sin vigilancia) · 11 min</text><text class="grp" x="10" y="40">FUEGO / EQUIPOS</text><text class="lbl" x="10" y="64">Bol con agua fría</text><rect class="bw" x="250.0" y="48.16" width="754.5" height="22" rx="3"/><text class="tk" x="256.0" y="64">camarones descongelando (pasivo, 10 min)</text><text class="lbl" x="10" y="96">Brócoli cortado</text><rect class="bw" x="476.4" y="80.16" width="603.6" height="22" rx="3"/><text class="tk" x="482.4" y="96">reposo ≥5 min (sulforafano); sigue en la etapa 2</text><text class="lbl" x="10" y="128">Jarro hervidor (agua)</text><rect class="bp" x="702.7" y="112.16" width="377.3" height="22" rx="3"/><text class="tk" x="708.7" y="128">calentar 0,8 L → rompe hervor ≈ 11:00</text><line class="sep" x1="0" y1="142" x2="1120" y2="142"/><text class="grp" x="10" y="164">TRABAJO DE MANOS</text><text class="lbl" x="10" y="192">Pesar y poner a descongelar</text><rect class="bm" x="250.0" y="176.16" width="37.7" height="22" rx="3"/><text class="lbl" x="10" y="220">Lavar y cortar brócoli</text><rect class="bm" x="287.7" y="204.16" width="188.7" height="22" rx="3"/><text class="tw" x="293.7" y="220">entero</text><text class="lbl" x="10" y="248">Limpiar y laminar champiñones</text><rect class="bm" x="476.4" y="232.16" width="113.1" height="22" rx="3"/><text class="lbl" x="10" y="276">Partir cherry</text><rect class="bm" x="589.5" y="260.16" width="37.8" height="22" rx="3"/><text class="lbl" x="10" y="304">Lavar limón y jengibre, pesar pasta</text><rect class="bm" x="627.3" y="288.16" width="75.4" height="22" rx="3"/><text class="lbl" x="10" y="332">Agua al fuego</text><rect class="bm" x="702.7" y="316.16" width="37.8" height="22" rx="3"/><text class="lbl" x="10" y="360">Ordenar el puesto de cocción</text><rect class="bm" x="740.5" y="344.16" width="75.4" height="22" rx="3"/><text class="lbl" x="10" y="388">Espera libre (nada que vigilar)</text><rect class="bw" x="815.9" y="372.16" width="188.6" height="22" rx="3"/><text class="lbl" x="10" y="416">Escurrir y secar camarones</text><rect class="bm" x="1004.5" y="400.16" width="75.5" height="22" rx="3"/>
+<line x1="250" y1="28" x2="250" y2="434" stroke="#333" stroke-width="1.5"/><line x1="250" y1="434" x2="1080.0" y2="434" stroke="#333" stroke-width="1.5"/>
+</g><g transform="translate(0,480)">
+<line class="ax" x1="250.0" y1="28" x2="250.0" y2="430"/><text class="tick" x="250.0" y="448" text-anchor="middle">0</text><line class="axm" x1="333.0" y1="28" x2="333.0" y2="430"/><line class="ax" x1="416.0" y1="28" x2="416.0" y2="430"/><text class="tick" x="416.0" y="448" text-anchor="middle">2</text><line class="axm" x1="499.0" y1="28" x2="499.0" y2="430"/><line class="ax" x1="582.0" y1="28" x2="582.0" y2="430"/><text class="tick" x="582.0" y="448" text-anchor="middle">4</text><line class="axm" x1="665.0" y1="28" x2="665.0" y2="430"/><line class="ax" x1="748.0" y1="28" x2="748.0" y2="430"/><text class="tick" x="748.0" y="448" text-anchor="middle">6</text><line class="axm" x1="831.0" y1="28" x2="831.0" y2="430"/><line class="ax" x1="914.0" y1="28" x2="914.0" y2="430"/><text class="tick" x="914.0" y="448" text-anchor="middle">8</text><line class="axm" x1="997.0" y1="28" x2="997.0" y2="430"/><line class="ax" x1="1080.0" y1="28" x2="1080.0" y2="430"/><text class="tick" x="1080.0" y="448" text-anchor="middle">10 min</text><text class="ttl" x="10" y="22">ETAPA 2 · COCCIÓN Y PLATO (con vigilancia) · 10 min</text><text class="grp" x="10" y="40">FUEGO / EQUIPOS</text><text class="lbl" x="10" y="64">Jarro hervidor</text><rect class="bp" x="250.0" y="48.16" width="103.8" height="22" rx="3"/><text class="tk" x="256.0" y="64">hervor sostenido</text><rect class="bf" x="353.8" y="48.16" width="581.0" height="22" rx="3"/><text class="tw" x="359.8" y="64">spaghetti 7 min</text><text class="lbl" x="10" y="96">Wok 30 cm</text><rect class="bp" x="250.0" y="80.16" width="41.5" height="22" rx="3"/><rect class="bf" x="291.5" y="80.16" width="228.3" height="22" rx="3"/><text class="tw" x="297.5" y="96">champiñones</text><rect class="bf" x="519.8" y="80.16" width="62.2" height="22" rx="3"/><text class="tw" x="525.8" y="96">sofrito</text><rect class="bf" x="582.0" y="80.16" width="41.5" height="22" rx="3"/><rect class="bh" x="623.5" y="80.16" width="249.0" height="22" rx="3"/><text class="tw" x="629.5" y="96">brócoli tapado 3 min</text><rect class="bf" x="872.5" y="80.16" width="62.3" height="22" rx="3"/><text class="tw" x="878.5" y="96">cam.</text><rect class="bw" x="934.8" y="80.16" width="83.0" height="22" rx="3"/><text class="tk" x="940.8" y="96">mantecar</text><line class="sep" x1="0" y1="110" x2="1120" y2="110"/><text class="grp" x="10" y="132">TRABAJO DE MANOS</text><text class="lbl" x="10" y="160">Wok al fuego + aceite</text><rect class="bm" x="250.0" y="144.16" width="41.5" height="22" rx="3"/><text class="lbl" x="10" y="188">Champiñones al wok</text><rect class="bm" x="291.5" y="172.16" width="20.7" height="22" rx="3"/><text class="lbl" x="10" y="216">Pasta al jarro, hundir</text><rect class="bm" x="353.8" y="200.16" width="41.4" height="22" rx="3"/><text class="lbl" x="10" y="244">Revolver champiñones</text><rect class="bm" x="457.5" y="228.16" width="20.7" height="22" rx="3"/><text class="lbl" x="10" y="272">Sofrito (jengibre, ajo, cúrcuma)</text><rect class="bm" x="519.8" y="256.16" width="62.2" height="22" rx="3"/><text class="lbl" x="10" y="300">Brócoli: saltear, agua, tapar</text><rect class="bm" x="582.0" y="284.16" width="41.5" height="22" rx="3"/><text class="lbl" x="10" y="328">Revolver pasta</text><rect class="bm" x="665.0" y="312.16" width="20.8" height="22" rx="3"/><text class="lbl" x="10" y="356">Camarones al wok</text><rect class="bm" x="872.5" y="340.16" width="62.3" height="22" rx="3"/><text class="lbl" x="10" y="384">Pasta, limón, cherry, mantecar</text><rect class="bm" x="934.8" y="368.16" width="83.0" height="22" rx="3"/><text class="lbl" x="10" y="412">Emplatar</text><rect class="bm" x="1017.8" y="396.16" width="62.2" height="22" rx="3"/>
+<line x1="250" y1="28" x2="250" y2="430" stroke="#333" stroke-width="1.5"/><line x1="250" y1="430" x2="1080.0" y2="430" stroke="#333" stroke-width="1.5"/>
+</g></svg>
+</div>
+</section>
+<h2 class="brk pv">Criterios de diseño de esta versión</h2>
+<div class="box">
+<p><b>Criterio principal: dos etapas.</b> La <b>etapa 1 (preparación)</b> reúne todo lo que no exige vigilancia: pesar, descongelar, lavar, cortar, ordenar el puesto y poner el agua. Si un paso se demora o se alarga, el resultado no cambia (el brócoli cortado mejora con más reposo; los camarones esperan en agua fría; el agua hirviendo espera). La <b>etapa 2 (cocción y plato)</b> reúne los pasos donde pasarse del tiempo arruina algo: dorado, sofrito, vapor, pasta al dente, camarones, mantecatura y emplatado. Entre las dos etapas puede haber una pausa; el reloj de la etapa 2 arranca cuando el agua del jarro rompe hervor.</p>
+<p><b>Costo de la separación.</b> Cocinar en dos etapas tarda 21 min en vez de 16: en la etapa 1 las manos quedan libres 2,5 min esperando a los camarones, y en la etapa 2 el fuego no se solapa con el corte. A cambio, la etapa 2 se ejecuta con todo listo y con una sola cosa que mirar por vez.</p>
+<p><b>Criterios secundarios (sin contradecir al principal).</b> <b>Nutrición:</b> mismo plato y mismas técnicas (brócoli con reposo ≥5 min y vapor corto en wok tapado; cúrcuma + pimienta + aceite; limón fuera del fuego; camarones 45 s). <b>Desperdicio:</b> brócoli entero, jengibre sin pelar, limón completo, agua de la pasta a la salsa, solo la porción descongelada. <b>Tiempo:</b> dentro de cada etapa las tareas se solapan igual que antes (el agua se enciende mientras descongelan los camarones; en la etapa 2 el jarro y el wok trabajan en paralelo). <b>Sabor sin sal:</b> Maillard en champiñones, sofrito aromático, acidez del limón, pimienta y aceite crudo al final.</p>
+</div>
+
+
+<h2>Seguridad y conservación</h2>
+<div class="box">
+<p>Tabla y cuchillo solo tocan vegetales; los camarones van del bol al wok volcándolos, sin utensilio. Dentro del wok solo entra la cuchara de madera (nunca la pinza): el antiadherente rayado se desprende y termina en el plato. Descongelar solo en agua fría y solo la porción a cocinar; la bolsa vuelve al freezer cerrada. Sobrantes frescos (medio brócoli, medio limón, champiñones, cherry): heladera a ≤ 5 °C, usar al día siguiente. Si entre la etapa 1 y la 2 pasan más de 30 min: bol de camarones (sin agua, tapado con film), brócoli, champiñones y cherry a la heladera, y el agua del jarro se enciende recién al empezar la etapa 2 (sumar 5 min). Si sobra plato: enfriar en menos de 2 h, heladera, consumir en 24 h y recalentar hasta que humee.</p>
+</div>
+
+
+
+</body>
+</html>

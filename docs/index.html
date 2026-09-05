@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Templa · documentación</title>
+  <style>
+    :root { --ground:#F3F5EF; --paper:#fff; --ink:#16211B; --muted:#66736B; --line:#DDE2D8; --green:#1E7A4C; --coral:#E0522A; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--ground); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 56px 24px 80px; }
+    .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+    h1 { font-size: 40px; letter-spacing: -.03em; line-height: 1; margin: 0 0 12px; }
+    .lead { color: var(--muted); margin: 0 0 36px; max-width: 60ch; }
+    h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 36px 0 10px; }
+    ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    li a { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; color: inherit; text-decoration: none; }
+    li a:hover { border-color: var(--green); }
+    li b { display: block; }
+    li small { color: var(--muted); }
+    .chip { font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: #DDEFE3; color: var(--green); white-space: nowrap; }
+    .chip.c { background: #FBE3DA; color: var(--coral); }
+    footer { margin-top: 48px; color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="logo.png" alt="" width="240" height="80" style="display:block;width:240px;height:auto;margin:0 0 16px">
+    <p class="eyebrow">Cero desperdicio · sin sal · 1 porción</p>
+    <h1>Templa</h1>
+    <p class="lead">La receta como línea de tiempo viva. Documentación del sistema: arquitectura, decisiones, pruebas, despliegue y seguridad.</p>
+
+    <h2>Leer primero</h2>
+    <ul>
+      <li><a href="ARCHITECTURE.md"><span><b>Arquitectura</b><small>Componentes, cómo se comunican, qué ADR respalda cada decisión</small></span><span class="chip">Vista general</span></a></li>
+      <li><a href="adr/README.md"><span><b>Decisiones de arquitectura</b><small>Trece ADR: compose único, tres servicios, NATS, PostgreSQL, Caddy, JWT…</small></span><span class="chip">ADR</span></a></li>
+    </ul>
+
+    <h2>Operar</h2>
+    <ul>
+      <li><a href="TESTING.md"><span><b>Pruebas</b><small>Unitarias con compuerta del 100 %, integración, mutation testing y sus resultados</small></span><span class="chip">Calidad</span></a></li>
+      <li><a href="DEPLOYMENT.md"><span><b>Despliegue</b><small>VM de Oracle, imágenes por SHA, reversión, respaldo, operación diaria</small></span><span class="chip">Oracle Cloud</span></a></li>
+      <li><a href="SECURITY.md"><span><b>Seguridad</b><small>Amenazas, mitigaciones y lo que queda abierto</small></span><span class="chip c">Abiertos listados</span></a></li>
+    </ul>
+
+    <h2>Diagramas</h2>
+    <ul>
+      <li><a href="diagrams/c4-contexto.mmd"><span><b>C4 · Contexto</b><small>El sistema y su entorno</small></span><span class="chip">Mermaid</span></a></li>
+      <li><a href="diagrams/c4-contenedores.mmd"><span><b>C4 · Contenedores</b><small>Los ocho contenedores y sus relaciones</small></span><span class="chip">Mermaid</span></a></li>
+      <li><a href="diagrams/secuencia-cocinada.mmd"><span><b>Secuencia · registrar una cocinada</b><small>Diseño previsto del camino principal</small></span><span class="chip">Mermaid</span></a></li>
+      <li><a href="diagrams/despliegue.mmd"><span><b>Despliegue</b><small>Del push al contenedor corriendo en la VM</small></span><span class="chip">Mermaid</span></a></li>
+    </ul>
+
+    <footer>Fuente: el repositorio. Esta portada se publica en GitHub Pages desde <code>docs/</code> en cada push a <code>main</code>.</footer>
+  </main>
+</body>
+</html>
