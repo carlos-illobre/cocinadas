@@ -1,0 +1,33 @@
+{
+  "name": "templa-catalogo",
+  "version": "0.1.0",
+  "description": "Recetas, ingredientes y utensilios leídos del repositorio. Solo lectura.",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "node --env-file=../../.env --watch --import tsx src/server.ts",
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "mutation": "stryker run",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "fastify": "^5.3.0",
+    "nats": "^2.29.0"
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "^9.0.0",
+    "@stryker-mutator/vitest-runner": "^9.0.0",
+    "@types/node": "^22.15.0",
+    "@vitest/coverage-v8": "^3.2.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

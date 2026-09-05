@@ -1,0 +1,8 @@
+# Todo texto con LF en el repositorio, sin importar el sistema: los scripts .sh y los
+# Dockerfiles se ejecutan en Linux y con CRLF fallan de formas que no mencionan el motivo.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.pdf binary

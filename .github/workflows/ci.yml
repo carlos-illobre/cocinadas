@@ -1,0 +1,145 @@
+# Pipeline (docs/TESTING.md, docs/DEPLOYMENT.md):
+#   pruebas   en cada push y PR: unitarias con la compuerta del 100 % + paridad de .env.
+#   mutacion  en cada push y PR, después de pruebas: Stryker en los cuatro proyectos.
+#             No bloquea; deja los informes como artefacto.
+#   imagenes  solo en main y solo si las pruebas pasaron: construye las cuatro imágenes
+#             para amd64 y arm64 y las publica en GHCR etiquetadas por SHA (ADR-011).
+#             deploy.sh trae exactamente ese SHA a la instancia.
+#   sitio     solo en main: publica docs/ en GitHub Pages.
+name: ci
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: microservices/*/pnpm-lock.yaml
+      - name: Unitarias con compuerta de cobertura
+        run: bash tests/utest.sh
+      - name: Integración sin stack (paridad de .env, contratos)
+        run: bash tests/itest.sh --rapido
+      - name: Compose resuelve sin variables sin definir
+        run: cp .env.example .env && docker compose config --quiet
+      - name: Sintaxis de los scripts de despliegue
+        run: bash -n deployment/oracle-single/deploy.sh && bash -n deployment/oracle-single/preflight.sh
+      - name: Informes de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: microservices/*/coverage/
+          retention-days: 7
+
+  mutacion:
+    # Informa, no reprueba (docs/TESTING.md): tarda minutos, por eso corre solo acá y
+    # nunca en la máquina de desarrollo salvo pedido expreso. Los informes quedan como
+    # artefacto del run.
+    needs: pruebas
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: microservices/*/pnpm-lock.yaml
+      - name: Instalar dependencias
+        run: for d in microservices/*/; do (cd "$d" && pnpm install --frozen-lockfile); done
+      - name: Mutation testing de todos los servicios
+        run: bash tests/mutation.sh
+      - name: Informes de mutación
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutacion
+          path: microservices/*/reports/mutation/
+          retention-days: 14
+
+  imagenes:
+    needs: pruebas
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - servicio: catalogo
+            contexto: .
+            dockerfile: microservices/catalogo/Dockerfile
+          - servicio: usuarios
+            contexto: microservices/usuarios
+            dockerfile: microservices/usuarios/Dockerfile
+          - servicio: cocinadas
+            contexto: microservices/cocinadas
+            dockerfile: microservices/cocinadas/Dockerfile
+          - servicio: frontend
+            contexto: microservices/frontend
+            dockerfile: microservices/frontend/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Construir y publicar ${{ matrix.servicio }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.contexto }}
+          file: ${{ matrix.dockerfile }}
+          # arm64 para la Ampere A1 y amd64 para desarrollo y para una Micro AMD. Construir
+          # arm64 sobre x86 con QEMU tarda varias veces más; se acepta a cambio de no
+          # depender de un runner ARM.
+          platforms: linux/amd64,linux/arm64
+          push: true
+          # Etiquetadas por SHA, nunca por `latest`: `docker compose ps` dice exactamente
+          # qué versión hay y la reversión es determinística.
+          tags: ghcr.io/${{ github.repository_owner }}/templa-${{ matrix.servicio }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.servicio }}
+          cache-to: type=gha,scope=${{ matrix.servicio }},mode=max
+
+  sitio:
+    needs: pruebas
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.publicar.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: publicar
+        uses: actions/deploy-pages@v4

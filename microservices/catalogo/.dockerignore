@@ -1,0 +1,9 @@
+# Este servicio se construye con contexto en la raíz del repositorio (ADR-006), así que
+# el .dockerignore que manda es el de la raíz. Este queda para que `docker build` desde
+# esta carpeta, si alguien lo hace por error, tampoco arrastre nada de más.
+node_modules
+dist
+coverage
+reports
+.stryker-tmp
+.env*

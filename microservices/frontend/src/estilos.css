@@ -1,0 +1,527 @@
+/* Tokens del sistema visual aprobado (docs/mockups/app-cocina-mockup.html). */
+:root {
+  --ground: #f3f5ef;
+  --paper: #ffffff;
+  --ink: #16211b;
+  --muted: #66736b;
+  --line: #dde2d8;
+  --green: #1e7a4c;
+  --green-soft: #ddefe3;
+  --coral: #e0522a;
+  --coral-soft: #fbe3da;
+  --display: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif;
+  --body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.pantalla {
+  max-width: 390px;
+  margin: 0 auto;
+  padding: 48px 22px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+h1 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 34px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 0 0 8px;
+}
+
+.lead {
+  color: var(--muted);
+  margin: 0 0 32px;
+}
+
+.servicios {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.servicios li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.servicios .nombre {
+  font-weight: 600;
+}
+
+.servicios .detalle {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.servicios .ok .detalle {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.servicios .caido .detalle {
+  background: var(--coral-soft);
+  color: var(--coral);
+}
+
+.logo {
+  display: block;
+  width: 240px;
+  height: auto;
+  margin: 0 0 20px;
+}
+
+/* ---------- pantalla de inicio (docs/mockups/bienvenida-concepto.png) ---------- */
+.inicio {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #101312;
+  color: #fff;
+}
+
+.inicio-fondo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Oscurece el centro para que el logo y el lema se lean sobre cualquier recorte del fondo. */
+.inicio-velo {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 45% at 50% 48%, rgba(10, 12, 11, 0.72), rgba(10, 12, 11, 0.15) 70%, transparent);
+}
+
+.inicio-contenido {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.inicio-logo {
+  width: min(300px, 78vw);
+  height: auto;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
+}
+
+.inicio-lema {
+  margin: 0;
+  font-family: var(--body);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.inicio-boton {
+  margin-top: 22px;
+  min-width: 220px;
+  height: 56px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--coral);
+  color: #fff;
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -8px rgba(224, 82, 42, 0.7);
+}
+
+.inicio-boton:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+/* ---------- comunes de las pantallas de catálogo (docs/mockups/app-cocina-mockup.html) ---------- */
+.enlace {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--green);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.volver {
+  display: inline-block;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.aviso-error {
+  background: var(--coral-soft);
+  color: var(--coral);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.chip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  height: 56px;
+  border: 0;
+  border-radius: 16px;
+  padding: 0 22px;
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+
+.btn.primary {
+  width: 100%;
+  background: var(--ink);
+  color: #fff;
+}
+
+.btn:focus-visible,
+.enlace:focus-visible,
+.rcard:focus-visible,
+.seg button:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* ---------- selección de recetas ---------- */
+.pick {
+  padding-top: 32px;
+}
+
+.pick h1 {
+  font-size: 34px;
+  margin-bottom: 14px;
+}
+
+.lista-recetas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rcard {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  text-align: left;
+  background: var(--paper);
+  border: 1px solid var(--green);
+  box-shadow: 0 0 0 3px var(--green-soft);
+  border-radius: 20px;
+  padding: 12px 14px 12px 12px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.plato {
+  width: 76px;
+  height: 64px;
+  border-radius: 14px;
+  object-fit: cover;
+  flex: none;
+}
+
+.plato-vacio {
+  display: grid;
+  place-items: center;
+  background: var(--soft);
+  color: var(--muted);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.rcard-texto b {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  display: block;
+  line-height: 1.1;
+}
+
+.rcard .m {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rcard .go {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+}
+
+.pie {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 13px;
+}
+
+/* ---------- portada ---------- */
+.cover {
+  padding-top: 28px;
+  padding-bottom: 40px;
+}
+
+.cover h1 {
+  font-size: 26px;
+  line-height: 1.05;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.cover-titulo {
+  display: grid;
+  grid-template-columns: 1fr 84px;
+  column-gap: 12px;
+  align-items: start;
+  margin: 4px 0 10px;
+}
+
+.plato-hero {
+  width: 84px;
+  height: 84px;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 8px 20px -10px rgba(22, 33, 27, 0.5);
+}
+
+.seg {
+  margin: 14px 0 0;
+  background: var(--soft);
+  border-radius: 14px;
+  padding: 4px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+}
+
+.seg button {
+  height: 48px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.1;
+  cursor: pointer;
+}
+
+.seg button small {
+  font-size: 10.5px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.seg button.on {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 2px 6px rgba(22, 33, 27, 0.12);
+}
+
+.seg button.on small {
+  color: var(--green);
+}
+
+.ingr {
+  margin-top: 16px;
+}
+
+.ingr .eyebrow span {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.fila-ingredientes {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0 0;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.fila-ingredientes li {
+  flex: none;
+  width: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.fila-ingredientes small {
+  font-size: 9.5px;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.ph {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  flex: none;
+}
+
+.ph-vacio {
+  display: grid;
+  place-items: center;
+  background: var(--soft);
+  color: var(--muted);
+  font-family: var(--display);
+  font-weight: 700;
+}
+
+.stages {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stage {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 12px 14px;
+}
+
+.stage.hot {
+  border-color: var(--coral-soft);
+}
+
+.stage .hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 16.5px;
+  letter-spacing: -0.02em;
+}
+
+.stage .hd span {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.stage p {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.stage-cuenta {
+  font-variant-numeric: tabular-nums;
+}
+
+.stage.hot .stage-cuenta {
+  color: var(--coral-deep, #b83e1c);
+  font-weight: 600;
+}
+
+.cta {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cta .hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
