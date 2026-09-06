@@ -38,6 +38,9 @@ export interface Paso {
   readonly espera: boolean;
   readonly titulo: string;
   readonly acciones: readonly string[];
+  readonly ingredientes: readonly string[];
+  readonly inicia_procesos: readonly string[];
+  readonly por_que: { readonly etiquetas: readonly string[]; readonly texto: string };
 }
 
 export interface Proceso {
@@ -47,6 +50,10 @@ export interface Proceso {
   readonly inicio_s: number;
   readonly fin_s: number;
   readonly critico: boolean;
+  readonly ingrediente: string | null;
+  readonly nota: string;
+  /** Id del paso que hay que hacer cuando vence, o null. */
+  readonly al_terminar: string | null;
 }
 
 export interface Etapa {

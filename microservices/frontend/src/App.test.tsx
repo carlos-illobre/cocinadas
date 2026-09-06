@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { App, Cocina, Servicios, versionPorOmision } from './App';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { App, Servicios, versionPorOmision } from './App';
+import type { Avisador } from './cocina/sonido';
 import { fetchDeCatalogo, nunca, recetaDosEtapas, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
 import type { Fetch } from './salud';
 
@@ -14,6 +15,9 @@ function fetchCompleto(): Fetch {
   });
 }
 
+const avisadorFalso: Avisador = { suave: vi.fn(), fuerte: vi.fn() };
+const crearAvisador = vi.fn(() => avisadorFalso);
+
 describe('versionPorOmision', () => {
   it('elige la última versión declarada', () => {
     expect(versionPorOmision(resumenSpaghetti)).toBe('dos-etapas');
@@ -26,42 +30,77 @@ describe('versionPorOmision', () => {
 });
 
 describe('el recorrido de la app', () => {
-  it('arranca en la pantalla de inicio sin consultar nada', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    crearAvisador.mockClear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('arranca en la pantalla de inicio sin consultar nada ni crear el avisador', () => {
     let consultas = 0;
     const fetchImpl: Fetch = () => {
       consultas += 1;
       return nunca('');
     };
-    render(<App fetchImpl={fetchImpl} />);
+    render(<App fetchImpl={fetchImpl} crearAvisador={crearAvisador} />);
 
     expect(screen.getByRole('button', { name: 'Empezar' })).toBeInTheDocument();
     expect(consultas).toBe(0);
+    expect(crearAvisador).not.toHaveBeenCalled();
   });
 
-  it('inicio → recetas → portada → cocina, y vuelve por el mismo camino', async () => {
-    render(<App fetchImpl={fetchCompleto()} />);
+  it('inicio → recetas → portada → cocina → resumen → recetas, y el avisador nace con el primer gesto', async () => {
+    vi.useRealTimers();
+    render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} ahora={() => 1_000_000} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    expect(crearAvisador).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('heading', { level: 1, name: 'Recetas' })).toBeInTheDocument();
 
     fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Spaghetti integral');
-    // La versión por omisión es la última: dos etapas.
     expect(screen.getByRole('tab', { selected: true })).toHaveTextContent('Versión 2');
 
     fireEvent.click(await screen.findByRole('button', { name: 'Empezar Etapa 1' }));
-    expect(screen.getByText('Cocina · en construcción')).toBeInTheDocument();
-    expect(screen.getByText('Versión 2 · Dos etapas · 11 + 10 min.')).toBeInTheDocument();
+    expect(screen.getByText('Etapa 1 · Preparación')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Paso 1 de 3');
 
+    // Volver desde la cocina lleva a la portada de la misma versión.
     fireEvent.click(screen.getByRole('button', { name: '‹ Portada' }));
     expect(screen.getByRole('tab', { selected: true })).toHaveTextContent('Versión 2');
-
+    // Y desde la portada, a la lista; y otra vez adentro.
     fireEvent.click(screen.getByRole('button', { name: '‹ Recetas' }));
     expect(screen.getByRole('heading', { level: 1, name: 'Recetas' })).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
+
+    // Cocinar entero: tres pasos de la etapa 1, pausa, cinco de la etapa 2, resumen.
+    fireEvent.click(await screen.findByRole('button', { name: 'Empezar Etapa 1' }));
+    for (let i = 0; i < 3; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar Etapa 2' }));
+    for (let i = 0; i < 5; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
+    expect(screen.getByText('Plato listo · Dos etapas')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Volver a las recetas' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Recetas' })).toBeInTheDocument();
+    // El avisador no se vuelve a crear.
+    expect(crearAvisador).toHaveBeenCalledTimes(1);
+  });
+
+  it('sin reloj inyectado, la cocina usa el del navegador', async () => {
+    vi.useRealTimers();
+    render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Empezar Etapa 1' }));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Paso 1 de 3');
   });
 
   it('cambiar la pestaña de versión pide la otra receta', async () => {
-    render(<App fetchImpl={fetchCompleto()} />);
+    vi.useRealTimers();
+    render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} />);
     fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
     fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
     await screen.findByRole('button', { name: 'Empezar Etapa 1' });
@@ -73,7 +112,8 @@ describe('el recorrido de la app', () => {
   });
 
   it('desde recetas se llega al estado del sistema y se vuelve', async () => {
-    render(<App fetchImpl={fetchCompleto()} />);
+    vi.useRealTimers();
+    render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} />);
     fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
 
     fireEvent.click(screen.getByRole('button', { name: 'Estado del sistema' }));
@@ -83,7 +123,8 @@ describe('el recorrido de la app', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Recetas' })).toBeInTheDocument();
   });
 
-  it('usa el fetch del navegador cuando no se inyecta ninguno', async () => {
+  it('usa el fetch y el avisador del navegador cuando no se inyecta ninguno', async () => {
+    vi.useRealTimers();
     const original = globalThis.fetch;
     globalThis.fetch = (() => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([resumenSpaghetti]) })) as unknown as typeof fetch;
     try {
@@ -93,14 +134,6 @@ describe('el recorrido de la app', () => {
     } finally {
       globalThis.fetch = original;
     }
-  });
-});
-
-describe('Cocina (provisoria)', () => {
-  it('dice qué receta y versión se eligió', () => {
-    render(<Cocina receta={recetaDosEtapas} alVolver={() => undefined} />);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Spaghetti integral');
-    expect(screen.getByText('Versión 2 · Dos etapas · 11 + 10 min.')).toBeInTheDocument();
   });
 });
 
@@ -121,7 +154,6 @@ describe('Servicios', () => {
     expect(filas[0]).toHaveTextContent('v0.1.0');
     expect(filas[1]).toHaveClass('caido');
     expect(filas[1]).toHaveTextContent('HTTP 503');
-    // Sin alVolver no hay botón de volver.
     expect(screen.queryByRole('button', { name: '‹ Recetas' })).not.toBeInTheDocument();
   });
 
