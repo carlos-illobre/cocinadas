@@ -12,7 +12,8 @@ export interface PropiedadesInicio {
  * bordes con su tamaño natural y el medio queda de pizarra, como en el diseño.
  */
 const CAPAS_ARRIBA = [2, 3, 4, 5, 6];
-const CAPAS_ABAJO = [7, 8, 9, 10];
+// La 10 es la hoja de abajo a la izquierda: va antes que la 9 para quedar bajo los tallarines.
+const CAPAS_ABAJO = [7, 8, 10, 9];
 
 /**
  * Pantalla de inicio: la mesada como escena en capas. Las diez capas comparten un mismo
