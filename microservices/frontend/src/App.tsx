@@ -86,7 +86,7 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
     case 'inicio':
       return (
         <Inicio
-          alEmpezar={() => {
+          alEntrar={() => {
             setAvisador(crearAvisador());
             setPantalla({ nombre: 'recetas' });
           }}

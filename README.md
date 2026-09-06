@@ -11,7 +11,7 @@ El repositorio tiene dos mitades que se alimentan entre sí:
 |---|---|
 | `data/recetas/`, `data/ingredientes/`, `data/utencillos/` | **El catálogo**: recetas como POE (HTML + PDF imprimible + JSON de datos), fichas de ingredientes con foto y fichas de utensilios. Es contenido, no código; la app lo lee tal cual. |
 | `microservices/`, `infrastructure/`, `tests/`, `deployment/`, `docs/` | **La aplicación**: tres microservicios Node + TypeScript, una SPA React, un reverse proxy, y todo lo necesario para probarla, desplegarla y entenderla. |
-| `docs/mockups/` | El diseño visual de la app: el mockup HTML de la pantalla de cocina (`app-cocina-mockup.html`) y el concepto de la pantalla de bienvenida. |
+| `docs/mockups/` | El diseño visual de la app: el mockup HTML de la pantalla de cocina (`app-cocina-mockup.html`), el concepto de la pantalla de bienvenida y en `inicio-capas/` los originales de las capas de esa pantalla, con el script que genera las versiones livianas que usa la app. |
 
 ## El mockup navegable
 

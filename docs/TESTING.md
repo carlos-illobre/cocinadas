@@ -32,7 +32,7 @@ bash tests/utest.sh catalogo     # uno
 | catalogo | 69 | 100 / 100 / 100 / 100 |
 | usuarios | 22 | 100 / 100 / 100 / 100 |
 | cocinadas | 22 | 100 / 100 / 100 / 100 |
-| frontend | 201 | 100 / 100 / 100 / 100 |
+| frontend | 202 | 100 / 100 / 100 / 100 |
 
 ### Qué está excluido de la cobertura, y por qué, uno por uno
 

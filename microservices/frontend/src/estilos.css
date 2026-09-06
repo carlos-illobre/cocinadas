@@ -66,6 +66,10 @@
   --display: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'Space Mono', ui-monospace, Menlo, monospace;
+  /* Solo para el lema de la pantalla de inicio. */
+  --poppins: 'Poppins', var(--body);
+  /* La del botón de Google, que es la de sus botones oficiales. */
+  --google: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 * {
@@ -276,17 +280,29 @@ h1 {
   margin: 0 0 20px;
 }
 
-/* ---------- pantalla de inicio (docs/mockups/bienvenida-concepto.png) ---------- */
+/* ---------- pantalla de inicio: la mesada en capas ---------- */
 .inicio {
   position: fixed;
   inset: 0;
-  display: grid;
-  place-items: center;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
   overflow: hidden;
-  background: #101312;
+  /* El color de la pizarra: si una capa tarda, no se ve un borde claro detrás. */
+  background: #16120f;
   color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
+.inicio-escena {
+  position: absolute;
+  inset: 0;
+}
+
+/* La pizarra es una textura: se puede recortar sin que se note. Nunca se deforma. */
 .inicio-fondo {
   position: absolute;
   inset: 0;
@@ -294,13 +310,35 @@ h1 {
   height: 100%;
   object-fit: cover;
   object-position: center;
+  display: block;
 }
 
-/* Oscurece el centro para que el logo y el lema se lean sobre cualquier recorte del fondo. */
-.inicio-velo {
+/*
+ * Cada grupo de vegetales conserva el lienzo original completo y se escala por el ancho de
+ * la pantalla; anclado a su borde, deja los vegetales donde estaban en el diseño. En una
+ * pantalla alta el sobrante es pizarra, que es justo donde van el logo y los botones.
+ */
+.inicio-capas {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  aspect-ratio: 1414 / 2000;
+}
+
+.inicio-capas.arriba {
+  top: 0;
+}
+
+.inicio-capas.abajo {
+  bottom: 0;
+}
+
+.inicio-capa {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 70% 45% at 50% 48%, rgba(10, 12, 11, 0.72), rgba(10, 12, 11, 0.15) 70%, transparent);
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .inicio-contenido {
@@ -308,50 +346,93 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  width: 100%;
   padding: 24px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
   text-align: center;
 }
 
 .inicio-logo {
-  width: min(300px, 78vw);
+  width: min(300px, 74vw);
   height: auto;
   filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
 }
 
+/* Poppins Medium, solo acá. */
 .inicio-lema {
-  margin: 0;
-  font-family: var(--body);
-  font-size: 20px;
+  margin: 10px 0 0;
+  font-family: var(--poppins);
+  font-size: 19px;
   font-weight: 500;
-  letter-spacing: -0.01em;
-  color: rgba(255, 255, 255, 0.94);
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
 }
 
-.inicio-boton {
-  margin-top: 22px;
-  min-width: 220px;
-  height: 56px;
-  padding: 0 28px;
-  border: 0;
-  border-radius: 16px;
-  background: var(--coral);
+.inicio-acciones {
+  margin-top: 38px;
+  width: min(320px, 84vw);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* El botón con la marca de Google: su tipografía, sus colores y su «G». */
+.boton-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f1f1f;
+  font-family: var(--google);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.google-g {
+  flex: none;
+}
+
+.boton-sin-cuenta {
+  height: 48px;
+  padding: 0 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   color: #fff;
   font-family: var(--display);
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: -0.01em;
   cursor: pointer;
-  box-shadow: 0 10px 24px -8px rgba(224, 82, 42, 0.7);
 }
 
-.inicio-boton:focus-visible {
+.inicio-aviso {
+  margin: 2px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.boton-google:focus-visible,
+.boton-sin-cuenta:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 3px;
 }
-
 
 /* ---------- comunes de las pantallas de catálogo (copiadas del prototipo de Figma) ---------- */
 .enlace {

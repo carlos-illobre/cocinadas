@@ -39,7 +39,7 @@ function tildarTodoYCocinar(): void {
 }
 
 async function hastaLaCocina(): Promise<void> {
-  fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
   fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
   fireEvent.click(await screen.findByRole('button', { name: 'Comenzar · 21 min →' }));
   tildarTodoYCocinar();
@@ -65,7 +65,7 @@ describe('el recorrido de la app', () => {
     };
     render(<App fetchImpl={fetchImpl} crearAvisador={crearAvisador} almacen={memoria()} />);
 
-    expect(screen.getByRole('button', { name: 'Empezar' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Entrar sin cuenta' })).toBeInTheDocument();
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     expect(consultas).toBe(0);
     expect(crearAvisador).not.toHaveBeenCalled();
@@ -74,7 +74,7 @@ describe('el recorrido de la app', () => {
   it('inicio → recetas → portada → mise en place → cocina → resumen → progreso, guardando la cocinada y sumando experiencia', async () => {
     const almacen = montar({ ahora: () => 1_000_000 });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     expect(crearAvisador).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('heading', { level: 1, name: '¿Qué cocinamos hoy?' })).toBeInTheDocument();
     expect(document.querySelector('.xp-puntos')).toHaveTextContent('0 XP');
@@ -132,7 +132,7 @@ describe('el recorrido de la app', () => {
 
   it('el tema se aplica al documento, se guarda y se puede volver', () => {
     const almacen = montar();
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     expect(document.documentElement.getAttribute('data-tema')).toBe('claro');
 
     fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
@@ -147,7 +147,7 @@ describe('el recorrido de la app', () => {
 
   it('arranca con el tema ya guardado en el teléfono', () => {
     montar({ almacen: memoria({ [CLAVE_TEMA]: 'oscuro' }) });
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     expect(document.documentElement.getAttribute('data-tema')).toBe('oscuro');
     fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
     expect(screen.getByRole('button', { name: 'Cambiar a modo claro' })).toBeInTheDocument();
@@ -155,7 +155,7 @@ describe('el recorrido de la app', () => {
 
   it('las pestañas de la barra cambian de sección', async () => {
     montar();
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
 
     fireEvent.click(screen.getByRole('button', { name: 'Progreso' }));
     expect(screen.getByRole('heading', { level: 1, name: 'Progreso' })).toBeInTheDocument();
@@ -172,7 +172,7 @@ describe('el recorrido de la app', () => {
   it('arranca con las cocinadas ya guardadas en el teléfono y su experiencia', () => {
     const cocinada = { id: 'x', plato: 'p', nombre: 'Plato p', version: { clave: 'c', titulo: 'T' }, fecha: '2026-09-05T10:00:00Z', total_previsto_s: 100, total_real_s: 90, etapas: [], pasos: [], criticos: 0, criticosATiempo: 0 };
     montar({ almacen: memoria({ [CLAVE_COCINADAS]: JSON.stringify([cocinada]) }) });
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     // 90 s contra 100 s previstos: 90 puntos.
     expect(document.querySelector('.xp-puntos')).toHaveTextContent('90 XP');
     fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
@@ -183,7 +183,7 @@ describe('el recorrido de la app', () => {
 
   it('desde ajustes se llega al estado de los servicios y se vuelve', async () => {
     montar();
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
     fireEvent.click(screen.getByRole('button', { name: 'Estado de los servicios ›' }));
     expect(screen.getByRole('heading', { level: 1, name: 'Templa' })).toBeInTheDocument();
@@ -193,7 +193,7 @@ describe('el recorrido de la app', () => {
 
   it('cambiar el modo de preparación pide la otra receta', async () => {
     montar();
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
     await screen.findByRole('button', { name: 'Comenzar · 21 min →' });
 
@@ -240,7 +240,7 @@ describe('el recorrido de la app', () => {
     vi.stubGlobal('localStorage', roto);
     try {
       render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} />);
-      expect(screen.getByRole('button', { name: 'Empezar' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Entrar sin cuenta' })).toBeInTheDocument();
       // Y si el solo hecho de tocar localStorage lanza (marco aislado), también arranca.
       vi.unstubAllGlobals();
       const previo = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
@@ -252,7 +252,7 @@ describe('el recorrido de la app', () => {
       });
       try {
         render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} />);
-        expect(screen.getAllByRole('button', { name: 'Empezar' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: 'Entrar sin cuenta' })).toHaveLength(2);
       } finally {
         if (previo) Object.defineProperty(globalThis, 'localStorage', previo);
         else delete (globalThis as { localStorage?: unknown }).localStorage;
