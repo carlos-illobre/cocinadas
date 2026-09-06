@@ -11,6 +11,9 @@ web/public/api/
 web/public/inicio/
 coverage/
 reports/
+# Salida de Playwright: trazas, capturas y el informe HTML de la última corrida
+web/test-results/
+web/playwright-report/
 .stryker-tmp/
 *.tsbuildinfo
 
