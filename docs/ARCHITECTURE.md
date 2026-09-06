@@ -5,10 +5,14 @@ cronómetros por paso y alarmas para los procesos que corren solos, y guarda los
 de cada cocinada para mostrar el progreso por receta.
 
 **Cómo está hecho:** una SPA que se baja entera al teléfono, con el catálogo de recetas
-adentro, servida como archivos estáticos por un único Caddy que además termina el TLS. No
-hay backend: las cocinadas viven en el `localStorage` de cada teléfono. El porqué, y el
-camino de vuelta el día que eso no alcance, están en
-[ADR-015](adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md).
+adentro, servida como archivos estáticos por Caddy. No hay backend: las cocinadas viven en
+el `localStorage` de cada teléfono. El porqué, y el camino de vuelta el día que eso no
+alcance, están en [ADR-015](adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md).
+
+**Delante hay un reverse proxy que no es de esta aplicación**: en la VM corre más de una
+app y el 80 y el 443 son de una sola, así que los ata una pieza aparte que reparte por
+dominio. Es optativa —se prende desde el `.env`— porque en otro ambiente ese trabajo lo
+puede hacer un balanceador de la nube ([ADR-016](adr/ADR-016-proxy-de-la-maquina-como-pieza-aparte.md)).
 
 Los diagramas de esta página están en [diagrams/](diagrams/) como Mermaid.
 
@@ -28,11 +32,14 @@ C4Context
 
 ## Componentes
 
-Hay uno solo. La tabla separa lo que corre de lo que se genera para que corra.
+La aplicación es una sola. El proxy no es parte de ella: es infraestructura de la máquina,
+y por eso vive en `infrastructure/`, la carpeta de lo que sirve para levantar la aplicación
+y que en producción puede estar reemplazado por un servicio de la nube.
 
 | Componente | Carpeta | Responsabilidad | Estado / tecnología |
 |---|---|---|---|
-| **web** | `microservices/frontend` | El único contenedor: sirve el bundle (la SPA más el catálogo) y termina el TLS. | Caddy en modo file server (ADR-009, ADR-013). Sin Node en producción: la imagen final no lleva `node_modules`. |
+| **web** | `microservices/frontend` | La aplicación: sirve el bundle (la SPA más el catálogo). Habla HTTP en `:80` y contesta a cualquier `Host`: no termina TLS ni sabe por qué dominio la llamaron. | Caddy en modo file server (ADR-013). Sin Node en producción: la imagen final no lleva `node_modules`. |
+| **proxy** *(optativo)* | `infrastructure/proxy` | El reverse proxy **de la máquina**: ata el 80 y el 443, emite y renueva el TLS, y reparte por dominio entre esta app y las demás de la VM. Se prende con `COMPOSE_PROFILES=proxy`. | Caddy, imagen oficial sin construir (ADR-009, ADR-016). |
 | **la SPA** | `microservices/frontend/src` | Toda la aplicación (ver abajo). | React 19 + TypeScript, compilada con Vite. |
 | **el catálogo** | `microservices/frontend/src/catalogo` | Lee `data/recetas/`, `data/ingredientes/` y `data/utencillos/` **en el build** y escribe el JSON y las fotos que la SPA consume. | Node, corre una vez por despliegue con `tsx`. `catalogo.ts` es puro y decide qué archivos van; `generar.ts` solo los escribe (ADR-006, ADR-015). |
 
@@ -64,18 +71,28 @@ velocidad; el criterio exacto de puntos es provisional.
 C4Container
   title Cocinadas · contenedores
   Person(cocinero, "Cocinero")
-  System_Boundary(vm, "VM Oracle · docker compose") {
-    Container(web, "web", "Caddy", "TLS + file server del bundle")
+  System_Boundary(vm, "VM Oracle") {
+    Container(proxy, "proxy", "Caddy · optativo", "80/443 · TLS · reparte por dominio entre todas las apps de la máquina")
+    Container(web, "web", "Caddy", "file server del bundle")
+    Container_Ext(otras, "otras aplicaciones", "lo que haya en la VM", "cada una en su puerto alto")
   }
   ContainerDb(tel, "localStorage del teléfono", "Navegador", "cocinadas, cocinada en curso, tema")
-  Rel(cocinero, web, "HTTPS 443", "la SPA y /api/catalogo/*.json")
+  Rel(cocinero, proxy, "HTTPS 443")
+  Rel(proxy, web, "HTTP 80", "red interna del compose")
+  Rel(proxy, otras, "HTTP", "host.docker.internal:<puerto>")
   Rel(cocinero, tel, "lee y escribe", "sin salir del teléfono")
 ```
 
 ## Cómo se comunican
 
-- **El navegador habla solo con Caddy**, por HTTPS, y todo lo que le pide son archivos: el
+- **El navegador habla con el proxy**, por HTTPS. El proxy mira el dominio, decide de qué
+  aplicación es y le pasa la petición. Para Cocinadas todo lo que sigue son archivos: el
   `index.html`, los assets con hash, y el catálogo bajo `/api/catalogo/`.
+- **La aplicación no sabe nada del proxy.** Escucha en `:80` y contesta a cualquier `Host`,
+  así que la misma imagen sirve igual en `localhost`, detrás del proxy propio o detrás del
+  de otra aplicación. Lo que sí se queda en su imagen son las cabeceras de seguridad, la
+  política de contenido, el ruteo de la SPA y el caché: es de la aplicación y se despliega
+  con el código que lo necesita.
 - **El catálogo son archivos, no una API.** `GET /api/catalogo/recetas.json` es la lista y
   `GET /api/catalogo/recetas/<plato>/<version>.json` es una receta entera, con las rutas
   de las fotos ya resueltas. `api.ts` es el único que sabe que llevan `.json`.
@@ -90,7 +107,7 @@ sequenceDiagram
   title Cocinar y guardar la cocinada
   actor C as Cocinero
   participant F as la SPA
-  participant W as web (Caddy)
+  participant W as proxy → web
   participant L as localStorage
   C->>F: elige una receta
   F->>W: GET /api/catalogo/recetas/<plato>/<version>.json
@@ -131,6 +148,7 @@ flowchart LR
 | Un solo compose, el `.env` como fuente de la verdad, sin fallbacks | [ADR-001](adr/ADR-001-compose-unico-y-env-como-fuente-de-verdad.md) |
 | El catálogo se lee de los JSON del repo y va dentro de la imagen | [ADR-006](adr/ADR-006-catalogo-desde-el-repositorio-en-la-imagen.md) |
 | Caddy como servidor y TLS automático | [ADR-009](adr/ADR-009-caddy-reverse-proxy-y-tls.md) |
+| El reverse proxy es de la máquina, no de la aplicación | [ADR-016](adr/ADR-016-proxy-de-la-maquina-como-pieza-aparte.md) |
 | pnpm, Vitest y Stryker | [ADR-010](adr/ADR-010-pnpm-vitest-y-stryker.md) |
 | Despliegue en una VM de Oracle con imagen multi-arquitectura en GHCR | [ADR-011](adr/ADR-011-despliegue-en-vm-oracle-con-imagenes-por-sha.md) |
 | La aplicación como SPA React + Vite | [ADR-013](adr/ADR-013-frontend-spa-react-vite.md) |

@@ -11,6 +11,7 @@ El repositorio tiene dos mitades que se alimentan entre sí:
 |---|---|
 | `data/recetas/`, `data/ingredientes/`, `data/utencillos/` | **El catálogo**: recetas como POE (HTML + PDF imprimible + JSON de datos), fichas de ingredientes con foto y fichas de utensilios. Es contenido, no código; la app lo lee tal cual. |
 | `microservices/frontend/`, `tests/`, `deployment/`, `docs/` | **La aplicación**: una SPA React + TypeScript que se sirve como archivos estáticos, con el catálogo generado adentro, y todo lo necesario para probarla, desplegarla y entenderla. |
+| `infrastructure/` | **Lo que no es la aplicación**: contenedores optativos que la acompañan y que en producción pueden estar reemplazados por un servicio de la nube. Hoy, el reverse proxy que ata el 80 y el 443 de la máquina y reparte entre todas las apps que haya (ADR-016). |
 | `docs/mockups/` | El diseño visual de la app: el mockup HTML de la pantalla de cocina (`app-cocina-mockup.html`), el concepto de la pantalla de bienvenida y en `inicio-capas/` los originales de las capas de esa pantalla, con el script que genera las versiones livianas que usa la app. |
 
 ## El mockup navegable
@@ -37,12 +38,15 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Hay **un solo contenedor**. Cuando está `healthy`, la app está en **http://localhost/** y
-el catálogo, que es parte del bundle, en `http://localhost/api/catalogo/recetas.json`.
+Levanta **dos contenedores**: la aplicación (`web`) y el reverse proxy (`proxy`). Cuando
+están `healthy`, la app está en **http://localhost/** por el proxy y en
+**http://localhost:8180/** directo, y el catálogo, que es parte del bundle, en
+`/api/catalogo/recetas.json`.
 
-Los puertos del lado del host salen del `.env` (`PUERTO_HTTP`, `PUERTO_HTTPS`): si la
-máquina ya tiene otra aplicación en el 80 o el 443, se mueven ahí y nada más. Para
-compartir la VM con otra aplicación, ver «Convivir con otra aplicación en la misma VM» en
+El proxy es **optativo**: no es parte de la aplicación sino de la máquina, y es lo único
+que ata el 80 y el 443 (ADR-016). Si la máquina ya tiene otra cosa en esos puertos, se
+apaga con `COMPOSE_PROFILES=` en el `.env` y la app sigue atendiendo en `PUERTO_APP`. Para
+varias aplicaciones en la misma VM, ver «Varias aplicaciones en la misma VM» en
 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 Para desarrollar con recarga en caliente, sin Docker:
@@ -104,5 +108,7 @@ Las cocinadas, el tema y la cocinada en curso viven en el `localStorage` del tel
 - [docs/SECURITY.md](docs/SECURITY.md): amenazas, qué las mitiga y qué queda abierto.
 - [docs/adr/ADR-015…](docs/adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md): por qué
   el proyecto pasó de cuatro servicios a uno, y qué hace falta para volver atrás.
+- [docs/adr/ADR-016…](docs/adr/ADR-016-proxy-de-la-maquina-como-pieza-aparte.md): por qué
+  el reverse proxy no es de la aplicación, y cómo se agrega otra app a la misma máquina.
 - [data/recetas/README.md](data/recetas/README.md), [data/ingredientes/README.md](data/ingredientes/README.md),
   [data/utencillos/README.md](data/utencillos/README.md): las convenciones del catálogo.

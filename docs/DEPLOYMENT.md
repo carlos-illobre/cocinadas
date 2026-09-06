@@ -4,10 +4,15 @@ Una VM de Oracle Cloud (Always Free) con Docker, el mismo `docker-compose.yml` q
 desarrollo, y **una** imagen construida por el CI y publicada en GHCR etiquetada por SHA
 de commit (ADR-011). Todo lo específico vive en `deployment/oracle-single/`.
 
-Lo que corre en la instancia es un solo contenedor, `web`: Caddy sirviendo el bundle de la
-aplicación con el catálogo adentro (ADR-015). No hay base de datos ni broker, así que **en
-el servidor no hay nada que respaldar**: las cocinadas viven en el teléfono de cada
-persona.
+Lo que corre en la instancia son **dos contenedores, y uno es optativo**:
+
+| Servicio | Qué es | ¿Siempre? |
+|---|---|---|
+| `web` | La aplicación: Caddy sirviendo el bundle con el catálogo adentro (ADR-015). Habla HTTP y no sabe por qué dominio la llamaron. | Sí |
+| `proxy` | El reverse proxy **de la máquina**, no de esta aplicación (ADR-016): ata el 80 y el 443, emite el TLS y reparte por dominio entre esta app y las demás que haya en la VM. | Solo con `COMPOSE_PROFILES=proxy` |
+
+No hay base de datos ni broker, así que **en el servidor no hay nada que respaldar**: las
+cocinadas viven en el teléfono de cada persona.
 
 > La guía paso a paso de la instancia (crearla, conectarse, Security List, DNS,
 > certificado) se genera con la skill `desplegar-en-oracle-cloud` como `ORACLE.md` en
@@ -30,53 +35,69 @@ Adentro del contenedor los puertos no cambian nunca. Del lado del host los decid
 
 | Variable | Valor por omisión | Quién | Desde dónde |
 |---|---|---|---|
-| `PUERTO_HTTP`, `PUERTO_HTTPS` | 80, 443 (TCP y UDP) | `web` | La interfaz que diga `PROXY_ADDR`. **Los únicos que se abren en la Security List.** |
-| — | 8081 | `web` | Solo desde adentro del contenedor: es el sitio de salud contra el que pegan el healthcheck del compose y `deploy.py`. No se publica. |
+| `PUERTO_HTTP`, `PUERTO_HTTPS` | 80, 443 (TCP y UDP) | `proxy` | La interfaz que diga `PROXY_ADDR`. **Los únicos que se abren en la Security List.** |
+| `PUERTO_APP` | 8180 | `web` | La interfaz que diga `APP_ADDR`, que es `0.0.0.0` para que el proxy lo alcance desde su contenedor. **No se abre en la Security List**, que es lo que lo mantiene fuera de internet. |
+| — | 8081 | los dos | Solo desde adentro de cada contenedor: es el sitio de salud contra el que pegan el healthcheck del compose y `deploy.py`. No se publica. |
 
 Los puertos que publica Docker no pasan por la cadena `INPUT` de iptables: `ufw` no
 los protege. Lo que decide qué está abierto es la Security List de la VCN.
 
-## Convivir con otra aplicación en la misma VM
+## Varias aplicaciones en la misma VM
 
-Dos aplicaciones pueden compartir la máquina, pero **el 80 y el 443 son de una sola**: el
-navegador no elige puerto. La que los tiene le pasa a la otra el tráfico de su dominio.
-
-Si Cocinadas es la que los tiene, no hay nada que hacer: los valores de `.env.oracle`
-funcionan tal cual y Caddy emite el certificado de `cocinadas.duckdns.org` solo.
-
-Si los tiene la otra aplicación, en el `.env` de Cocinadas:
+**El 80 y el 443 son de una sola aplicación**: el navegador no elige puerto. Por eso quien
+los ata no es ninguna de las aplicaciones sino el `proxy`, que es una pieza de la máquina
+(ADR-016). Cada aplicación es un inquilino que escucha en un puerto alto y se olvida del
+TLS.
 
 ```
-PROXY_ADDR=127.0.0.1
-PUERTO_HTTP=8280
-PUERTO_HTTPS=8243
-SITE_ADDRESS=http://cocinadas.duckdns.org
+cocinadas.duckdns.org  ─┐
+citypass.duckdns.org   ─┼─→  proxy (80/443)  ─→  web (red interna)      cocinadas
+loquevenga.duckdns.org ─┘                     ─→  host:8181             citypass
+                                              ─→  host:8182             la próxima
 ```
 
-`SITE_ADDRESS` con `http://` es lo que apaga el TLS de Caddy: el certificado lo maneja el
-otro proxy, que es el que ve Internet. `PROXY_ADDR=127.0.0.1` deja a Cocinadas fuera del
-alcance de la red, solo accesible desde la propia VM.
+### Agregar una aplicación
 
-Del lado del otro proxy hay que agregar el dominio. Con nginx:
+Su bloque va en `infrastructure/proxy/vecinos/<nombre>.caddy` **en la VM**:
 
-```nginx
-server {
-    listen 443 ssl;
-    server_name cocinadas.duckdns.org;
-    # El mismo certificado que ya maneje ese proxy, emitido también para este dominio.
-    location / {
-        proxy_pass http://127.0.0.1:8280;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+```caddy
+citypass.duckdns.org {
+	reverse_proxy host.docker.internal:8181
 }
 ```
 
-Y en la Security List de la VCN no se abre nada nuevo: el 8280 no sale de la máquina.
+y `docker compose restart proxy`. Eso es todo: no se toca el compose ni el Caddyfile.
 
-Cocinadas no publica ningún otro puerto, así que no hay más nada que pueda chocar. Para
-ver qué está tomado:
+**`host.docker.internal` y no `127.0.0.1`**: el proxy corre adentro de un contenedor, así
+que `127.0.0.1` sería su propio loopback. El compose le da ese nombre con
+`extra_hosts: host-gateway`. Por eso el vecino tiene que publicar su puerto en `0.0.0.0` y
+no en `127.0.0.1`, y por eso ese puerto **no** se abre en la Security List.
+
+Del lado del vecino: mover sus `80:80` y `443:443` a un puerto alto, y apagar su certbot
+—el TLS lo hace Caddy para todos los dominios—. Si publica algo que no es HTTP (por
+ejemplo Kafka en el 9092), eso sigue publicándolo él directo: el proxy no lo toca.
+
+Ese archivo **no se versiona acá**: la configuración de una aplicación es de esa
+aplicación. Ver `infrastructure/proxy/vecinos/README.md`. `deploy.py` crea el directorio y
+nunca pisa su contenido.
+
+### Si el 80 y el 443 los tiene otra cosa
+
+Un balanceador de la nube, o el proxy de otra aplicación que no se puede mover. Entonces
+Cocinadas no levanta proxy: en su `.env`,
+
+```
+COMPOSE_PROFILES=
+```
+
+y la aplicación sigue atendiendo en `APP_ADDR:PUERTO_APP`, que es a donde esa otra cosa le
+manda el tráfico. No hay que tocar nada más.
+
+**Ojo**: apagar el perfil no baja un proxy que ya estaba corriendo —`--remove-orphans` no
+alcanza, ver más abajo—. `deploy.py` lo resuelve; a mano es
+`docker compose rm -sf proxy`.
+
+Para ver qué puertos están tomados en la máquina:
 
 ```bash
 sudo ss -lntp
@@ -86,7 +107,7 @@ sudo ss -lntp
 
 | Archivo | Dónde | Qué tiene | Plantilla |
 |---|---|---|---|
-| `.env` de la **aplicación** | `RUTA_REMOTA/.env` en la VM | Las 11 variables del compose con valores de producción; `deploy.py` solo le cambia `TAG`. Ninguna es un secreto: no hay base ni tokens que firmar. | `deployment/oracle-single/.env.oracle` |
+| `.env` de la **aplicación** | `RUTA_REMOTA/.env` en la VM | Las 15 variables del compose con valores de producción, más `COMPOSE_PROFILES`; `deploy.py` solo le cambia `TAG`. Ninguna es un secreto: no hay base ni tokens que firmar. | `deployment/oracle-single/.env.oracle` |
 | `.env` del **despliegue** | `deployment/oracle-single/.env` en tu máquina | `SSH` y `RUTA_REMOTA`: cómo llegar a la VM. | `deployment/oracle-single/.env.deploy.example` |
 
 Los dos están en el `.gitignore`. `tests/integration/paridad-env.sh` comprueba que cada
@@ -97,7 +118,9 @@ uno declare exactamente lo que su plantilla.
 1. `python deployment/oracle-single/deploy.py --preflight` desde tu máquina: verifica
    memoria, disco, Docker, puertos y firewall en la instancia, sin tocar nada.
 2. En la VM: `mkdir -p ~/cocinadas && cd ~/cocinadas`, copiar `.env.oracle` como `.env` y
-   completar los marcadores (`REGISTRO` y `TAG`).
+   completar los marcadores (`REGISTRO` y `TAG`). Si en la máquina ya hay otra aplicación
+   con el 80 y el 443, decidir acá si se los queda ella (`COMPOSE_PROFILES=`) o si pasan a
+   este proxy (ver «Varias aplicaciones en la misma VM»).
 3. En tu máquina: copiar `.env.deploy.example` a `deployment/oracle-single/.env` y
    completar `SSH` y `RUTA_REMOTA`.
 4. Mergear a `main`: el CI publica la imagen y despliega solo. Si hace falta a mano:
@@ -166,8 +189,29 @@ igual y serviría una app sin recetas. Si no contesta en dos minutos, muestra lo
 dice cómo volver.
 
 **Revertir revierte también las recetas**, porque el catálogo viaja dentro de la imagen
-(ADR-006). Y no hay datos que puedan quedar desfasados: el único volumen guarda
-certificados.
+(ADR-006). Y no hay datos que puedan quedar desfasados: los dos volúmenes son del proxy y
+guardan certificados.
+
+**Lo que la reversión NO revierte** es el Caddyfile del proxy ni los vecinos: son archivos
+que viven en la VM. Si un despliegue cambió el Caddyfile del proxy, volver a un SHA
+anterior lo vuelve a copiar desde ese commit, pero los vecinos quedan como estaban —que es
+lo correcto: son de otras aplicaciones.
+
+### La trampa de los perfiles
+
+`docker compose up -d --remove-orphans` **no baja** un servicio apagado por perfil:
+`--remove-orphans` borra contenedores de servicios que ya no están en el compose, y un
+servicio apagado por perfil sigue estando. O sea que sacar `proxy` de `COMPOSE_PROFILES`
+no lo baja, y el proxy viejo se queda con el 80 y el 443 justo cuando querías dárselos a
+otra aplicación.
+
+`deploy.py` compara `docker compose config --services` (que respeta los perfiles y dice
+qué debería correr) con `docker compose ps --services` (que dice qué corre) y baja la
+diferencia. A mano es lo mismo:
+
+```bash
+docker compose ps --services | grep -vxF "$(docker compose config --services)" | xargs -r docker compose rm -sf
+```
 
 ## Seguridad
 
@@ -179,13 +223,15 @@ Lo que hay puesto:
 | Techo del log por contenedor (hoy 1 MB) | `LOG_MAX_SIZE`, `LOG_MAX_FILES` |
 | Techo de CPU por contenedor | `CPU_LIMIT_*` |
 | Nivel de detalle del log de Caddy | `LOG_LEVEL` (`DEBUG`, `INFO`, `WARN`, `ERROR`) |
-| Cabeceras de seguridad y política de contenido | `microservices/frontend/Caddyfile`, que viaja dentro de la imagen |
+| Cabeceras de seguridad y política de contenido | `microservices/frontend/Caddyfile`, que viaja dentro de la imagen de la aplicación |
+| TLS y reparto por dominio | `infrastructure/proxy/Caddyfile`, que se copia a la VM en el despliegue |
 | Sin privilegios nuevos, sin capacidades, disco de solo lectura | `docker-compose.yml` |
 
 Antes de publicar, en la VM:
 
-- En la Security List de la VCN, abrir solo el 80 y el 443. Si Cocinadas va detrás de otro
-  proxy, su `PUERTO_HTTP` **no** se abre: se llega por `127.0.0.1`.
+- En la Security List de la VCN, abrir **solo el 80 y el 443**. `PUERTO_APP` no se abre
+  nunca: es lo único que lo mantiene fuera de internet, porque los puertos que publica
+  Docker no pasan por la cadena `INPUT` de iptables y `ufw` no los protege.
 
 El `.env` de la instancia no tiene ningún secreto (no hay base ni tokens que firmar), así
 que no hay nada que rotar ante un incidente. Lo que todavía no está cubierto es lo que
@@ -201,8 +247,10 @@ commit. Quedan dos volúmenes, y ninguno guarda datos de la aplicación:
 
 | Volumen | Qué se pierde si se pierde | Urgencia |
 |---|---|---|
-| `caddy-datos` | Los certificados TLS. Se reemiten solos, con los límites de intentos de Let's Encrypt. | Opcional. |
+| `caddy-datos` | Los certificados TLS del proxy. Se reemiten solos, con los límites de intentos de Let's Encrypt. | Opcional. |
 | `caddy-config` | Configuración derivada de Caddy. Se regenera al arrancar. | No hace falta. |
+
+Los dos son del `proxy`: con el perfil apagado, el proyecto no usa ninguno.
 
 Si igual se quiere guardar los certificados para no reemitirlos, desde la VM:
 
@@ -226,10 +274,10 @@ imágenes etiquetadas por SHA nunca están «colgadas».
 
 ```bash
 ssh <destino> 'cd ~/cocinadas && docker compose ps'                    # qué corre y con qué TAG
-ssh <destino> 'cd ~/cocinadas && docker compose logs -f --tail 100 web'
+ssh <destino> 'cd ~/cocinadas && docker compose logs -f --tail 100 web proxy'
 ssh <destino> 'docker stats --no-stream'                               # memoria
 ssh <destino> 'df -h / && docker system df'                            # disco
-ssh <destino> 'cd ~/cocinadas && docker compose restart web'
+ssh <destino> 'cd ~/cocinadas && docker compose restart proxy'   # tras tocar un vecino
 ```
 
 ## Límites del plan gratuito a tener presentes

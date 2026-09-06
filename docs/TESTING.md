@@ -68,8 +68,8 @@ Un script por asunto en `tests/integration/`:
 
 | Script | Qué verifica | Necesita stack |
 |---|---|---|
-| `paridad-env.sh` | Que `.env.example`, `deployment/oracle-single/.env.oracle` y `.env` declaren exactamente las mismas variables; que **toda variable que `docker-compose.yml` interpola esté declarada**; y que el compose **no tenga valores por omisión** (`${VAR:-x}`). Lo mismo para el par de despliegue. | No |
-| `health.sh` | Que la SPA se sirva, que una ruta del navegador caiga en el `index.html`, que `recetas.json` traiga al menos un plato (lo que antes garantizaba el inventario de `/health`, ADR-006), que un JSON inexistente dé 404 y no el `index.html`, y que las fotos salgan con `Content-Type: image/*`. | Sí |
+| `paridad-env.sh` | Que `.env.example`, `deployment/oracle-single/.env.oracle` y `.env` declaren exactamente las mismas variables; que **toda variable que `docker-compose.yml` interpola esté declarada**; que el compose **no tenga valores por omisión** (`${VAR:-x}`); y que los perfiles que nombra `COMPOSE_PROFILES` **existan en el compose**, porque un perfil mal escrito no da error: simplemente no levanta nada. Lo mismo para el par de despliegue. | No |
+| `health.sh` | Contra la aplicación en `PUERTO_APP`: que la SPA se sirva, que una ruta del navegador caiga en el `index.html`, que `recetas.json` traiga al menos un plato (lo que antes garantizaba el inventario de `/health`, ADR-006), que un JSON inexistente dé 404 y no el `index.html`, y que las fotos salgan con `Content-Type: image/*`. Y, **si el proxy está levantado**, que además sirva la aplicación por `SITE_ADDRESS`. | Sí |
 
 **La paridad es la que más rinde:** una variable que el compose usa y ningún `.env`
 define cae en su valor por omisión sin que nada avise. En el mejor caso el ambiente
@@ -81,8 +81,14 @@ El 404 de un JSON inexistente no es un detalle: si el `try_files` de la SPA se c
 `/api/`, una receta que no existe devolvería el `index.html` con 200 y `api.ts` intentaría
 leer la página como si fuera una receta.
 
-Última corrida (2026-09-06, stack local): las cinco comprobaciones en verde; el catálogo
-generado en el build fueron 5 JSON y 20 fotos.
+Se prueba siempre contra el puerto de la aplicación y solo *además* por el proxy, porque
+el proxy es optativo (ADR-016): la misma prueba tiene que servir con el proxy propio,
+detrás del de otra aplicación o detrás de un balanceador de la nube. Que el proxy esté
+apagado es un aviso, no un fallo; que esté levantado y no reparta, sí.
+
+Última corrida (2026-09-06, stack local): las seis comprobaciones en verde con el proxy
+prendido, y las cinco de la aplicación con el proxy apagado. El catálogo generado en el
+build fueron 5 JSON y 20 fotos.
 
 ## Mutación
 
@@ -156,6 +162,7 @@ valen, porque son lo que hubo que arreglar.
 | Qué se rompió | Prueba que debía fallar | ¿Falló? | Qué se hizo |
 |---|---|---|---|
 | Borrar una variable de `.env.example` (se probó con `MEM_LIMIT_NATS`, que ya no existe) | `paridad-env.sh` | Sí: «sobran: …» en `.env.oracle` y en `.env`, y «el compose usa variables que .env.example no declara». | Nada; la prueba sirve. |
+| `COMPOSE_PROFILES=prxy` (un perfil mal escrito) en `.env.example` | `paridad-env.sh` | Sí, con la comprobación agregada en 2026-09-06: «COMPOSE_PROFILES nombra perfiles que el compose no define: prxy». **Sin ella no fallaba nada**: compose no avisa por un perfil inexistente, simplemente no levanta el proxy, y el sitio queda sin quien termine el TLS. | Se agregó esa comprobación a `paridad-env.sh`. |
 | Cambiar `${TAG:?...}` por `${TAG:-local}` en el compose | `paridad-env.sh` | **No.** La variable seguía declarada, así que la paridad pasaba, y `grep -c ':-'` daba 4: cuatro fallbacks sin que nada avisara. | Se agregó a `paridad-env.sh` la comprobación de que el compose no tenga `${VAR:-x}` ni `${VAR-x}`. Repetido: ahora falla con «el compose tiene valores por omisión: ${TAG:-local}». |
 | `obligatoria()` devolviendo `''` en vez de lanzar cuando la variable está vacía | `config.test.ts` «corta también si está declarada pero vacía» | Sí, 1 de 26. | Nada. |
 | `esFicha()` sin el filtro de `plantilla-` | `catalogo.test.ts` | Sí, 3 de 26: «plantilla-ingrediente.md no es una ficha», el conteo de ingredientes (3 en vez de 2) y el inventario. | Nada. |

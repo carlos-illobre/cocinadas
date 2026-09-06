@@ -70,10 +70,27 @@ else
     nota "$(echo "$fallbacks" | tr '\n' ' ')"
     fallos=$((fallos+1))
 fi
-no_usadas=$(comm -13 <(echo "$interpoladas") <(variables_de "$referencia"))
+# COMPOSE_PROFILES no la interpola el compose: la lee el propio `docker compose` del .env
+# para decidir qué servicios levanta (ADR-016). No aparece como ${...} en el archivo y
+# aun así hace falta, así que se excluye de este aviso a mano.
+LEIDAS_POR_COMPOSE='COMPOSE_PROFILES'
+no_usadas=$(comm -13 <(echo "$interpoladas") <(variables_de "$referencia") | grep -vxF "$LEIDAS_POR_COMPOSE")
 if [ -n "$no_usadas" ]; then
     aviso "declaradas en $referencia pero no usadas por el compose: $(echo "$no_usadas" | tr '\n' ' ')"
     nota "si ya no hacen falta, borrarlas de los tres .env"
+fi
+
+# Que el perfil del proxy exista de verdad: un COMPOSE_PROFILES con un nombre mal escrito
+# no da error, simplemente no levanta nada, y el sitio queda sin quien termine el TLS.
+perfiles_declarados=$(sed -n 's/^COMPOSE_PROFILES=//p' "$referencia" | tr ',' '\n' | grep -v '^$' | sort -u)
+perfiles_del_compose=$(sed -n 's/^ *profiles: *\[\"\(.*\)\"\] *$/\1/p' docker-compose.yml | tr -d '"' | tr ',' '\n' | sed 's/ //g' | sort -u)
+desconocidos=$(comm -23 <(echo "$perfiles_declarados") <(echo "$perfiles_del_compose"))
+if [ -z "$desconocidos" ]; then
+    ok "los perfiles de COMPOSE_PROFILES existen en el compose"
+else
+    mal "COMPOSE_PROFILES nombra perfiles que el compose no define:"
+    nota "$(echo "$desconocidos" | tr '\n' ' ')"
+    fallos=$((fallos+1))
 fi
 
 titulo "Los .env del despliegue"

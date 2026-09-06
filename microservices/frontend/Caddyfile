@@ -1,12 +1,17 @@
-# El único servidor del sistema (ADR-009, ADR-015): sirve la SPA con el catálogo adentro
-# y termina el TLS. No proxea a nadie porque no hay nada detrás.
+# Sirve la SPA con el catálogo adentro (ADR-013, ADR-015). Es un inquilino: escucha en
+# HTTP y no sabe por qué dominio lo llamaron ni termina TLS. De eso se ocupa el proxy de
+# la máquina (ADR-016, infrastructure/proxy/), o lo que sea que haya adelante.
 #
-# SITE_ADDRESS sale del .env: `http://localhost` en desarrollo (sin TLS, sin redirección),
-# el dominio a secas en producción, con lo que Caddy pide el certificado a Let's Encrypt
-# por HTTP-01 (el puerto 80 tiene que estar abierto en la Security List) y lo renueva
-# solo, recargando sin reiniciar. Es el punto que con nginx+certbot hay que orquestar a
-# mano y que se olvida.
+# `:80` sin nombre de sitio es a propósito: contesta a cualquier Host. Quién es el dueño
+# de cada dominio ya lo decidió el proxy antes de llegar acá, y así la misma imagen sirve
+# igual en localhost, detrás del proxy propio o detrás del de otra aplicación.
+#
+# Lo que sí vive acá y no en el proxy: las cabeceras de seguridad, la política de
+# contenido, el ruteo de la SPA y el caché. Son de la aplicación, y se despliegan con el
+# código que las necesita.
 {
+	# Sin TLS: no emite ni guarda certificados, así que tampoco necesita volúmenes.
+	auto_https off
 	# La API de administración deja reconfigurar el servidor entero por HTTP. No hace
 	# falta: la configuración cambia recreando el contenedor.
 	admin off
@@ -23,7 +28,7 @@
 	respond /salud 200
 }
 
-{$SITE_ADDRESS} {
+:80 {
 	root * /srv
 	encode zstd gzip
 

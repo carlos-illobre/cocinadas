@@ -29,12 +29,27 @@ larga de cada decisión: antes de cambiar algo que tenga un ADR, leelo.
 6. **No se crean servicios «para después».** Un servicio se crea cuando tiene una ruta que
    hace algo. Es la lección de ADR-015: `usuarios` y `cocinadas` vivieron meses sin nada
    más que `/health`, y cuando se borraron no había nada que rescatar.
+7. **La configuración de otra aplicación no vive en este repositorio.** El proxy importa
+   `vecinos/*.caddy` y cada app de la máquina trae el suyo; acá no se acumula nada ajeno
+   (ADR-016).
 
 ## Cómo está armado
 
-**No hay backend.** Un solo contenedor: Caddy sirviendo una SPA que se baja entera al
-teléfono, con el catálogo adentro. Las cocinadas viven en el `localStorage`
+**No hay backend.** La aplicación es un contenedor: Caddy sirviendo una SPA que se baja
+entera al teléfono, con el catálogo adentro. Las cocinadas viven en el `localStorage`
 (`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`).
+
+**Delante hay un proxy que no es de la aplicación** (`infrastructure/proxy/`, ADR-016). En
+la VM corre más de una app y el 80 y el 443 son de una sola, así que los ata una pieza
+aparte que reparte por dominio. Es **optativa**: se prende con `COMPOSE_PROFILES=proxy` en
+el `.env`. `infrastructure/` es justamente eso —lo que no es la aplicación y en producción
+puede estar reemplazado por un servicio de la nube—, así que lo que se agregue ahí también
+va bajo un perfil.
+
+La aplicación es **inquilina**: escucha en `:80`, contesta a cualquier `Host` y no sabe por
+qué dominio la llamaron. Lo suyo (cabeceras, CSP, ruteo de la SPA, caché) se queda en su
+imagen; al proxy solo se le va el TLS y el reparto. Las otras apps de la máquina dejan su
+bloque en `infrastructure/proxy/vecinos/` **en la VM**, no en este repositorio.
 
 El catálogo **se genera en el build**: `src/catalogo/catalogo.ts` lee `data/` y devuelve
 el plan de archivos (puro, medido al 100 %); `generar.ts` lo escribe en
@@ -77,7 +92,7 @@ Las recetas las genera la skill `receta-poe-fitness`, que vive fuera del reposit
 bash tests/utest.sh            # unitarias de todo, con la compuerta del 100 %
 bash tests/itest.sh --rapido   # paridad de .env, sin levantar nada
 bash tests/itest.sh            # lo anterior más el camino de punta a punta (stack arriba)
-docker compose up -d --build   # levantar el único contenedor en local
+docker compose up -d --build   # levantar la app y el proxy en local
 python deployment/oracle-single/deploy.py --dry-run   # ver qué haría un despliegue
 ```
 
@@ -102,3 +117,10 @@ python deployment/oracle-single/deploy.py --dry-run   # ver qué haría un despl
 - **Cada merge a `main` despliega solo.** Si el entorno `produccion` de GitHub llegara a
   tener «required reviewers», el despliegue queda esperando aprobación y deja de ser
   automático.
+- **`--remove-orphans` NO baja un servicio apagado por perfil.** Sacar `proxy` de
+  `COMPOSE_PROFILES` no lo apaga: el contenedor viejo se queda con el 80 y el 443 justo
+  cuando se los querías dar a otra aplicación. `deploy.py` compara `config --services`
+  contra `ps --services` y baja la diferencia; a mano es `docker compose rm -sf proxy`.
+- **Un vecino se alcanza por `host.docker.internal`, no por `127.0.0.1`**: el proxy corre
+  en un contenedor y `127.0.0.1` es su propio loopback. Cocinadas no lo necesita porque
+  comparte el compose con el proxy y se resuelve por nombre de servicio (`web:80`).

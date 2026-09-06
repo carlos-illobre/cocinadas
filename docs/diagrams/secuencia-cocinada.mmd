@@ -2,7 +2,7 @@ sequenceDiagram
   title Cocinar y guardar la cocinada
   actor C as Cocinero
   participant F as la SPA
-  participant W as web (Caddy)
+  participant W as proxy → web
   participant L as localStorage del teléfono
   C->>F: elige una receta y su versión
   F->>W: GET /api/catalogo/recetas/<plato>/<version>.json

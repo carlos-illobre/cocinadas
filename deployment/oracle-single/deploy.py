@@ -171,6 +171,32 @@ def resolver_sha(raiz: Path, pedido: str | None, dry_run: bool) -> str:
     return sha
 
 
+def apagar_lo_que_sobra(vm: Instancia, ruta_remota: str) -> None:
+    """Baja los contenedores que el .env ya no pide.
+
+    `up -d --remove-orphans` NO alcanza: solo borra contenedores de servicios que ya no
+    están en el compose, y un servicio apagado por perfil sigue estando. Sin esto, sacar
+    `proxy` de COMPOSE_PROFILES no lo baja, y el proxy viejo se queda con el 80 y el 443
+    justo cuando se los querías dar a otra aplicación (ADR-016).
+
+    `config --services` respeta los perfiles y dice qué DEBERÍA correr; `ps --services`
+    dice qué corre. La diferencia se borra. Sin sobrantes no hace nada.
+    """
+    if vm.dry_run:
+        info("$ compara `docker compose config --services` con `ps --services` y baja la diferencia")
+        return
+    _, esperados = vm.correr(f"cd '{ruta_remota}' && docker compose config --services", silencioso=True)
+    codigo, corriendo = vm.correr(f"cd '{ruta_remota}' && docker compose ps --services", silencioso=True)
+    if codigo != 0:
+        info("no pude comparar los servicios activos: reviso a mano si quedó algo de más")
+        return
+    sobrantes = sorted(set(corriendo.split()) - set(esperados.split()))
+    if not sobrantes:
+        return
+    vm.correr(f"cd '{ruta_remota}' && docker compose rm -sf {' '.join(sobrantes)}")
+    ok(f"apagado lo que el .env ya no pide: {', '.join(sobrantes)}")
+
+
 def preflight(vm: Instancia, raiz: Path) -> int:
     """Corre las comprobaciones previas EN la instancia, sin tocar nada."""
     guion = raiz / "deployment" / "oracle-single" / "preflight.sh"
@@ -201,8 +227,16 @@ def desplegar(vm: Instancia, raiz: Path, ruta_remota: str, sha: str) -> None:
     if vm.copiar(raiz / "docker-compose.yml", f"{ruta_remota}/docker-compose.yml") != 0:
         morir("no pude copiar el docker-compose.yml")
     ok("docker-compose.yml")
-    # El Caddyfile ya no se copia: viaja dentro de la imagen (ADR-015), así que la
-    # configuración del servidor cambia con el mismo SHA que el código.
+    # El Caddyfile de la APLICACIÓN no se copia: viaja dentro de su imagen (ADR-015). El
+    # del proxy sí, porque el proxy usa la imagen oficial de Caddy sin construir nada
+    # (ADR-016). Se copia aunque el perfil `proxy` esté apagado: es un archivo, no un
+    # contenedor, y así prenderlo después es cambiar el .env y nada más.
+    vm.correr(f"mkdir -p '{ruta_remota}/infrastructure/proxy/vecinos'")
+    if vm.copiar(raiz / "infrastructure" / "proxy" / "Caddyfile", f"{ruta_remota}/infrastructure/proxy/Caddyfile") != 0:
+        morir("no pude copiar el Caddyfile del proxy")
+    ok("infrastructure/proxy/Caddyfile")
+    # vecinos/ NO se toca: ahí cada una de las otras aplicaciones de la máquina deja su
+    # propio bloque, y un despliegue de Cocinadas no tiene por qué pisárselo.
 
     codigo, _ = vm.correr(
         f"cd '{ruta_remota}' && test -f .env && sed -i '/^TAG=/d' .env && printf 'TAG=%s\\n' '{sha}' >> .env"
@@ -225,6 +259,8 @@ def desplegar(vm: Instancia, raiz: Path, ruta_remota: str, sha: str) -> None:
     if codigo != 0:
         morir("el reemplazo falló — la versión anterior puede haber quedado a medias")
     ok("contenedores actualizados")
+
+    apagar_lo_que_sobra(vm, ruta_remota)
 
     paso("Comprobando que quedó arriba")
     # `docker compose ps` muestra «Up» un contenedor que se está reiniciando en bucle. Lo

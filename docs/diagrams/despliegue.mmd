@@ -11,16 +11,17 @@ flowchart LR
   end
   subgraph vm["VM Oracle · Always Free"]
     compose["docker compose up -d<br/>TAG=&lt;sha&gt; en .env"]
-    health["el sitio interno de salud contesta<br/>y la imagen trae el catálogo"]
+    limpieza["baja lo que el .env ya no pide<br/>(un perfil apagado no se cae solo)"]
+    health["el sitio de salud contesta<br/>y la imagen trae el catálogo"]
   end
   le["Let's Encrypt"]
   push --> ci
   ci -- "pasa, en main" --> ghcr
   ci -- "pasa, en main" --> pages
   ghcr --> deploy
-  deploy -- "scp compose<br/>ssh: fija TAG, pull, up" --> compose
+  deploy -- "scp compose + Caddyfile del proxy<br/>ssh: fija TAG, pull, up" --> compose
   manual -- "lo mismo, con otro SHA" --> compose
   ghcr -- "docker compose pull" --> compose
-  compose --> health
+  compose --> limpieza --> health
   health -- "no contesta en 2 min" --> manual
-  compose -- "ACME HTTP-01 · puerto 80" --> le
+  compose -- "ACME HTTP-01 · puerto 80 · solo el proxy" --> le

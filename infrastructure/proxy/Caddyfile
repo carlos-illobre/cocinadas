@@ -1,0 +1,46 @@
+# El reverse proxy de la MÁQUINA, no de esta aplicación (ADR-016).
+#
+# Es lo único que ata el 80 y el 443, y lo único que pide certificados. Cada aplicación
+# de la máquina —esta y las que vengan— es un inquilino que escucha en un puerto alto y
+# no sabe nada de TLS ni de dominios.
+#
+# Es opcional: se prende con COMPOSE_PROFILES=proxy en el .env. En un ambiente donde el
+# TLS lo termine otra cosa (un balanceador de la nube, o el proxy de otra aplicación que
+# ya esté en la máquina) se deja apagado y esta pieza no existe.
+#
+# Acá adentro no hay nada de la aplicación: ni cabeceras de seguridad, ni caché, ni
+# rutas. Todo eso vive en la imagen de cada inquilino, que es donde se despliega junto
+# con el código que lo necesita.
+{
+	admin off
+	log {
+		output stdout
+		format console
+		level {$LOG_LEVEL}
+	}
+}
+
+# Para el healthcheck del compose y del despliegue. No se publica ningún puerto hacia acá.
+:8081 {
+	respond /salud 200
+}
+
+# Cocinadas. `web` es el nombre del servicio en el compose: se resuelve por la red
+# interna, sin dar la vuelta por el host.
+{$SITE_ADDRESS} {
+	reverse_proxy web:80
+}
+
+# Cualquier dominio que no sea de ninguna aplicación de la máquina. Sin esto Caddy
+# contesta un 200 con el cuerpo vacío, que desde afuera parece que algo funcionó: un
+# vecino mal escrito, o un dominio que quedó apuntando acá después de desinstalar su
+# aplicación, se ven como éxito. Un nombre de sitio concreto siempre le gana a este.
+:80 {
+	respond "no hay ninguna aplicación en este dominio" 404
+}
+
+# Las demás aplicaciones de la máquina. Cada una trae su propio bloque y lo deja en este
+# directorio al desplegarse; este repositorio no guarda la configuración de nadie más.
+# Ver vecinos/README.md. Si no hay ninguno, el glob no encuentra nada y la configuración
+# sigue siendo válida (comprobado con `caddy validate`).
+import /etc/caddy/vecinos/*.caddy

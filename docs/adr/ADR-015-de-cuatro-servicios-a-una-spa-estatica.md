@@ -1,6 +1,6 @@
 # ADR-015: De cuatro servicios a una sola SPA estática
 
-**Estado:** Aceptado
+**Estado:** Aceptado, enmendado por [ADR-016](ADR-016-proxy-de-la-maquina-como-pieza-aparte.md)
 **Fecha:** 2026-09-06
 
 ---
@@ -162,3 +162,16 @@ backend. Lo que este ADR deja preparado:
 - [ADR-001](ADR-001-compose-unico-y-env-como-fuente-de-verdad.md),
   [ADR-006](ADR-006-catalogo-desde-el-repositorio-en-la-imagen.md),
   [ADR-013](ADR-013-frontend-spa-react-vite.md).
+
+---
+
+## Enmienda (2026-09-06): [ADR-016](ADR-016-proxy-de-la-maquina-como-pieza-aparte.md)
+
+Lo que decide este ADR no cambia: un solo contenedor para la aplicación, sin backend, con
+el catálogo generado en el build. Lo que cambia es lo que hay ADELANTE. Como en la VM
+corre más de una aplicación, el TLS y el reparto por dominio salen de la aplicación y
+pasan a un proxy optativo de la máquina. Dos consecuencias sobre lo escrito acá: los
+volúmenes `caddy-datos` y `caddy-config` ya no son de la aplicación sino del proxy —con el
+proxy apagado, el proyecto no usa ninguno—, y el Caddyfile del proxy es un archivo que el
+despliegue copia a la VM, así que la frase «la configuración del servidor viaja dentro de
+la imagen» vale para la aplicación y no para el proxy.

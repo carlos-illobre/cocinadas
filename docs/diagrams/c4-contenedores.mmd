@@ -1,9 +1,13 @@
 C4Container
   title Cocinadas · contenedores (docker compose en una VM)
   Person(cocinero, "Cocinero")
-  System_Boundary(vm, "VM Oracle · docker compose") {
-    Container(web, "web", "Caddy 2", "TLS · file server del bundle: la SPA y el catálogo bajo /api/catalogo/. Único contenedor, y el único que publica hacia afuera (80, 443)")
+  System_Boundary(vm, "VM Oracle") {
+    Container(proxy, "proxy", "Caddy 2 · optativo (COMPOSE_PROFILES=proxy)", "Ata el 80 y el 443 de la MÁQUINA, emite y renueva el TLS y reparte por dominio. No es parte de la aplicación (ADR-016)")
+    Container(web, "web", "Caddy 2", "La aplicación: file server del bundle (la SPA y el catálogo bajo /api/catalogo/). Escucha en :80 y no sabe por qué dominio la llamaron")
+    Container_Ext(vecinas, "otras aplicaciones de la VM", "cada una con su stack", "Cada una publica un puerto alto y deja su bloque en proxy/vecinos/")
   }
-  ContainerDb(tel, "localStorage", "Navegador del teléfono", "cocinadas guardadas · cocinada en curso · tema")
-  Rel(cocinero, web, "HTTPS", "443")
+  ContainerDb(tel, "localStorage", "Navegador del teléfono", "cocinadas.historial · cocinadas.cocinando · cocinadas.tema")
+  Rel(cocinero, proxy, "HTTPS", "443")
+  Rel(proxy, web, "HTTP", "web:80, por la red interna del compose")
+  Rel(proxy, vecinas, "HTTP", "host.docker.internal:<puerto>")
   Rel(cocinero, tel, "lee y escribe", "no sale del teléfono")

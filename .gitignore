@@ -21,3 +21,7 @@ desktop.ini
 
 # Temporales de la sesión de Claude
 .claude/settings.local.json
+
+# Bytecode de Python (deploy.py se compila al verificarlo)
+__pycache__/
+*.pyc
