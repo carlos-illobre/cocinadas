@@ -1,4 +1,11 @@
-import type { Fetch } from './salud';
+/**
+ * Cómo se pide al catálogo. Se inyecta en vez de usar `fetch` global para que las pruebas
+ * puedan responder por ruta sin red, y para que el día que el catálogo vuelva a ser una
+ * API se cambie en un solo lugar.
+ *
+ * Es un subconjunto del `fetch` del navegador: solo lo que la app usa.
+ */
+export type Fetch = (url: string) => Promise<{ readonly ok: boolean; readonly status: number; json(): Promise<unknown> }>;
 
 /**
  * Dónde queda el catálogo dentro del bundle: archivos generados en el build (ADR-015).

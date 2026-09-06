@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { Recetas } from './Recetas';
 import { fetchDeCatalogo, nunca, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
-import type { Fetch } from './salud';
+import type { Fetch } from './api';
 
 describe('Recetas', () => {
   it('saluda, muestra la experiencia y el estado de carga mientras espera al catálogo', () => {

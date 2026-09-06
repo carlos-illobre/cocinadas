@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BASE_CATALOGO, listarRecetas, minutos, obtenerReceta, reloj, urlFoto } from './api';
-import type { Fetch } from './salud';
+import { BASE_CATALOGO, listarRecetas, minutos, obtenerReceta, reloj, urlFoto, type Fetch } from './api';
 
 function fetchQueDevuelve(cuerpo: unknown, ok = true, status = 200): { fetchImpl: Fetch; urls: string[] } {
   const urls: string[] = [];

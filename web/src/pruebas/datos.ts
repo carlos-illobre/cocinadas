@@ -1,5 +1,4 @@
-import type { Receta, RecetaResumen } from '../api';
-import type { Fetch } from '../salud';
+import type { Fetch, Receta, RecetaResumen } from '../api';
 
 /** Datos de ejemplo con la forma que sirve el catálogo. Fuera de la cobertura (src/pruebas/**). */
 
