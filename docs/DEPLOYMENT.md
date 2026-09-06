@@ -1,8 +1,13 @@
 # Despliegue
 
 Una VM de Oracle Cloud (Always Free) con Docker, el mismo `docker-compose.yml` que en
-desarrollo, y las imágenes construidas por el CI y publicadas en GHCR etiquetadas por
-SHA de commit (ADR-011). Todo lo específico vive en `deployment/oracle-single/`.
+desarrollo, y **una** imagen construida por el CI y publicada en GHCR etiquetada por SHA
+de commit (ADR-011). Todo lo específico vive en `deployment/oracle-single/`.
+
+Lo que corre en la instancia es un solo contenedor, `web`: Caddy sirviendo el bundle de la
+aplicación con el catálogo adentro (ADR-015). No hay base de datos ni broker, así que **en
+el servidor no hay nada que respaldar**: las cocinadas viven en el teléfono de cada
+persona.
 
 > La guía paso a paso de la instancia (crearla, conectarse, Security List, DNS,
 > certificado) se genera con la skill `desplegar-en-oracle-cloud` como `ORACLE.md` en
@@ -20,14 +25,13 @@ SHA de commit (ADR-011). Todo lo específico vive en `deployment/oracle-single/`
 
 ## Puertos
 
-Adentro de los contenedores los puertos no cambian nunca. Del lado del host los decide
-el `.env`, para poder convivir con otra aplicación en la misma máquina.
+Adentro del contenedor los puertos no cambian nunca. Del lado del host los decide el
+`.env`, para poder convivir con otra aplicación en la misma máquina.
 
 | Variable | Valor por omisión | Quién | Desde dónde |
 |---|---|---|---|
-| `PUERTO_HTTP`, `PUERTO_HTTPS` | 80, 443 (TCP y UDP) | `reverse-proxy` | La interfaz que diga `PROXY_ADDR`. **Los únicos que se abren en la Security List.** |
-| `PUERTO_CATALOGO`, `PUERTO_USUARIOS`, `PUERTO_COCINADAS`, `PUERTO_FRONTEND` | 3101, 3102, 3103, 8180 | catalogo, usuarios, cocinadas, frontend | Solo `127.0.0.1` de la VM (`PUBLISH_ADDR`). Los usa `deploy.py` para comprobar los `/health`. |
-| — | 5432, 4222, 8222 | postgres, nats | Solo la red interna del compose. Para mirarlos: `docker compose exec` o túnel SSH. |
+| `PUERTO_HTTP`, `PUERTO_HTTPS` | 80, 443 (TCP y UDP) | `web` | La interfaz que diga `PROXY_ADDR`. **Los únicos que se abren en la Security List.** |
+| — | 8081 | `web` | Solo desde adentro del contenedor: es el sitio de salud contra el que pegan el healthcheck del compose y `deploy.py`. No se publica. |
 
 Los puertos que publica Docker no pasan por la cadena `INPUT` de iptables: `ufw` no
 los protege. Lo que decide qué está abierto es la Security List de la VCN.
@@ -71,7 +75,8 @@ server {
 
 Y en la Security List de la VCN no se abre nada nuevo: el 8280 no sale de la máquina.
 
-Los demás puertos no chocan si cada aplicación usa los suyos. Para ver qué está tomado:
+Cocinadas no publica ningún otro puerto, así que no hay más nada que pueda chocar. Para
+ver qué está tomado:
 
 ```bash
 sudo ss -lntp
@@ -81,7 +86,7 @@ sudo ss -lntp
 
 | Archivo | Dónde | Qué tiene | Plantilla |
 |---|---|---|---|
-| `.env` de la **aplicación** | `RUTA_REMOTA/.env` en la VM | Las 13 variables del compose con valores de producción; `deploy.py` solo le cambia `TAG`. | `deployment/oracle-single/.env.oracle` |
+| `.env` de la **aplicación** | `RUTA_REMOTA/.env` en la VM | Las 11 variables del compose con valores de producción; `deploy.py` solo le cambia `TAG`. Ninguna es un secreto: no hay base ni tokens que firmar. | `deployment/oracle-single/.env.oracle` |
 | `.env` del **despliegue** | `deployment/oracle-single/.env` en tu máquina | `SSH` y `RUTA_REMOTA`: cómo llegar a la VM. | `deployment/oracle-single/.env.deploy.example` |
 
 Los dos están en el `.gitignore`. `tests/integration/paridad-env.sh` comprueba que cada
@@ -91,18 +96,22 @@ uno declare exactamente lo que su plantilla.
 
 1. `python deployment/oracle-single/deploy.py --preflight` desde tu máquina: verifica
    memoria, disco, Docker, puertos y firewall en la instancia, sin tocar nada.
-2. En la VM: `mkdir -p ~/cocinadas && cd ~/cocinadas`, copiar `.env.oracle` como `.env`
-   y completar los marcadores (`REGISTRO`, contraseña, `JWT_SECRET` con
-   `openssl rand -base64 48`).
+2. En la VM: `mkdir -p ~/cocinadas && cd ~/cocinadas`, copiar `.env.oracle` como `.env` y
+   completar los marcadores (`REGISTRO` y `TAG`).
 3. En tu máquina: copiar `.env.deploy.example` a `deployment/oracle-single/.env` y
    completar `SSH` y `RUTA_REMOTA`.
-4. Mergear a `main` y esperar a que el CI publique las imágenes (job `imagenes`).
-5. `python deployment/oracle-single/deploy.py`.
+4. Mergear a `main`: el CI publica la imagen y despliega solo. Si hace falta a mano:
+   `python deployment/oracle-single/deploy.py`.
 
 ## Despliegue automático al mergear a main
 
 El job `desplegar` del CI corre `deploy.py` con el SHA del commit, después de que el job
-`imagenes` publicó las cuatro imágenes. Un despliegue por vez y solo desde `main`.
+`imagen` publicó la imagen. Un despliegue por vez y solo desde `main`.
+
+Todo merge a `main` —con commit de merge o con squash— es un push a `main`, así que **cada
+merge se despliega solo, sin apretar nada**. La cadena es `pruebas → imagen → desplegar`:
+si la compuerta del 100 % o la paridad de `.env` fallan, no se publica la imagen y no se
+despliega.
 
 Hace falta cargar cuatro secretos en **Settings → Secrets and variables → Actions** del
 repositorio:
@@ -129,8 +138,10 @@ La clave del CI conviene que sea **dedicada**: si se filtra, se borra esa línea
 **La huella se fija a mano** en vez de aceptar la que venga (`StrictHostKeyChecking=no`):
 aceptar cualquiera es aceptar a quien se ponga en el medio.
 
-**Para pedir aprobación antes de cada despliegue**: en Settings → Environments → `produccion`,
-agregar «Required reviewers». Sin revisores configurados, el despliegue corre solo.
+**Ojo con el entorno `produccion`**: si en Settings → Environments → `produccion` hay
+«Required reviewers», el despliegue deja de ser automático y queda esperando aprobación.
+Para que corra solo en cada merge, ese entorno no tiene que tener revisores. (Si en algún
+momento se quiere lo contrario, agregarlos ahí es todo lo que hace falta.)
 
 **Qué tiene que estar abierto**: el CI entra por SSH desde los runners de GitHub, que no
 tienen IP fija, así que el 22 de la instancia tiene que aceptar conexiones de internet.
@@ -147,12 +158,16 @@ python deployment/oracle-single/deploy.py --dry-run  # ver qué haría, sin toca
 ```
 
 El script anota qué SHA había antes y lo imprime, así la reversión es copiar ese comando.
-Da el despliegue por bueno solo cuando los cuatro `/health` contestan; si uno no
-contesta en dos minutos, muestra sus logs y dice cómo volver.
+Da el despliegue por bueno con dos comprobaciones: que el sitio interno de salud conteste
+—desde adentro del contenedor, porque en producción `SITE_ADDRESS` es el dominio y una
+petición a `localhost` no coincidiría con ningún sitio de Caddy— y que la imagen traiga
+`/srv/api/catalogo/recetas.json`, porque una imagen construida sin `data/` arrancaría
+igual y serviría una app sin recetas. Si no contesta en dos minutos, muestra los logs y
+dice cómo volver.
 
-**Lo que la reversión no revierte:** los volúmenes. Si una versión migró datos, volver la
-imagen no vuelve los datos. Un cambio que toque el formato de lo persistido lo dice en el
-mensaje del commit y acá.
+**Revertir revierte también las recetas**, porque el catálogo viaja dentro de la imagen
+(ADR-006). Y no hay datos que puedan quedar desfasados: el único volumen guarda
+certificados.
 
 ## Seguridad
 
@@ -163,64 +178,58 @@ Lo que hay puesto:
 |---|---|
 | Techo del log por contenedor (hoy 1 MB) | `LOG_MAX_SIZE`, `LOG_MAX_FILES` |
 | Techo de CPU por contenedor | `CPU_LIMIT_*` |
-| Peticiones por minuto y por IP antes del 429 | `RATE_LIMIT_POR_MINUTO` |
-| Cabeceras de seguridad y política de contenido | `infrastructure/reverse-proxy/Caddyfile` |
+| Nivel de detalle del log de Caddy | `LOG_LEVEL` (`DEBUG`, `INFO`, `WARN`, `ERROR`) |
+| Cabeceras de seguridad y política de contenido | `microservices/frontend/Caddyfile`, que viaja dentro de la imagen |
 | Sin privilegios nuevos, sin capacidades, disco de solo lectura | `docker-compose.yml` |
 
 Antes de publicar, en la VM:
 
-- `chmod 600 ~/cocinadas/.env`: ahí están la contraseña de la base y el secreto de los JWT.
-- En la Security List de la VCN, abrir solo los puertos del reverse proxy. Si Cocinadas va
-  detrás de otro proxy, su `PUERTO_HTTP` **no** se abre: se llega por `127.0.0.1`.
-- Poner el respaldo en el cron (abajo).
+- En la Security List de la VCN, abrir solo el 80 y el 443. Si Cocinadas va detrás de otro
+  proxy, su `PUERTO_HTTP` **no** se abre: se llega por `127.0.0.1`.
 
-Lo que todavía no está cubierto es lo que llega con las cuentas: hash de contraseñas,
-límite de intentos de login, vida corta del token y que cada servicio verifique que el
-dueño del recurso es el del token.
+El `.env` de la instancia no tiene ningún secreto (no hay base ni tokens que firmar), así
+que no hay nada que rotar ante un incidente. Lo que todavía no está cubierto es lo que
+llega con las cuentas: hash de contraseñas, límite de intentos de login y vida del token.
+El camino para agregarlo está en
+[ADR-015](adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md).
 
 ## Respaldo
 
-El estado vive en cuatro volúmenes. Qué se pierde con cada uno:
+**No hay nada que respaldar en el servidor.** Las cocinadas viven en el `localStorage` del
+teléfono de cada persona y el catálogo viaja dentro de la imagen, reconstruible desde el
+commit. Quedan dos volúmenes, y ninguno guarda datos de la aplicación:
 
 | Volumen | Qué se pierde si se pierde | Urgencia |
 |---|---|---|
-| `postgres-datos` | **Todos los usuarios y todas las cocinadas.** No están en ningún otro lado. | Respaldar. |
-| `caddy-datos` | Los certificados TLS. Se reemiten, con los límites de intentos de Let's Encrypt. | Respaldar. |
-| `nats-datos` | Eventos publicados y no consumidos todavía. Se regenera con el uso. | No hace falta. |
+| `caddy-datos` | Los certificados TLS. Se reemiten solos, con los límites de intentos de Let's Encrypt. | Opcional. |
 | `caddy-config` | Configuración derivada de Caddy. Se regenera al arrancar. | No hace falta. |
 
-Respaldo con un contenedor descartable, desde la VM:
+Si igual se quiere guardar los certificados para no reemitirlos, desde la VM:
 
 ```bash
-docker run --rm -v cocinadas_postgres-datos:/d -v "$PWD:/b" alpine tar czf /b/postgres-datos.tgz -C /d .
 docker run --rm -v cocinadas_caddy-datos:/d -v "$PWD:/b" alpine tar czf /b/caddy-datos.tgz -C /d .
 ```
 
-Para PostgreSQL, además, un volcado lógico es más portable:
-`docker compose exec postgres pg_dump -U cocinadas cocinadas > cocinadas.sql`.
+`respaldo.sh` se borró junto con la base: no tenía qué copiar.
 
-Eso mismo, automático, lo hace `deployment/oracle-single/respaldo.sh`: vuelca la base
-comprimida, copia los certificados, guarda los últimos siete días y borra los más viejos.
-Se corre **en la VM** y acepta `--dry-run` para ver qué haría. En el cron:
-
-```
-17 3 * * * cd ~/cocinadas && bash deployment/oracle-single/respaldo.sh >> ~/respaldos/registro.txt 2>&1
-```
+**Lo que sí está sin resolver es del lado del usuario**: sin exportar ni sincronizar, el
+historial se pierde con el teléfono. Es exactamente lo que ADR-015 deja preparado para
+revertir el día que haga falta.
 
 ## Disco
 
-Cada despliegue deja imágenes. `deploy.py` corre `docker image prune -af --filter
+Cada despliegue deja una imagen. `deploy.py` corre `docker image prune -af --filter
 until=24h` al final e informa cuánto liberó: sin `-a` no libera nada, porque las
 imágenes etiquetadas por SHA nunca están «colgadas».
 
 ## Operación diaria
 
 ```bash
-ssh <destino> 'cd ~/cocinadas && docker compose ps'                        # qué corre y con qué TAG
-ssh <destino> 'cd ~/cocinadas && docker compose logs -f --tail 100 cocinadas'
-ssh <destino> 'docker stats --no-stream'                                    # memoria por contenedor
-ssh <destino> 'df -h / && docker system df'                                 # disco
-ssh <destino> 'cd ~/cocinadas && docker compose restart usuarios'
+ssh <destino> 'cd ~/cocinadas && docker compose ps'                    # qué corre y con qué TAG
+ssh <destino> 'cd ~/cocinadas && docker compose logs -f --tail 100 web'
+ssh <destino> 'docker stats --no-stream'                               # memoria
+ssh <destino> 'df -h / && docker system df'                            # disco
+ssh <destino> 'cd ~/cocinadas && docker compose restart web'
 ```
 
 ## Límites del plan gratuito a tener presentes

@@ -1,6 +1,6 @@
 # ADR-011: Despliegue en una VM de Oracle Cloud con imágenes multi-arquitectura por SHA
 
-**Estado:** Aceptado
+**Estado:** Aceptado, enmendado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -94,3 +94,14 @@ El compose es el mismo en desarrollo y en la VM (ADR-001).
 
 - `.claude/skills/desplegar-en-oracle-cloud/referencias/instancia.md`, `despliegue.md`, `operacion.md`.
 - `docs/DEPLOYMENT.md`.
+
+---
+
+## Enmienda (2026-09-06): [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+El mecanismo no cambia: imágenes multi-arquitectura etiquetadas por SHA en GHCR y
+`deploy.py` trayendo exactamente ese SHA. Lo que cambia es la cantidad: una sola imagen,
+`cocinadas-web`, en vez de cuatro. La comprobación de que quedó arriba dejó de mirar
+puertos publicados —en producción `SITE_ADDRESS` es el dominio, así que una petición a
+`localhost` no coincide con ningún sitio de Caddy— y pregunta por el sitio interno de
+salud desde adentro del contenedor.

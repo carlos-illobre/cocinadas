@@ -1,6 +1,6 @@
 # ADR-006: El catálogo se lee de los JSON del repositorio y viaja dentro de la imagen
 
-**Estado:** Aceptado
+**Estado:** Aceptado, enmendado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -91,3 +91,13 @@ Las convenciones de `data/recetas/README.md`, `data/ingredientes/README.md` y
 ## Referencias
 
 - `data/recetas/esquema-receta.md`, `.dockerignore` de la raíz, `microservices/catalogo/Dockerfile`.
+
+---
+
+## Enmienda (2026-09-06): [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+Lo que decide este ADR —que el catálogo sale de los JSON del repositorio y viaja dentro
+de la imagen, para que la versión del catálogo sea la del commit desplegado— sigue en pie
+y es más literal que antes. Lo que cambió es quién lo lee: ya no un servicio que carga los
+JSON en memoria al arrancar, sino un paso del build que los escribe como archivos
+estáticos dentro del bundle. Revertir un despliegue sigue revirtiendo las recetas.

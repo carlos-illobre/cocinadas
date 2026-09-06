@@ -1,23 +1,26 @@
 flowchart LR
   subgraph dev["Máquina de desarrollo"]
-    push["git push (rama → PR → main)"]
-    deploy["deploy.sh &lt;sha&gt;"]
+    push["git push (rama → PR → merge a main)"]
+    manual["deploy.py &lt;sha&gt; (a mano, para revertir)"]
   end
   subgraph gh["GitHub"]
     ci{"CI: utest.sh 100 %<br/>itest.sh --rapido<br/>compose config"}
     ghcr[("GHCR<br/>cocinadas-web:&lt;sha&gt;<br/>amd64 + arm64")]
     pages["GitHub Pages<br/>docs/"]
+    deploy["job desplegar<br/>ssh + deploy.py &lt;sha&gt;"]
   end
   subgraph vm["VM Oracle · Always Free"]
     compose["docker compose up -d<br/>TAG=&lt;sha&gt; en .env"]
-    health["/health × 4 contestan"]
+    health["el sitio interno de salud contesta<br/>y la imagen trae el catálogo"]
   end
   le["Let's Encrypt"]
   push --> ci
   ci -- "pasa, en main" --> ghcr
   ci -- "pasa, en main" --> pages
-  deploy -- "scp compose + Caddyfile<br/>ssh: fija TAG, pull, up" --> compose
+  ghcr --> deploy
+  deploy -- "scp compose<br/>ssh: fija TAG, pull, up" --> compose
+  manual -- "lo mismo, con otro SHA" --> compose
   ghcr -- "docker compose pull" --> compose
   compose --> health
-  health -- "no contesta en 2 min" --> deploy
+  health -- "no contesta en 2 min" --> manual
   compose -- "ACME HTTP-01 · puerto 80" --> le

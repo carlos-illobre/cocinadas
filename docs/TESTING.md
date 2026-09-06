@@ -15,24 +15,25 @@ integración inflan los números sin probar ramas.
 ## Unitarias
 
 Corren sin levantar nada y **exigen el 100 %** en las cuatro métricas. La compuerta está
-en dos lugares: en la configuración de Vitest de cada servicio (`thresholds`), que hace
-fallar `pnpm test:cov`, y en `tests/utest.sh`, que vuelve a leer
+en dos lugares: en `vite.config.ts` (`thresholds`), que hace fallar `pnpm test:cov`, y en
+`tests/utest.sh`, que vuelve a leer
 `coverage/coverage-summary.json` y muestra la tabla por archivo nombrando cuál bajó y en
 qué métrica.
 
 ```bash
-bash tests/utest.sh              # todos los servicios
-bash tests/utest.sh catalogo     # uno
+bash tests/utest.sh              # el proyecto (recorre microservices/*, que hoy es uno)
+bash tests/utest.sh frontend     # explícito
 ```
 
-Última corrida en este esqueleto (2026-09-05):
+Última corrida (2026-09-06):
 
-| Servicio | Pruebas | Cobertura |
+| Proyecto | Pruebas | Cobertura |
 |---|---|---|
-| catalogo | 79 | 100 / 100 / 100 / 100 |
-| usuarios | 31 | 100 / 100 / 100 / 100 |
-| cocinadas | 31 | 100 / 100 / 100 / 100 |
-| frontend | 242 | 100 / 100 / 100 / 100 |
+| frontend | 270 | 100 / 100 / 100 / 100 |
+
+Desde ADR-015 hay un solo proyecto. Las pruebas del catálogo, que eran del servicio, viven
+ahora en `src/catalogo/` y entran en la misma compuerta sin configuración aparte: es la
+razón por la que el generador vive dentro de `src/` y no en una carpeta de herramientas.
 
 ### Qué está excluido de la cobertura, y por qué, uno por uno
 
@@ -40,25 +41,26 @@ Solo adaptadores de infraestructura y raíces de composición. **El criterio:** 
 archivo excluido contiene una decisión (un `if`, un mapeo de errores, una política), esa
 decisión se extrae a un módulo medible y afuera queda solo la llamada al sistema externo.
 
-| Servicio | Archivo | Por qué |
-|---|---|---|
-| catalogo, usuarios, cocinadas | `src/server.ts` | Raíz de composición: lee la configuración, arma la app, conecta las dependencias y llama a `listen`. Solo llamadas, sin ramas. |
-| catalogo, usuarios, cocinadas | `src/infra/nats.ts` | Configura el cliente de NATS real. No se puede ejercitar sin un broker. |
-| usuarios, cocinadas | `src/infra/db.ts` | Crea el pool de `pg` y el cliente de Drizzle, y hace `select 1` al arrancar. No se puede ejercitar sin PostgreSQL. |
-| frontend | `src/main.tsx` | Raíz de composición: monta `<App/>` en `#raiz`. |
-| frontend | `src/pruebas/**`, `src/**/*.test.*` | Utilidades de las pruebas y las pruebas mismas. |
+Son tres, y ninguno decide nada.
 
-Lo que sí se mide, y con qué: la lectura de configuración (`config.ts`: variable ausente,
-vacía, puerto inválido y sus bordes, secreto corto), la app HTTP (`app.ts`, con `inject`
-de Fastify, sin abrir puerto: nivel de logs, `/health`, y que `/` sea 404), el inventario
-del catálogo (`catalogo.ts`, sobre un directorio temporal con la misma forma que el
-repositorio), y en el frontend la consulta de salud (`salud.ts`, con un `fetch`
-inyectado), el cliente del catálogo (`api.ts`, con un `fetch` inyectado que responde por ruta), las pantallas `Inicio`, `Recetas` y `Portada` (con Testing Library: carga, error, datos con y sin foto, cambio de versión, desmontaje antes de la respuesta) el recorrido completo en `App` (inicio → recetas → portada → cocina → resumen y vuelta), el modelo de la cocinada (`cocina/modelo.ts`: pasos, huecos entre pasos, procesos que corren solos, alarma, pausa entre etapas, resumen y desvíos, todo puro con el reloj inyectado), los avisos sonoros (`cocina/sonido.ts`, con un AudioContext falso que graba cada nota con su frecuencia, su forma de onda y el pico de su envolvente) y el gantt vertical (`gantt` y `frenteGantt`: altos proporcionales al tiempo con un mínimo legible, huecos entre pasos, procesos en la misma escala y el frente que avanza con el cronómetro) y la pantalla `Cocina` con relojes falsos (tic, exceso titilando, sub-pasos, porqué, procesos, carriles, alarma con sonido repetido, fin de etapa y final). Además, `cocina/receta-real.test.ts` importa los dos JSON reales de `data/recetas/` y los cocina enteros con el modelo, exactamente a tiempo: es la prueba de que los datos y la pantalla hablan el mismo idioma. Con las pantallas de la segunda ronda se suman: el almacén de cocinadas (`historial/almacen.ts`: orden, basura guardada, agrupación por receta, y el almacén seguro con uno en memoria y uno que lanza), la mise en place (tildar, destildar, receta vacía), el historial y su gráfico (barras, techo del eje, elección de receta), el perfil con sus números y sus logros (`logros.ts`: cada regla con su caso que la consigue y otro que no, incluida la racha con huecos y con dos cocinadas del mismo día), la barra inferior, la cocinada en curso (`cocina/enCurso.ts`: retomar, descartar la vieja, la de otra receta y cualquier cosa guardada que no se pueda leer) y la navegación con el botón de atrás del teléfono (que vuelve de pantalla, que no cuenta dos veces cuando ya volvió un botón de la pantalla, y que en la primera no hace nada), y en `App` el recorrido completo con guardado, las pestañas y el arranque con datos ya guardados o con un `localStorage` que no existe o lanza. Con las pantallas copiadas del prototipo de Figma (tercera ronda) se suman la experiencia (`xp.ts`: niveles contiguos, progreso dentro del nivel, puntos por precisión) y su barra (`BarraXp`), la lista de recetas con la tarjeta grande, y la portada con los modos con ícono. Con el tema claro/oscuro del prototipo se suman `tema.ts` (leer, guardar, alternar y aplicar) y, en `App`, que el tema se aplique al documento, se guarde y se recuerde al arrancar. En los tres servicios se prueba además el límite de peticiones: que la de más contesta 429 con `Retry-After`, y que un cliente que se pasa no deja afuera a otro. En `catalogo`, además: la carga del catálogo sobre un directorio temporal con la forma de `data/` (recetas válidas e ignoradas, fichas con foto, sin foto, con enlace roto y con enlace fuera del directorio) y las rutas HTTP con un catálogo falso y archivos temporales (200 con tipo y caché, 404, 400 por identificadores inválidos sin tocar el catálogo).
+| Archivo | Por qué |
+|---|---|
+| `src/main.tsx` | Raíz de composición: monta `<App/>` en `#raiz`. |
+| `src/catalogo/generar.ts` | Escribe a disco el plan que armó `planificar()`: crea carpetas, escribe JSON y copia fotos. Sin ramas propias. Todo lo que decide qué archivos van y con qué contenido está en `catalogo.ts`, que se mide entero. |
+| `src/pruebas/**`, `src/**/*.test.*` | Utilidades de las pruebas y las pruebas mismas. |
+
+Lo que sí se mide, y con qué: la generación del catálogo (`src/catalogo/catalogo.ts`,
+sobre un directorio temporal con la misma forma que `data/`: recetas válidas e ignoradas,
+fichas con foto, sin foto, con enlace roto, con enlace fuera del directorio y con enlace a
+algo que no es una imagen; y el plan resultante, que las versiones se escriban por clave y
+por número y que solo se copien las fotos que alguna receta referencia), la consulta de
+salud (`salud.ts`, con un `fetch`
+inyectado), el cliente del catálogo (`api.ts`, con un `fetch` inyectado que responde por ruta), las pantallas `Inicio`, `Recetas` y `Portada` (con Testing Library: carga, error, datos con y sin foto, cambio de versión, desmontaje antes de la respuesta) el recorrido completo en `App` (inicio → recetas → portada → cocina → resumen y vuelta), el modelo de la cocinada (`cocina/modelo.ts`: pasos, huecos entre pasos, procesos que corren solos, alarma, pausa entre etapas, resumen y desvíos, todo puro con el reloj inyectado), los avisos sonoros (`cocina/sonido.ts`, con un AudioContext falso que graba cada nota con su frecuencia, su forma de onda y el pico de su envolvente) y el gantt vertical (`gantt` y `frenteGantt`: altos proporcionales al tiempo con un mínimo legible, huecos entre pasos, procesos en la misma escala y el frente que avanza con el cronómetro) y la pantalla `Cocina` con relojes falsos (tic, exceso titilando, sub-pasos, porqué, procesos, carriles, alarma con sonido repetido, fin de etapa y final). Además, `cocina/receta-real.test.ts` importa los dos JSON reales de `data/recetas/` y los cocina enteros con el modelo, exactamente a tiempo: es la prueba de que los datos y la pantalla hablan el mismo idioma. Con las pantallas de la segunda ronda se suman: el almacén de cocinadas (`historial/almacen.ts`: orden, basura guardada, agrupación por receta, y el almacén seguro con uno en memoria y uno que lanza), la mise en place (tildar, destildar, receta vacía), el historial y su gráfico (barras, techo del eje, elección de receta), el perfil con sus números y sus logros (`logros.ts`: cada regla con su caso que la consigue y otro que no, incluida la racha con huecos y con dos cocinadas del mismo día), la barra inferior, la cocinada en curso (`cocina/enCurso.ts`: retomar, descartar la vieja, la de otra receta y cualquier cosa guardada que no se pueda leer) y la navegación con el botón de atrás del teléfono (que vuelve de pantalla, que no cuenta dos veces cuando ya volvió un botón de la pantalla, y que en la primera no hace nada), y en `App` el recorrido completo con guardado, las pestañas y el arranque con datos ya guardados o con un `localStorage` que no existe o lanza. Con las pantallas copiadas del prototipo de Figma (tercera ronda) se suman la experiencia (`xp.ts`: niveles contiguos, progreso dentro del nivel, puntos por precisión) y su barra (`BarraXp`), la lista de recetas con la tarjeta grande, y la portada con los modos con ícono. Con el tema claro/oscuro del prototipo se suman `tema.ts` (leer, guardar, alternar y aplicar) y, en `App`, que el tema se aplique al documento, se guarde y se recuerde al arrancar.
 
 ## Integración
 
 ```bash
-bash tests/itest.sh --rapido   # sin stack: paridad de .env y contratos. Dice qué saltea.
+bash tests/itest.sh --rapido   # sin stack: paridad de .env. Dice qué saltea.
 bash tests/itest.sh            # con stack: lo anterior + health.sh
 ```
 
@@ -67,8 +69,7 @@ Un script por asunto en `tests/integration/`:
 | Script | Qué verifica | Necesita stack |
 |---|---|---|
 | `paridad-env.sh` | Que `.env.example`, `deployment/oracle-single/.env.oracle` y `.env` declaren exactamente las mismas variables; que **toda variable que `docker-compose.yml` interpola esté declarada**; y que el compose **no tenga valores por omisión** (`${VAR:-x}`). Lo mismo para el par de despliegue. | No |
-| `contratos.sh` | Que las copias de esquemas de eventos en `microservices/*/src/contratos/` sean idénticas a `contratos/eventos/`. | No |
-| `health.sh` | Que cada servicio conteste `/health` en su puerto publicado y a través del reverse proxy, que la SPA se sirva, y que la imagen de `catalogo` traiga recetas adentro (ADR-006). | Sí |
+| `health.sh` | Que la SPA se sirva, que una ruta del navegador caiga en el `index.html`, que `recetas.json` traiga al menos un plato (lo que antes garantizaba el inventario de `/health`, ADR-006), que un JSON inexistente dé 404 y no el `index.html`, y que las fotos salgan con `Content-Type: image/*`. | Sí |
 
 **La paridad es la que más rinde:** una variable que el compose usa y ningún `.env`
 define cae en su valor por omisión sin que nada avise. En el mejor caso el ambiente
@@ -76,15 +77,17 @@ arranca distinto de lo esperado; en el peor, una variable de seguridad, arranca 
 Por eso el compose no tiene valores por omisión (`:?` en todas) y esta prueba corre en el
 CI en cada push.
 
-Última corrida de `health.sh` (2026-09-05, stack local): los cuatro `/health` por puerto,
-los tres por el proxy y la SPA en `http://localhost/` contestaron; el inventario de la
-imagen de catálogo fue `{"recetas":2,"ingredientes":30,"utensilios":22}`.
+El 404 de un JSON inexistente no es un detalle: si el `try_files` de la SPA se comiera
+`/api/`, una receta que no existe devolvería el `index.html` con 200 y `api.ts` intentaría
+leer la página como si fuera una receta.
+
+Última corrida (2026-09-06, stack local): las cinco comprobaciones en verde; el catálogo
+generado en el build fueron 5 JSON y 20 fotos.
 
 ## Mutación
 
 ```bash
-bash tests/mutation.sh              # todos
-bash tests/mutation.sh catalogo     # uno
+bash tests/mutation.sh              # el proyecto
 ```
 
 Stryker con el corredor de Vitest, sobre los mismos archivos que mide la cobertura. **Sin
@@ -96,11 +99,14 @@ decisión documentada acá de no cubrirlo.
 
 Los informes quedan en `microservices/<servicio>/reports/mutation/index.html`.
 
-### Resultado medido (2026-09-05)
+### Resultado medido
 
-Números impresos por `tests/mutation.sh` desde el `mutation.json` de cada servicio.
+**Pendiente de volver a medir después de ADR-015.** Los números de abajo son de la última
+corrida con los cuatro proyectos (2026-09-05) y se conservan porque las explicaciones de
+los sobrevivientes siguen valiendo: el código del frontend no cambió y el del catálogo se
+movió sin reescribirse. La corrida nueva sale del job `mutacion` del primer CI de la rama.
 
-| Servicio | Mutantes | Muertos | Sobrevivieron | Puntaje |
+| Servicio (antes de ADR-015) | Mutantes | Muertos | Sobrevivieron | Puntaje |
 |---|---|---|---|---|
 | catalogo | 292 | 288 | 4 | 98,6 % |
 | usuarios | 47 | 47 | 0 | 100 % |
@@ -130,16 +136,14 @@ Las mismas pruebas se agregaron en usuarios y cocinadas, que tenían los mismos 
 
 | Sobreviviente | Por qué sobrevive | Decisión |
 |---|---|---|
-| `catalogo.ts:205` `x.id !== null && fotos.has(x.id)` → `true && …` | `Map.has(null)` es `false`, así que quitar la guarda de nulo no cambia ningún resultado. Equivalente. | No cubrir; la guarda queda porque documenta que un `id: null` no se busca. |
-| `rutas.ts:22` `ruta === null \|\| tipo === null` → `tipo === null` | `tipo` ya es `null` cuando `ruta` lo es (se calcula en la línea anterior), así que la primera mitad es redundante para el resultado. Equivalente. | No cubrir. |
-| `rutas.ts:35` y `rutas.ts:67` `required: ['plato']` / `['id']` → `['']` | Un parámetro de ruta siempre está presente: `required` no puede fallar nunca. Equivalente. | No cubrir; se deja por claridad del esquema. |
+| `catalogo.ts:205` la guarda de `id` nulo antes de buscar la foto | `Map.get(null)` no encuentra nada, así que quitarla no cambia ningún resultado. Equivalente. | No cubrir; queda porque documenta que un `id: null` no se busca. Sigue vigente en `src/catalogo/catalogo.ts`. |
+| `rutas.ts:22`, `rutas.ts:35` y `rutas.ts:67` | Eran del servidor HTTP del catálogo, que dejó de existir con ADR-015: las fotos ahora son archivos y el `Content-Type` lo pone Caddy. | Ya no aplican. |
 
 ### Dos ajustes de Stryker que no vienen de fábrica
 
 - Con el `node_modules` estricto de pnpm, el descubrimiento automático de plugins no
-  encuentra el corredor: «Cannot find TestRunner plugin "vitest"» en los cuatro proyectos.
-  Se declara `"plugins": ["@stryker-mutator/vitest-runner"]` en cada
-  `stryker.config.json`.
+  encuentra el corredor: «Cannot find TestRunner plugin "vitest"». Se declara
+  `"plugins": ["@stryker-mutator/vitest-runner"]` en `stryker.config.json`.
 - `coverageAnalysis: "perTest"` para que cada mutante corra solo las pruebas que lo
   tocan; en catalogo, 1,53 pruebas por mutante en promedio y 17 segundos en total.
 
@@ -151,7 +155,7 @@ valen, porque son lo que hubo que arreglar.
 
 | Qué se rompió | Prueba que debía fallar | ¿Falló? | Qué se hizo |
 |---|---|---|---|
-| Borrar `MEM_LIMIT_NATS` de `.env.example` | `paridad-env.sh` | Sí: «sobran: MEM_LIMIT_NATS» en `.env.oracle` y en `.env`, y «el compose usa variables que .env.example no declara». | Nada; la prueba sirve. |
+| Borrar una variable de `.env.example` (se probó con `MEM_LIMIT_NATS`, que ya no existe) | `paridad-env.sh` | Sí: «sobran: …» en `.env.oracle` y en `.env`, y «el compose usa variables que .env.example no declara». | Nada; la prueba sirve. |
 | Cambiar `${TAG:?...}` por `${TAG:-local}` en el compose | `paridad-env.sh` | **No.** La variable seguía declarada, así que la paridad pasaba, y `grep -c ':-'` daba 4: cuatro fallbacks sin que nada avisara. | Se agregó a `paridad-env.sh` la comprobación de que el compose no tenga `${VAR:-x}` ni `${VAR-x}`. Repetido: ahora falla con «el compose tiene valores por omisión: ${TAG:-local}». |
 | `obligatoria()` devolviendo `''` en vez de lanzar cuando la variable está vacía | `config.test.ts` «corta también si está declarada pero vacía» | Sí, 1 de 26. | Nada. |
 | `esFicha()` sin el filtro de `plantilla-` | `catalogo.test.ts` | Sí, 3 de 26: «plantilla-ingrediente.md no es una ficha», el conteo de ingredientes (3 en vez de 2) y el inventario. | Nada. |

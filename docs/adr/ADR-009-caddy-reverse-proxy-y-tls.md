@@ -1,6 +1,6 @@
 # ADR-009: Caddy como reverse proxy con TLS automático
 
-**Estado:** Aceptado
+**Estado:** Aceptado, enmendado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -89,3 +89,13 @@ proxy.
 
 - `.claude/skills/desplegar-en-oracle-cloud/referencias/operacion.md`, «El dominio y el certificado».
 - [ADR-013](ADR-013-frontend-spa-react-vite.md).
+
+---
+
+## Enmienda (2026-09-06): [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+Caddy sigue siendo la elección, y ahora es lo único que corre. Los dos Caddy que había —el
+del sistema, que terminaba el TLS y enrutaba `/api/<servicio>/`, y el del frontend, que
+servía los archivos— se fundieron en uno: sin servicios detrás, el primero solo le pasaba
+las peticiones al segundo. El Caddyfile pasó a viajar dentro de la imagen, así que la
+configuración del servidor cambia con el mismo SHA que el código.

@@ -1,12 +1,30 @@
-# Frontend de Cocinadas
+# Cocinadas
 
-La SPA (React 19 + TypeScript, Vite, Vitest). Cómo levantarla y probarla: ver el README de la raíz y `docs/TESTING.md`.
+La aplicación entera: la SPA (React 19 + TypeScript, Vite, Vitest) y el generador del
+catálogo. Desde [ADR-015](../../docs/adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+no hay ningún otro proyecto; la carpeta sigue llamándose `microservices/frontend` por
+historia, no porque quede algún microservicio.
+
+Cómo levantarla y probarla: ver el README de la raíz y `docs/TESTING.md`.
+
+## El generador del catálogo (`src/catalogo/`)
+
+Corre en Node antes de `vite build` (`pnpm generar:catalogo`), lee `data/` del repositorio
+y escribe `public/api/catalogo/`. Está partido en dos a propósito: `catalogo.ts` es puro y
+devuelve el plan de qué archivos hay que escribir —se mide al 100 % como todo lo demás—, y
+`generar.ts` solo escribe ese plan a disco, por eso es lo único excluido de la cobertura
+además de `main.tsx`.
+
+Vive en `src/` y no en una carpeta de herramientas justamente para que la compuerta de
+cobertura lo alcance sin configuración aparte.
 
 ## Archivos estáticos (`public/`)
 
 Lo que está acá se copia tal cual a la raíz del sitio al compilar. Vite no los procesa ni
-les agrega hash: cambiar uno obliga a un despliegue nuevo, y el Caddy del frontend los
-sirve con `Cache-Control: no-cache` salvo lo que esté bajo `/assets/`.
+les agrega hash: cambiar uno obliga a un despliegue nuevo, y Caddy los sirve con
+`Cache-Control: no-cache` salvo lo que esté bajo `/assets/`.
+
+`public/api/catalogo/` no se versiona: lo genera el build desde `data/`.
 
 ## La identidad visual
 

@@ -1,6 +1,6 @@
 # ADR-007: Fastify como framework HTTP de los servicios
 
-**Estado:** Aceptado
+**Estado:** Superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -66,3 +66,10 @@ El reverse proxy y el frontend no saben qué framework hay detrás.
 ## Referencias
 
 - [ADR-004](ADR-004-mensajes-json-con-esquema-versionado.md).
+
+---
+
+## Enmienda (2026-09-06): superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+No quedó ningún servicio HTTP propio: lo único que atiende peticiones es Caddy, sirviendo
+archivos. Fastify se fue con los tres servicios.

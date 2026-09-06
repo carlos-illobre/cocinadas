@@ -16,16 +16,36 @@ larga de cada decisión: antes de cambiar algo que tenga un ADR, leelo.
 
 1. **Un solo `docker-compose.yml`.** Lo que cambia entre ambientes sale del `.env` y de
    ningún otro lado (ADR-001).
-2. **Sin valores por omisión en la configuración.** El compose usa `${VAR:?}` y los
-   servicios cortan el arranque si falta una variable. Fallar al arrancar es el único
-   momento en que un error de configuración todavía es barato.
-3. **Cobertura del 100 %** en los cuatro proyectos, con compuerta. Lo que no se puede
-   probar se extrae a un módulo medible y afuera queda solo la llamada al sistema externo
-   (ver `docs/TESTING.md` para las exclusiones, que son tres y están justificadas).
+2. **Sin valores por omisión en la configuración.** El compose usa `${VAR:?}`, así que
+   falta una variable y no arranca. Fallar al arrancar es el único momento en que un error
+   de configuración todavía es barato.
+3. **Cobertura del 100 %**, con compuerta. Lo que no se puede probar se extrae a un módulo
+   medible y afuera queda solo la llamada al sistema externo (ver `docs/TESTING.md` para
+   las exclusiones, que son tres y están justificadas).
 4. **El mutation testing no se corre en local**: tarda minutos. Corre en el job `mutacion`
    del CI, que informa y no reprueba. Solo se corre a mano si Carlos lo pide.
 5. **El script de despliegue no se prueba ejecutándolo.** Se verifica leyéndolo y con
    `--dry-run`, que imprime cada comando remoto sin correrlo.
+6. **No se crean servicios «para después».** Un servicio se crea cuando tiene una ruta que
+   hace algo. Es la lección de ADR-015: `usuarios` y `cocinadas` vivieron meses sin nada
+   más que `/health`, y cuando se borraron no había nada que rescatar.
+
+## Cómo está armado
+
+**No hay backend.** Un solo contenedor: Caddy sirviendo una SPA que se baja entera al
+teléfono, con el catálogo adentro. Las cocinadas viven en el `localStorage`
+(`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`).
+
+El catálogo **se genera en el build**: `src/catalogo/catalogo.ts` lee `data/` y devuelve
+el plan de archivos (puro, medido al 100 %); `generar.ts` lo escribe en
+`public/api/catalogo/`, que no se versiona. Tocar una receta obliga a `pnpm
+generar:catalogo` en desarrollo, y a redesplegar en producción.
+
+El porqué de todo esto, y **qué hace falta el día que las cocinadas tengan que salir del
+celular**, está en `docs/adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md`. Los ADR
+002, 003, 004, 005, 007, 008 y 012 describen microservicios, NATS, PostgreSQL, Fastify,
+Drizzle y JWT que el proyecto tuvo declarados y nunca usó: están **superados**, no
+vigentes. Leerlos como historia, no como estado actual.
 
 ## El producto
 
@@ -55,9 +75,9 @@ Las recetas las genera la skill `receta-poe-fitness`, que vive fuera del reposit
 
 ```bash
 bash tests/utest.sh            # unitarias de todo, con la compuerta del 100 %
-bash tests/itest.sh --rapido   # paridad de .env y contratos, sin levantar nada
+bash tests/itest.sh --rapido   # paridad de .env, sin levantar nada
 bash tests/itest.sh            # lo anterior más el camino de punta a punta (stack arriba)
-docker compose up -d --build   # levantar todo en local
+docker compose up -d --build   # levantar el único contenedor en local
 python deployment/oracle-single/deploy.py --dry-run   # ver qué haría un despliegue
 ```
 
@@ -68,6 +88,17 @@ python deployment/oracle-single/deploy.py --dry-run   # ver qué haría un despl
   capitalización deja los enlaces de pnpm apuntando a otro lado y React se carga dos
   veces, con un error que no dice la causa.
 - **En la VM de Oracle corre otra aplicación** que usa el 80, el 443 y el 8080. Los
-  puertos del host salen del `.env` (`PROXY_ADDR`, `PUERTO_*`) y el 80 y el 443 son de una
-  sola aplicación: ver «Convivir con otra aplicación» en `docs/DEPLOYMENT.md`.
+  puertos del host salen del `.env` (`PROXY_ADDR`, `PUERTO_HTTP`, `PUERTO_HTTPS`) y el 80
+  y el 443 son de una sola aplicación: ver «Convivir con otra aplicación» en
+  `docs/DEPLOYMENT.md`.
 - Stryker necesita `"plugins": ["@stryker-mutator/vitest-runner"]` explícito con pnpm.
+- **El `try_files` de la SPA deja `/api/` afuera** a propósito. Si lo tapara, un JSON que
+  no existe devolvería el `index.html` con 200 y `api.ts` leería la página como si fuera
+  una receta. Hay una prueba de integración que lo cuida.
+- **La imagen se construye desde la raíz del repositorio** (`docker build -f
+  microservices/frontend/Dockerfile .`), porque el build necesita `data/`. La imagen
+  reproduce la ruta del repo (`/repo/microservices/frontend` con `/repo/data` al lado)
+  para que `generar.ts` encuentre los datos por la misma ruta relativa que en desarrollo.
+- **Cada merge a `main` despliega solo.** Si el entorno `produccion` de GitHub llegara a
+  tener «required reviewers», el despliegue queda esperando aprobación y deja de ser
+  automático.

@@ -50,3 +50,13 @@ Siete medidas, todas en configuración y ninguna en la lógica de la aplicación
 - Lo que sigue sin cubrir es todo lo que llega con las cuentas: hash de contraseñas,
   límite de intentos de login, vida corta del token y verificación de que el dueño del
   recurso es el del token. Se resuelve al escribir esos endpoints, no antes.
+
+---
+
+## Enmienda (2026-09-06): [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+La superficie que había que endurecer se redujo sola: no hay base con credenciales, ni
+broker, ni proceso que interprete el cuerpo de una petición. Queda un file server con las
+mismas cabeceras de seguridad, el mismo `cap_drop: ALL` y el mismo `read_only`. El límite
+de peticiones por IP se fue con Fastify; el día que haya un endpoint que escriba, vuelve a
+hacer falta.

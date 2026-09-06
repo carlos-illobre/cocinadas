@@ -1,6 +1,6 @@
 # ADR-008: Drizzle como capa de acceso a PostgreSQL
 
-**Estado:** Aceptado
+**Estado:** Superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -86,3 +86,10 @@ La base es PostgreSQL y el SQL sigue siendo SQL; Drizzle no lo esconde.
 ## Referencias
 
 - [ADR-005](ADR-005-postgresql-para-usuarios-y-cocinadas.md), [ADR-011](ADR-011-despliegue-en-vm-oracle-con-imagenes-por-sha.md).
+
+---
+
+## Enmienda (2026-09-06): superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+Sin base de datos no hay capa de acceso a la base. Drizzle se fue sin haber definido una
+sola tabla.

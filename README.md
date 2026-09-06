@@ -10,7 +10,7 @@ El repositorio tiene dos mitades que se alimentan entre sí:
 | Carpeta | Qué es |
 |---|---|
 | `data/recetas/`, `data/ingredientes/`, `data/utencillos/` | **El catálogo**: recetas como POE (HTML + PDF imprimible + JSON de datos), fichas de ingredientes con foto y fichas de utensilios. Es contenido, no código; la app lo lee tal cual. |
-| `microservices/`, `infrastructure/`, `tests/`, `deployment/`, `docs/` | **La aplicación**: tres microservicios Node + TypeScript, una SPA React, un reverse proxy, y todo lo necesario para probarla, desplegarla y entenderla. |
+| `microservices/frontend/`, `tests/`, `deployment/`, `docs/` | **La aplicación**: una SPA React + TypeScript que se sirve como archivos estáticos, con el catálogo generado adentro, y todo lo necesario para probarla, desplegarla y entenderla. |
 | `docs/mockups/` | El diseño visual de la app: el mockup HTML de la pantalla de cocina (`app-cocina-mockup.html`), el concepto de la pantalla de bienvenida y en `inicio-capas/` los originales de las capas de esa pantalla, con el script que genera las versiones livianas que usa la app. |
 
 ## El mockup navegable
@@ -33,39 +33,33 @@ Hace falta Docker con el plugin Compose, Node 22 y pnpm 10 (para las pruebas y e
 desarrollo fuera de Docker).
 
 ```bash
-cp .env.example .env            # y cambiar POSTGRES_PASSWORD y JWT_SECRET
+cp .env.example .env
 docker compose up -d --build
 ```
 
-Cuando los ocho contenedores están `healthy`:
+Hay **un solo contenedor**. Cuando está `healthy`, la app está en **http://localhost/** y
+el catálogo, que es parte del bundle, en `http://localhost/api/catalogo/recetas.json`.
 
-| URL | Qué hay |
-|---|---|
-| http://localhost/ | La SPA, a través del reverse proxy |
-| http://localhost/api/catalogo/health | `catalogo`, con el inventario de recetas, ingredientes y utensilios que lleva la imagen |
-| http://localhost/api/usuarios/health | `usuarios` |
-| http://localhost/api/cocinadas/health | `cocinadas` |
-| http://localhost:3001 · 3002 · 3003 · 8080 | Los mismos servicios sin pasar por el proxy |
+Los puertos del lado del host salen del `.env` (`PUERTO_HTTP`, `PUERTO_HTTPS`): si la
+máquina ya tiene otra aplicación en el 80 o el 443, se mueven ahí y nada más. Para
+compartir la VM con otra aplicación, ver «Convivir con otra aplicación en la misma VM» en
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-Todos esos puertos del lado del host salen del `.env` (`PUERTO_HTTP`, `PUERTO_FRONTEND`,
-`PUERTO_CATALOGO`…): si la máquina ya tiene otra aplicación en el 80, el 443 o el 8080,
-se mueven ahí y nada más. Para compartir la VM con otra aplicación, ver
-«Convivir con otra aplicación en la misma VM» en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-
-Para desarrollar un servicio con recarga en caliente contra el resto del stack en Docker:
+Para desarrollar con recarga en caliente, sin Docker:
 
 ```bash
-cd microservices/catalogo && pnpm install && pnpm dev
+cd microservices/frontend && pnpm install && pnpm dev
 ```
 
-Para el frontend, `pnpm dev` en `microservices/frontend` levanta Vite en el puerto 5173 con
-las llamadas a `/api/...` reenviadas a los servicios publicados por el compose.
+`pnpm dev` genera el catálogo desde `data/` y levanta Vite en el 5173. Si se toca una
+receta o una ficha, hay que volver a correr `pnpm generar:catalogo`: el catálogo se arma
+en el build, no en cada petición (ADR-015).
 
 ## Cómo se prueba
 
 ```bash
 bash tests/utest.sh            # unitarias de todo, con compuerta del 100 % de cobertura
-bash tests/itest.sh --rapido   # paridad de configuración y contratos, sin levantar nada
+bash tests/itest.sh --rapido   # paridad de configuración, sin levantar nada
 bash tests/itest.sh            # lo anterior más el camino de punta a punta (stack arriba)
 bash tests/mutation.sh         # mutation testing: informa, no reprueba
 ```
@@ -75,10 +69,8 @@ testing está en [docs/TESTING.md](docs/TESTING.md).
 
 ## Cómo se despliega
 
-Al mergear a `main`, el CI publica las imágenes y despliega solo. A mano, cuando hace
-falta volver atrás o probar:
-
-En una VM de Oracle Cloud con Docker, por SHA de commit y con reversión:
+Al mergear a `main`, el CI publica la imagen y despliega solo a una VM de Oracle Cloud.
+A mano, cuando hace falta volver atrás o probar:
 
 ```bash
 python deployment/oracle-single/deploy.py          # el último commit verificado de main
@@ -87,21 +79,22 @@ python deployment/oracle-single/deploy.py <sha>    # un commit concreto, o volve
 
 Guía completa en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-## La API
+## El catálogo
 
-Todos los servicios exponen `GET /health`. El catálogo, además (a través del proxy, con el
-prefijo `/api/catalogo`):
+**No hay backend.** El catálogo son archivos que se generan al compilar leyendo `data/`, y
+que la app pide bajo `/api/catalogo/` como cualquier otro archivo del bundle. El prefijo
+`/api/` se conserva a propósito: es por donde vuelve un backend el día que las cocinadas
+tengan que salir del celular (ver [ADR-015](docs/adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)).
 
-| Método y ruta | Devuelve |
+| Archivo | Qué tiene |
 |---|---|
-| `GET /recetas` | Un resumen por plato: nombre, momento, porciones, nutrición, `foto` y sus `versiones` (número, clave, título, duración). |
-| `GET /recetas/:plato/:version` | La receta completa (`data/recetas/esquema-receta.md`) con la ruta de la foto de cada ingrediente y utensilio resuelta. `version` es la clave (`dos-etapas`) o el número (`2`). 404 si no existe. |
-| `GET /recetas/:plato/foto` | La foto del plato terminado (JPEG), con caché de un día. |
-| `GET /ingredientes/:id/foto`, `GET /utensilios/:id/foto` | La primera imagen enlazada en la ficha del ingrediente o utensilio. 404 si no tiene. |
+| `/api/catalogo/recetas.json` | Un resumen por plato: nombre, momento, porciones, nutrición, `foto` y sus `versiones` (número, clave, título, duración). |
+| `/api/catalogo/recetas/<plato>/<version>.json` | La receta completa (`data/recetas/esquema-receta.md`) con la ruta de la foto de cada ingrediente y utensilio resuelta. `<version>` es la clave (`dos-etapas`) o el número (`2`); se escriben las dos. |
+| `/api/catalogo/fotos/recetas/<plato>.<ext>` | La foto del plato terminado, con caché de un día. |
+| `/api/catalogo/fotos/ingredientes/<id>.<ext>`, `/api/catalogo/fotos/utensilios/<id>.<ext>` | La primera imagen enlazada en la ficha. Solo se copian al bundle las que alguna receta usa. |
 
-Los identificadores son los nombres de archivo de las fichas; cualquier otra cosa (mayúsculas,
-puntos, barras) responde 400 sin llegar al catálogo. Usuarios y cocinadas todavía no tienen
-endpoints de dominio.
+Las cocinadas, el tema y la cocinada en curso viven en el `localStorage` del teléfono
+(`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`). No salen de ahí.
 
 ## Dónde leer más
 
@@ -109,5 +102,7 @@ endpoints de dominio.
   qué ADR respalda cada decisión.
 - [docs/adr/README.md](docs/adr/README.md): el índice de decisiones de arquitectura.
 - [docs/SECURITY.md](docs/SECURITY.md): amenazas, qué las mitiga y qué queda abierto.
+- [docs/adr/ADR-015…](docs/adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md): por qué
+  el proyecto pasó de cuatro servicios a uno, y qué hace falta para volver atrás.
 - [data/recetas/README.md](data/recetas/README.md), [data/ingredientes/README.md](data/ingredientes/README.md),
   [data/utencillos/README.md](data/utencillos/README.md): las convenciones del catálogo.

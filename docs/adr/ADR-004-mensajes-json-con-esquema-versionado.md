@@ -1,6 +1,6 @@
 # ADR-004: Mensajes JSON con esquema versionado en el repositorio
 
-**Estado:** Aceptado
+**Estado:** Superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -82,3 +82,10 @@ el esquema de `datos`.
 
 - [ADR-003](ADR-003-eventos-con-nats-jetstream.md).
 - `contratos/eventos/README.md`.
+
+---
+
+## Enmienda (2026-09-06): superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+Sin eventos no hay mensajes que versionar. `contratos/eventos/` se borró junto con el
+broker, y con él la prueba de integración que comparaba las copias.
