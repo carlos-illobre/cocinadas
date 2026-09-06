@@ -25,8 +25,8 @@ set -uo pipefail
 # justamente lo que hay que ver: Templa se mueve con PUERTO_HTTP y PUERTO_HTTPS en su
 # .env, y esa otra aplicación le pasa el tráfico (docs/DEPLOYMENT.md).
 PUERTOS=(80 443)
-# Suma de los mem_limit de .env.oracle: 3 × 256 (node) + 512 (postgres) + 256 (nats)
-# + 2 × 128 (proxy y frontend) = 1792 MB. Si cambian los techos, cambia esto.
+# Suma de los mem_limit de .env.oracle: 256 (catalogo) + 2 × 128 (proxy y frontend)
+# = 512 MB. Si cambian los techos, cambia esto.
 MEMORIA_NECESARIA_MB=1792
 
 VERDE='\033[0;32m'; ROJO='\033[0;31m'; AMARILLO='\033[0;33m'; NC='\033[0m'

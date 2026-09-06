@@ -25,7 +25,6 @@ correr() {
 
 # Sin stack
 correr paridad-env.sh
-correr contratos.sh
 
 # Con stack
 if [ "$rapido" = si ]; then

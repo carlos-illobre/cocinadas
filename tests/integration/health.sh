@@ -44,18 +44,13 @@ titulo "Puertos publicados"
 # Los puertos del host salen del .env: si se mueven para convivir con otra aplicación,
 # la prueba los sigue en vez de fallar contra el valor viejo.
 puerto() { sed -n "s/^$1=//p" .env | tail -1; }
-P_CATALOGO=$(puerto PUERTO_CATALOGO); P_USUARIOS=$(puerto PUERTO_USUARIOS)
-P_COCINADAS=$(puerto PUERTO_COCINADAS); P_FRONTEND=$(puerto PUERTO_FRONTEND)
+P_CATALOGO=$(puerto PUERTO_CATALOGO); P_FRONTEND=$(puerto PUERTO_FRONTEND)
 
 comprobar catalogo  "http://localhost:${P_CATALOGO}/health" catalogo
-comprobar usuarios  "http://localhost:${P_USUARIOS}/health" usuarios
-comprobar cocinadas "http://localhost:${P_COCINADAS}/health" cocinadas
 if esperar_200 "http://localhost:${P_FRONTEND}/health"; then ok "frontend → http://localhost:${P_FRONTEND}/health"; else mal "frontend no contestó"; fallos=$((fallos+1)); fi
 
 titulo "A través del reverse proxy ($SITE_ADDRESS)"
 comprobar catalogo  "$SITE_ADDRESS/api/catalogo/health" catalogo
-comprobar usuarios  "$SITE_ADDRESS/api/usuarios/health" usuarios
-comprobar cocinadas "$SITE_ADDRESS/api/cocinadas/health" cocinadas
 if esperar_200 "$SITE_ADDRESS/" && curl -sf "$SITE_ADDRESS/" | grep -q '<div id="raiz">'; then
     ok "la SPA se sirve en $SITE_ADDRESS/"
 else

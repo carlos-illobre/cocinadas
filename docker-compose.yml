@@ -31,7 +31,7 @@ x-endurecido: &endurecido
     - ALL
 
 x-node: &node
-  # Los servicios Node comparten techos, política de reinicio y endurecimiento; lo que los
+  # Techos, política de reinicio y endurecimiento de los servicios Node; lo que los
   # distingue va en cada uno.
   <<: *endurecido
   restart: unless-stopped
@@ -47,8 +47,6 @@ x-node: &node
   environment: &node-env
     LOG_LEVEL: ${LOG_LEVEL:?falta LOG_LEVEL en el .env}
     RATE_LIMIT_POR_MINUTO: ${RATE_LIMIT_POR_MINUTO:?falta RATE_LIMIT_POR_MINUTO en el .env}
-    # El host y el puerto del broker no cambian entre ambientes: van literales.
-    NATS_URL: nats://nats:4222
 
 services:
   reverse-proxy:
@@ -90,10 +88,6 @@ services:
       frontend:
         condition: service_healthy
       catalogo:
-        condition: service_healthy
-      usuarios:
-        condition: service_healthy
-      cocinadas:
         condition: service_healthy
     healthcheck:
       # Contra el sitio interno de salud del Caddyfile, no contra la API de
@@ -150,111 +144,15 @@ services:
       DIRECTORIO_DATOS: /datos
     ports:
       - "${PUBLISH_ADDR:?falta PUBLISH_ADDR en el .env}:${PUERTO_CATALOGO:?falta PUERTO_CATALOGO en el .env}:3001"
-    depends_on:
-      nats:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
       interval: 15s
       timeout: 5s
       retries: 5
 
-  usuarios:
-    # Registro, inicio de sesión y perfil. Emite los JWT que verifican los demás (ADR-012).
-    <<: *node
-    image: ${REGISTRO:?falta REGISTRO en el .env}/templa-usuarios:${TAG:?falta TAG en el .env}
-    build:
-      context: ./microservices/usuarios
-    environment:
-      <<: *node-env
-      PUERTO: "3002"
-      DATABASE_URL: postgres://${POSTGRES_USER:?falta POSTGRES_USER en el .env}:${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en el .env}@postgres:5432/${POSTGRES_DB:?falta POSTGRES_DB en el .env}
-      JWT_SECRET: ${JWT_SECRET:?falta JWT_SECRET en el .env}
-    ports:
-      - "${PUBLISH_ADDR:?falta PUBLISH_ADDR en el .env}:${PUERTO_USUARIOS:?falta PUERTO_USUARIOS en el .env}:3002"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      nats:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3002/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-
-  cocinadas:
-    # Tiempos registrados por paso en cada cocinada y el progreso por receta (ADR-005).
-    <<: *node
-    image: ${REGISTRO:?falta REGISTRO en el .env}/templa-cocinadas:${TAG:?falta TAG en el .env}
-    build:
-      context: ./microservices/cocinadas
-    environment:
-      <<: *node-env
-      PUERTO: "3003"
-      DATABASE_URL: postgres://${POSTGRES_USER:?falta POSTGRES_USER en el .env}:${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en el .env}@postgres:5432/${POSTGRES_DB:?falta POSTGRES_DB en el .env}
-      JWT_SECRET: ${JWT_SECRET:?falta JWT_SECRET en el .env}
-    ports:
-      - "${PUBLISH_ADDR:?falta PUBLISH_ADDR en el .env}:${PUERTO_COCINADAS:?falta PUERTO_COCINADAS en el .env}:3003"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      nats:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3003/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-
-  postgres:
-    # Una sola instancia para usuarios y cocinadas, cada servicio con su propio esquema
-    # (ADR-005). No publica puerto: se entra con `docker compose exec postgres psql`.
-    image: postgres:17-alpine
-    # Sin cap_drop: ALL como los demás. El arranque de postgres cambia dueño y permisos
-    # del directorio de datos, y sin esas capacidades no levanta.
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
-    logging: *logging
-    mem_limit: ${MEM_LIMIT_POSTGRES:?falta MEM_LIMIT_POSTGRES en el .env}
-    cpus: ${CPU_LIMIT_POSTGRES:?falta CPU_LIMIT_POSTGRES en el .env}
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:?falta POSTGRES_USER en el .env}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en el .env}
-      POSTGRES_DB: ${POSTGRES_DB:?falta POSTGRES_DB en el .env}
-    volumes:
-      - postgres-datos:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
-  nats:
-    # Broker de eventos con JetStream para persistir los streams (ADR-003). El puerto de
-    # monitoreo 8222 queda interno: se mira por túnel SSH si hace falta.
-    image: nats:2-alpine
-    <<: *endurecido
-    restart: unless-stopped
-    logging: *logging
-    mem_limit: ${MEM_LIMIT_NATS:?falta MEM_LIMIT_NATS en el .env}
-    cpus: ${CPU_LIMIT_NATS:?falta CPU_LIMIT_NATS en el .env}
-    read_only: true
-    tmpfs:
-      - /tmp
-    command: ["--jetstream", "--store_dir", "/data", "--http_port", "8222"]
-    volumes:
-      - nats-datos:/data
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8222/healthz"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
 volumes:
-  # Qué se pierde si se pierde cada uno (ver docs/DEPLOYMENT.md, sección Respaldo):
-  postgres-datos: {}   # usuarios registrados y todas las cocinadas: es el que importa
-  nats-datos: {}       # eventos pendientes de consumir; se regenera con el uso
+  # Ninguno guarda datos de la aplicación: las cocinadas viven en el celular de quien
+  # cocina y el catálogo viaja dentro de la imagen. En el servidor no hay nada que
+  # respaldar (ADR-015).
   caddy-datos: {}      # certificados TLS; perderlo obliga a reemitir
   caddy-config: {}     # configuración derivada de Caddy; se regenera al arrancar
