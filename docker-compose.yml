@@ -35,7 +35,13 @@ services:
     # La aplicación: Caddy sirviendo el bundle (la SPA con el catálogo adentro). Es un
     # inquilino (ADR-016): habla HTTP, no termina TLS y no sabe por qué dominio lo
     # llamaron. Sin volúmenes, porque no guarda nada.
-    image: ${REGISTRO:?falta REGISTRO en el .env}/cocinadas:${TAG:?falta TAG en el .env}
+    #
+    # La imagen se llama `cocinadas-web` y no `cocinadas` aunque hoy sea la única: una
+    # imagen es UNA COSA QUE CORRE, no un proyecto. El día que las cocinadas salgan del
+    # celular (ADR-015) va a haber una `cocinadas-api` al lado, y entonces un nombre sin
+    # sufijo no diría cuál de las dos es. Renombrar un paquete ya publicado deja colgados
+    # los SHA viejos y rompe la reversión, así que el nombre se elige una vez.
+    image: ${REGISTRO:?falta REGISTRO en el .env}/cocinadas-web:${TAG:?falta TAG en el .env}
     build:
       # Contexto en la raíz porque el build genera el catálogo leyendo data/ (ADR-006).
       # Lo que entra lo limita el .dockerignore de la raíz.

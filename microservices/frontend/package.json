@@ -1,5 +1,5 @@
 {
-  "name": "cocinadas",
+  "name": "cocinadas-web",
   "version": "0.1.0",
   "description": "La SPA de Cocinadas: React + TypeScript, compilada con Vite y servida como archivos estáticos.",
   "private": true,
