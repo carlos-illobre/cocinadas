@@ -77,6 +77,7 @@ Las recetas las genera la skill `receta-poe-fitness`, que vive fuera del reposit
 
 ```bash
 bash tests/utest.sh                          # unitarias, con la compuerta del 100 %
+cd web && pnpm e2e                           # el camino feliz en un navegador (ADR-018)
 cd web && pnpm dev                           # la app en http://localhost:5173
 cd web && pnpm generar:catalogo              # tras tocar una receta o una ficha
 cd web && pnpm optimizar                     # tras agregar o cambiar una imagen

@@ -5,8 +5,7 @@ Un solo nivel, con compuerta.
 | Nivel | Necesita | Compuerta | Corredor |
 |---|---|---|---|
 | Unitarias | Nada | **Sí**: 100 % de instrucciones, ramas, funciones y líneas | `tests/utest.sh` |
-
-Antes había tres. Qué pasó con los otros dos está más abajo, en «Lo que ya no está».
+| E2E | Chromium de Playwright | No: pasa o no pasa | `cd web && pnpm e2e` |
 
 ## Unitarias
 
@@ -61,10 +60,35 @@ falta en vez de publicar una receta sin foto), el plan de optimización de imág
 (`src/imagenes/plan.ts`: qué se convierte y a qué ancho, incluidas las excepciones de las
 capas de inicio), el cliente del catálogo (`api.ts`, con un `fetch` inyectado que responde por ruta), las pantallas `Inicio`, `Recetas` y `Portada` (con Testing Library: carga, error, datos con y sin foto, cambio de versión, desmontaje antes de la respuesta) el recorrido completo en `App` (inicio → recetas → portada → cocina → resumen y vuelta), el modelo de la cocinada (`cocina/modelo.ts`: pasos, huecos entre pasos, procesos que corren solos, alarma, pausa entre etapas, resumen y desvíos, todo puro con el reloj inyectado), los avisos sonoros (`cocina/sonido.ts`, con un AudioContext falso que graba cada nota con su frecuencia, su forma de onda y el pico de su envolvente) y el gantt vertical (`gantt` y `frenteGantt`: altos proporcionales al tiempo con un mínimo legible, huecos entre pasos, procesos en la misma escala y el frente que avanza con el cronómetro) y la pantalla `Cocina` con relojes falsos (tic, exceso titilando, sub-pasos, porqué, procesos, carriles, alarma con sonido repetido, fin de etapa y final). Además, `cocina/receta-real.test.ts` importa los dos JSON reales de `data/recetas/` y los cocina enteros con el modelo, exactamente a tiempo: es la prueba de que los datos y la pantalla hablan el mismo idioma. Con las pantallas de la segunda ronda se suman: el almacén de cocinadas (`historial/almacen.ts`: orden, basura guardada, agrupación por receta, y el almacén seguro con uno en memoria y uno que lanza), la mise en place (tildar, destildar, receta vacía), el historial y su gráfico (barras, techo del eje, elección de receta), el perfil con sus números y sus logros (`logros.ts`: cada regla con su caso que la consigue y otro que no, incluida la racha con huecos y con dos cocinadas del mismo día), la barra inferior, la cocinada en curso (`cocina/enCurso.ts`: retomar, descartar la vieja, la de otra receta y cualquier cosa guardada que no se pueda leer) y la navegación con el botón de atrás del teléfono (que vuelve de pantalla, que no cuenta dos veces cuando ya volvió un botón de la pantalla, y que en la primera no hace nada), y en `App` el recorrido completo con guardado, las pestañas y el arranque con datos ya guardados o con un `localStorage` que no existe o lanza. Con las pantallas copiadas del prototipo de Figma (tercera ronda) se suman la experiencia (`xp.ts`: niveles contiguos, progreso dentro del nivel, puntos por precisión) y su barra (`BarraXp`), la lista de recetas con la tarjeta grande, y la portada con los modos con ícono. Con el tema claro/oscuro del prototipo se suman `tema.ts` (leer, guardar, alternar y aplicar) y, en `App`, que el tema se aplique al documento, se guarde y se recuerde al arrancar.
 
+## E2E
+
+Uno solo: el camino feliz entero, de la portada a la primera cocinada guardada
+(`web/e2e/primera-cocinada.spec.ts`). Corre en Chromium con Playwright, emulando un
+Pixel 7, **contra `pnpm build` + `pnpm preview`** y no contra el servidor de desarrollo.
+
+```bash
+cd web && pnpm e2e
+```
+
+Está para cubrir lo que las unitarias no pueden ver, porque corren en jsdom y contra el
+código fuente: que el catálogo generado en el build se sirva, que las rutas relativas
+resuelvan bajo la base publicada, que las fotos existan de verdad —en jsdom un `<img>` no
+baja nada, así que una foto rota no se distingue de una buena— y que el `localStorage`
+sobreviva a una recarga.
+
+No tiene compuerta de cobertura y no la va a tener: su trabajo es que el recorrido
+funcione, no medir líneas. Por eso tampoco espera los tiempos de la receta —cocina lo más
+rápido que se pueda tocar y termina con 0 XP—; el puntaje lo miden `xp.test.ts` y
+`App.test.tsx` en un segundo y con todos los casos de borde.
+
+El porqué de que sea uno solo, y de Playwright en vez de Cypress, está en el
+[ADR-018](adr/ADR-018-un-e2e-de-camino-feliz-con-playwright.md).
+
 ## Lo que ya no está
 
 **Las pruebas de integración y el mutation testing se dieron de baja** con el paso a un
-sitio estático (ADR-017).
+sitio estático (ADR-017). Del primero volvió después una parte, en otra forma: el E2E de
+más arriba (ADR-018).
 
 - `tests/itest.sh` y `tests/integration/` verificaban la paridad de los `.env`, los
   contratos de eventos y el camino de punta a punta con el stack de Docker levantado. Sin
@@ -98,9 +122,14 @@ En Linux (CI, Docker) no existe el problema.
 
 ## El pipeline
 
-`.github/workflows/ci.yml` corre en cada push: `tests/utest.sh` y
-`bash -n` sobre los scripts de despliegue. Solo si todo pasa, y solo en `main`, construye
-y publica las imágenes. **El mutation testing corre solo en el CI** (job `mutacion`, después
-de `pruebas`, sin bloquear el pipeline): tarda minutos, así que no se corre en la máquina
-de desarrollo salvo pedido expreso. Los informes de cada servicio quedan como artefacto
-`mutacion` del run, y las tablas de arriba se actualizan desde ahí.
+`.github/workflows/ci.yml` corre en cada push y en cada PR:
+
+| Job | Qué hace |
+|---|---|
+| `pruebas` | `tests/utest.sh` con la compuerta del 100 %, y `validar-receta.py` sobre el catálogo. |
+| `e2e` | El camino feliz sobre el sitio compilado. Job aparte porque baja el navegador (~100 MB): en el mismo, un cambio de una línea de CSS pagaría esa descarga antes de saber si las unitarias pasan. |
+| `vulnerabilidades` | Trivy: CVE y secretos. Avisa, no reprueba. |
+| `publicar` | Solo en `main` y solo si `pruebas` y `e2e` pasaron. Compila, comprueba que el `index.html` no tenga rutas absolutas y publica en Pages. |
+
+La cobertura queda como artefacto `cobertura` del run; el informe y las trazas del E2E,
+como artefacto `e2e`.

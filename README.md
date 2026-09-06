@@ -45,8 +45,16 @@ cd web && pnpm build && pnpm preview
 bash tests/utest.sh
 ```
 
-Unitarias con **compuerta del 100 %** en instrucciones, ramas, funciones y líneas. El
-detalle de qué se mide, qué está excluido y por qué, en [docs/TESTING.md](docs/TESTING.md).
+Unitarias con **compuerta del 100 %** en instrucciones, ramas, funciones y líneas.
+
+```bash
+cd web && pnpm exec playwright install chromium && pnpm e2e
+```
+
+Y un E2E: el camino feliz entero, de la portada a la primera cocinada guardada, en un
+navegador y contra el sitio compilado. El navegador se baja una sola vez.
+
+El detalle de qué se mide, qué está excluido y por qué, en [docs/TESTING.md](docs/TESTING.md).
 
 ## Cómo se publica
 

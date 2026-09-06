@@ -1,7 +1,8 @@
 # Pipeline (docs/TESTING.md):
 #   pruebas          en cada push y PR: unitarias con la compuerta del 100 %.
+#   e2e              en cada push y PR: el camino feliz sobre el sitio compilado.
 #   vulnerabilidades en cada push y PR: CVE y secretos filtrados. Informa, no reprueba.
-#   publicar         solo en main y solo si las pruebas pasaron: compila la app y la
+#   publicar         solo en main y solo si pruebas y e2e pasaron: compila la app y la
 #                    publica en GitHub Pages. Cada merge a main es un push a main, así
 #                    que cada merge se publica solo.
 name: ci
@@ -47,6 +48,44 @@ jobs:
           path: web/coverage/
           retention-days: 7
 
+  e2e:
+    # El camino feliz completo en un navegador de verdad y sobre `pnpm build`, que es lo
+    # que se publica (ADR-018). Corre aparte de `pruebas` porque necesita bajar el
+    # navegador: si estuviera en el mismo job, un cambio de una línea de CSS pagaría esos
+    # 100 MB antes de saber si las unitarias pasan.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.VERSION_PNPM }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.VERSION_NODE }}
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - name: Instalar dependencias
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+      - name: Instalar el navegador
+        # Solo Chromium: la app es solo para celular y el proyecto de Playwright emula un
+        # Pixel 7. Bajar los tres navegadores sería pagar por dos que nadie prueba.
+        working-directory: web
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Camino feliz
+        working-directory: web
+        run: pnpm e2e
+      - name: Informe y trazas
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e
+          path: |
+            web/playwright-report/
+            web/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
   vulnerabilidades:
     # Busca CVE en las dependencias y secretos filtrados en el repositorio. No reprueba
     # el build: avisa. El día que una dependencia tenga un fallo grave, el aviso llega
@@ -84,7 +123,7 @@ jobs:
   publicar:
     # Solo en main y solo si las pruebas pasaron. Todo merge a main —con commit de merge
     # o con squash— es un push a main, así que esto corre en cada merge, sin apretar nada.
-    needs: pruebas
+    needs: [pruebas, e2e]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:

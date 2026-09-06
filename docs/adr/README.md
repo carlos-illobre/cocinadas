@@ -35,3 +35,4 @@ no cambia, cuándo revisarla y referencias.
 | [015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md) | De cuatro servicios a una sola SPA estática | Enmendado por 016 y 017 | 2026-09-06 |
 | [016](ADR-016-proxy-de-la-maquina-como-pieza-aparte.md) | El reverse proxy es una pieza de la máquina, no de la aplicación | Superado por 017 | 2026-09-06 |
 | [017](ADR-017-sitio-estatico-en-github-pages.md) | Sitio estático en GitHub Pages, sin servidor propio | Aceptado | 2026-09-06 |
+| [018](ADR-018-un-e2e-de-camino-feliz-con-playwright.md) | Un E2E de camino feliz con Playwright | Aceptado | 2026-09-06 |
