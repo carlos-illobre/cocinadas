@@ -10,11 +10,15 @@ Antes había tres. Qué pasó con los otros dos está más abajo, en «Lo que ya
 
 ## Unitarias
 
-Corren sin levantar nada y **exigen el 100 %** en las cuatro métricas. La compuerta está
-en dos lugares: en `web/vite.config.ts` (`thresholds`), que hace fallar `pnpm test:cov`, y
-en `tests/utest.sh`, que vuelve a leer
-`coverage/coverage-summary.json` y muestra la tabla por archivo nombrando cuál bajó y en
-qué métrica.
+Corren sin levantar nada y **exigen el 100 %** en las cuatro métricas. El umbral vive en
+un solo lugar, los `thresholds` de `web/vite.config.ts`, que hacen fallar `pnpm test:cov`;
+vitest imprime la tabla por archivo con las líneas que quedaron sin cubrir.
+
+`tests/utest.sh` es el envoltorio que usan el CI, el README y CLAUDE.md: corre desde
+cualquier subcarpeta, instala dependencias si faltan y comprueba que
+`coverage/coverage-summary.json` se haya generado en esta corrida. Eso último no es
+repetir la compuerta: es lo que detecta que alguien saque el reporter `json-summary` y la
+deje muda.
 
 ```bash
 bash tests/utest.sh

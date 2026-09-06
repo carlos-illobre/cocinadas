@@ -4,70 +4,51 @@
 #
 #   bash tests/utest.sh
 #
-# Corre la suite de web/ con cobertura y vuelve a comprobar el umbral leyendo
-# coverage/coverage-summary.json: así el fallo se ve en una tabla que dice qué archivo
-# bajó y en qué métrica, en vez de en un error de la herramienta.
+# Es el único punto de entrada: lo usan el CI, el README y CLAUDE.md. Corre la suite de
+# web/ con cobertura y deja pasar la salida de vitest tal cual, que es la que dice qué
+# líneas quedaron sin cubrir.
 #
-# La compuerta está en dos lugares a propósito: los `thresholds` de vite.config.ts hacen
-# fallar `pnpm test:cov`, y esto lo vuelve a comprobar sobre el JSON que produjo la
-# herramienta. Los números no se escriben a mano: se desfasan.
+# El umbral vive en los `thresholds` de vite.config.ts, que son los que hacen fallar
+# `pnpm test:cov`. Acá solo se comprueba que el resumen en JSON exista y esté al día: si
+# alguien saca el reporter `json-summary`, la compuerta se quedaría muda y nadie se
+# enteraría.
 set -uo pipefail
 cd "$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "no encuentro la raíz del repositorio"; exit 1; }
 
 UMBRAL=100
 PROYECTO=web
+RESUMEN=$PROYECTO/coverage/coverage-summary.json
 
-VERDE='\033[0;32m'; ROJO='\033[0;31m'; AMARILLO='\033[0;33m'; NC='\033[0m'
-ok()   { printf "  ${VERDE}✓${NC} %s\n" "$1"; }
-mal()  { printf "  ${ROJO}✗${NC} %s\n" "$1"; }
-nota() { printf "      %s\n" "$1"; }
+VERDE='\033[0;32m'; ROJO='\033[0;31m'; NC='\033[0m'
+ok()  { printf "  ${VERDE}✓${NC} %s\n" "$1"; }
+mal() { printf "  ${ROJO}✗${NC} %s\n" "$1"; }
 
 printf "\033[1m▶ %s\033[0m\n" "$PROYECTO"
+command -v pnpm > /dev/null || { mal "no encuentro pnpm en el PATH"; exit 1; }
 [ -f "$PROYECTO/package.json" ] || { mal "no existe $PROYECTO/package.json"; exit 1; }
 
 if [ ! -d "$PROYECTO/node_modules" ]; then
-    nota "instalando dependencias (pnpm install --frozen-lockfile)"
-    (cd "$PROYECTO" && pnpm install --frozen-lockfile --silent) || { mal "falló la instalación"; exit 1; }
+    printf "      instalando dependencias (pnpm install --frozen-lockfile)\n"
+    (cd "$PROYECTO" && pnpm install --frozen-lockfile) || { mal "falló la instalación"; exit 1; }
 fi
 
-salida=$(cd "$PROYECTO" && pnpm test:cov 2>&1)
-estado=$?
-# Vitest colorea la salida: se quitan las secuencias ANSI antes de leer los números.
-plano=$(printf '%s\n' "$salida" | sed 's/\x1b\[[0-9;]*m//g')
-pasaron=$(printf '%s\n' "$plano" | sed -n 's/.*Tests *\([0-9]*\) passed.*/\1/p' | tail -1)
-fallaron=$(printf '%s\n' "$plano" | sed -n 's/.*Tests *\([0-9]*\) failed.*/\1/p' | tail -1)
+# Se borra antes de correr para que un resumen viejo no haga pasar una corrida que ni
+# llegó a medir.
+rm -f "$RESUMEN"
 
-if [ "$estado" -ne 0 ]; then
-    printf '%s\n' "$salida" | tail -40
-    mal "la suite falló (${fallaron:-?} pruebas fallidas)"
-    exit 1
-fi
-ok "${pasaron:-0} pruebas pasaron"
+(cd "$PROYECTO" && pnpm test:cov) || { mal "la suite falló"; exit 1; }
 
-resumen=$PROYECTO/coverage/coverage-summary.json
-[ -f "$resumen" ] || { mal "no se generó $resumen"; exit 1; }
+[ -f "$RESUMEN" ] || { mal "no se generó $RESUMEN: revisá el reporter json-summary de vite.config.ts"; exit 1; }
 
-node - "$resumen" "$UMBRAL" <<'EOF'
+node - "$RESUMEN" "$UMBRAL" <<'EOF' || exit 1
 const [ruta, umbral] = process.argv.slice(2);
-const datos = require(require('path').resolve(ruta));
-const metricas = ['statements', 'branches', 'functions', 'lines'];
-const fila = (nombre, c) => `    ${nombre.padEnd(28)} ${metricas.map((m) => String(c[m].pct).padStart(7)).join('')}`;
-console.log(`    ${'archivo'.padEnd(28)} ${metricas.map((m) => m.padStart(7)).join('')}`);
-for (const [archivo, c] of Object.entries(datos)) {
-  if (archivo === 'total') continue;
-  console.log(fila(archivo.split(/[\\/]/).slice(-2).join('/'), c));
-}
-console.log(fila('TOTAL', datos.total));
-const bajas = metricas.filter((m) => datos.total[m].pct < Number(umbral));
+const total = require(require('path').resolve(ruta)).total;
+const bajas = ['statements', 'branches', 'functions', 'lines'].filter((m) => total[m].pct < Number(umbral));
 if (bajas.length > 0) {
-  console.error(`    ✗ por debajo del ${umbral} % en: ${bajas.map((m) => `${m} (${datos.total[m].pct} %)`).join(', ')}`);
+  console.error(`    por debajo del ${umbral} % en: ${bajas.map((m) => `${m} (${total[m].pct} %)`).join(', ')}`);
   process.exit(1);
 }
 EOF
-if [ $? -ne 0 ]; then
-    mal "cobertura por debajo del umbral"
-    exit 1
-fi
-ok "cobertura ≥ ${UMBRAL} % en las cuatro métricas"
 
+ok "cobertura ≥ ${UMBRAL} % en las cuatro métricas"
 printf "\n${VERDE}✓ todo en verde${NC}\n"
