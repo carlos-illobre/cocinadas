@@ -11,7 +11,7 @@ Cómo levantarla y probarla: ver el [README de la raíz](../README.md) y
 ## Rutas relativas, siempre
 
 `vite.config.ts` tiene `base: './'` y **toda ruta del código es relativa**
-(`logo.png`, `inicio/1.jpg`, `api/catalogo`). GitHub Pages sirve el sitio en `/<repo>/` y
+(`icono-512.png`, `inicio/1.jpg`, `api/catalogo`). GitHub Pages sirve el sitio en `/<repo>/` y
 no en la raíz, así que una ruta absoluta da 404 solo en producción. El CI lo comprueba
 sobre el `index.html` compilado.
 
@@ -27,13 +27,40 @@ además de `main.tsx`.
 Vive en `src/` y no en una carpeta de herramientas justamente para que la compuerta de
 cobertura lo alcance sin configuración aparte.
 
+## Las imágenes: originales en un lado, versiones chicas en otro
+
+Los **originales** viven en `data/` (ingredientes, utensilios, fotos de recetas) y en
+`docs/mockups/inicio-capas/` (las capas de la pantalla de inicio). Ahí pueden pesar lo que
+haga falta: una foto de ingrediente de 2000 × 2000 está bien como fuente.
+
+Las **versiones que se publican** están en `assets/`, en WebP y al tamaño al que se
+muestran. Se versionan, y se regeneran con:
+
+```bash
+pnpm optimizar          # las que falten o hayan cambiado
+pnpm optimizar --todas  # rehace todas
+```
+
+`src/imagenes/plan.ts` decide qué se convierte, a qué ancho y con qué nombre —y se mide al
+100 %—; `src/imagenes/optimizar.ts` maneja el navegador que convierte. Se usa el canvas de
+Chrome y no una librería para no agregar una dependencia por un comando que se corre a
+mano cada tanto.
+
+Si una receta usa una foto que todavía no tiene versión chica, **el build corta** y dice
+cuál falta: publicar una receta sin sus fotos es peor que no publicar.
+
+Los anchos salen de a qué tamaño se muestra cada cosa en el CSS: 128 px para ingredientes
+y utensilios (se ven a 38–52), 860 para la foto del plato (ocupa los 430 de ancho de la
+app, a 2×) y 1000 para las capas de inicio. Nunca se agranda.
+
 ## Archivos estáticos (`public/`)
 
 Lo que está acá se copia tal cual a la raíz del sitio al compilar. Vite no los procesa ni
 les agrega hash: cambiar uno obliga a publicar de nuevo. El `Cache-Control` lo decide
 GitHub Pages; no se puede configurar.
 
-`public/api/catalogo/` no se versiona: lo genera el build desde `data/`.
+`public/api/catalogo/` y `public/inicio/` no se versionan: los genera el build a partir de
+`data/` y de `assets/`.
 
 ## La identidad visual
 
@@ -41,18 +68,24 @@ Todos derivan de la imagen original que entregó Carlos el 2026-09-05 (la olla n
 con reloj y la palabra Cocinadas en degradé naranja a verde), recortada, sin la etiqueta
 "Made with AI" y con fondo transparente.
 
+**La palabra «Cocinadas» ya no es una imagen**: se escribe con la tipografía Lobster —la
+del logo original— y el degradado naranja a verde, en `src/Logotipo.tsx`. Los dos PNG que
+la traían dibujada (`logo.png` y `marca.png`) se borraron porque seguían diciendo
+«Templa»: renombrar el proyecto no renombra un archivo binario, y por eso el nombre viejo
+sobrevivió al renombre y se siguió mostrando en la pantalla de inicio.
+
+Lo que queda son las imágenes **sin texto adentro**, que no envejecen:
+
 | Archivo | Qué es | Tamaño | Dónde se usa |
 |---|---|---|---|
-| `logo.png` | Ícono + palabra, completo | 978 × 325 | Cabecera de la app (`src/App.tsx`) y pantalla de inicio |
-| `marca.png` | Solo la palabra Cocinadas | 642 × 243 | Reservado para cabeceras angostas o fondos oscuros |
-| `icono-512.png` | Solo la olla, lienzo cuadrado | 512 × 512 | Ícono de instalación (PWA) cuando exista el manifest |
-| `icono-192.png` | Ídem | 192 × 192 | `apple-touch-icon` en `index.html` |
+| `icono-512.png` | Solo la olla, lienzo cuadrado | 512 × 512 | **No está en `public/`**: vive en `docs/mockups/marca/`. Se publicaba sin que nada lo usara, y son 233 KB. Vuelve acá el día que haya un manifest de PWA que lo pida. |
+| `icono-192.png` | Ídem | 192 × 192 | La olla de la marca (`src/Logotipo.tsx`) y el `apple-touch-icon` de `index.html`. Se muestra a unos 88 px: 192 cubre pantallas del doble de densidad, y la de 512 pesaría 238 KB en vez de 42 |
 | `favicon.png` | Ídem | 64 × 64 | Favicon en `index.html` |
 | `inicio.jpg` | La foto de la mesada (brócoli, albahaca, limón, ajo, spaghetti sobre pizarra) que entregó Carlos como capa de fondo de la pantalla de inicio, sin la etiqueta "Made with AI" (se recortó la franja superior donde estaba) y comprimida a JPEG | 1024 × 1436 | Fondo de `src/Inicio.tsx`, con `object-fit: cover` y un velo radial oscuro en el centro para que el logo y el lema se lean |
 
-Para regenerarlos desde otro original: el corte entre la olla y la palabra se hace en la
-columna con menos píxeles opacos entre ambos (se midió: columna 344 del logo recortado),
-y la olla se centra en un lienzo cuadrado antes de reducirla.
+Para regenerar la olla desde otro original: se recorta a la izquierda de la palabra —en el
+logo original, la columna con menos píxeles opacos entre las dos partes— y se centra en un
+lienzo cuadrado antes de reducirla.
 
 El concepto de pantalla de bienvenida que acompañó al logo (fondo negro con verduras y
 el lema «Tu receta, al punto justo») está en `docs/mockups/bienvenida-concepto.png`: es

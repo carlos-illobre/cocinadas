@@ -10,7 +10,8 @@
  * contenido; escribirlos es lo único que hace `generar.ts`, que por eso no se mide.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { basename, dirname, extname, join, resolve, sep } from 'node:path';
+import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
+import { chicaDe } from '../imagenes/plan.js';
 
 /** Nombres de archivo que no son fichas aunque terminen en .md (ver los README de cada carpeta). */
 export function esFicha(nombre: string): boolean {
@@ -94,6 +95,11 @@ export interface ArchivoCopiado {
 export interface Plan {
   readonly json: readonly ArchivoJson[];
   readonly fotos: readonly ArchivoCopiado[];
+  /**
+   * Fotos que una receta usa y que todavía no tienen versión chica en `web/assets/`.
+   * Corta el build: publicar una receta sin sus fotos es peor que no publicar.
+   */
+  readonly faltantes: readonly string[];
 }
 
 const IMAGEN_MARKDOWN = /!\[[^\]]*\]\(([^)\s]+)\)/;
@@ -179,7 +185,12 @@ function resumenDe(r: RecetaJson): VersionResumen {
  * Lee data/ y arma el plan completo de lo que va al bundle. Las mismas respuestas que
  * antes daba la API, pero calculadas una vez en el build en vez de en cada petición.
  */
-export function planificar(directorioDatos: string, avisar: (mensaje: string) => void): Plan {
+/**
+ * `directorioAssets` es `web/assets`: lo que se publica son las versiones chicas que
+ * generó `pnpm optimizar`, no los originales de `data/`, que pesan hasta cuarenta veces
+ * más de lo que la pantalla necesita (src/imagenes/plan.ts).
+ */
+export function planificar(directorioDatos: string, directorioAssets: string, avisar: (mensaje: string) => void): Plan {
   const dirRecetas = join(directorioDatos, 'recetas');
   const recetas = leerRecetas(dirRecetas, avisar);
   const fotosIngredientes = indexarFotos(join(directorioDatos, 'ingredientes'), true, directorioDatos);
@@ -196,6 +207,14 @@ export function planificar(directorioDatos: string, avisar: (mensaje: string) =>
       fotosRecetas.set(r.plato, ruta);
     }
   }
+
+  // A partir de acá los índices apuntan a la versión chica y no al original: así la URL
+  // que va al JSON ya lleva `.webp` y lo que se copia al bundle es lo liviano.
+  const aChicas = (mapa: Map<string, string>): Map<string, string> =>
+    new Map([...mapa].map(([id, origen]) => [id, chicaDe(origen, directorioDatos, directorioAssets)]));
+  const chicasIngredientes = aChicas(fotosIngredientes);
+  const chicasUtensilios = aChicas(fotosUtensilios);
+  const chicasRecetas = aChicas(fotosRecetas);
 
   const url = (fotos: Map<string, string>, prefijo: string, id: string | null): string | null => {
     const origen = id === null ? undefined : fotos.get(id);
@@ -218,7 +237,7 @@ export function planificar(directorioDatos: string, avisar: (mensaje: string) =>
       momento: primera.momento,
       porciones: primera.porciones,
       nutricion: primera.nutricion,
-      foto: url(fotosRecetas, 'recetas', plato),
+      foto: url(chicasRecetas, 'recetas', plato),
       versiones: versiones.map(resumenDe).sort((a, b) => a.numero - b.numero),
     };
   });
@@ -227,9 +246,9 @@ export function planificar(directorioDatos: string, avisar: (mensaje: string) =>
   for (const r of recetas) {
     const servida: RecetaServida = {
       ...r,
-      foto: url(fotosRecetas, 'recetas', r.plato),
-      ingredientes: conFotos(r.ingredientes, fotosIngredientes, 'ingredientes'),
-      utensilios: conFotos(r.utensilios, fotosUtensilios, 'utensilios'),
+      foto: url(chicasRecetas, 'recetas', r.plato),
+      ingredientes: conFotos(r.ingredientes, chicasIngredientes, 'ingredientes'),
+      utensilios: conFotos(r.utensilios, chicasUtensilios, 'utensilios'),
     };
     // Por clave y por número: la API aceptaba las dos formas y la app usa la clave.
     json.push({ ruta: `recetas/${r.plato}/${r.version.clave}.json`, contenido: servida });
@@ -240,22 +259,28 @@ export function planificar(directorioDatos: string, avisar: (mensaje: string) =>
   // ficha del catálogo bajo demanda; el bundle se baja entero al celular, así que una
   // foto de un ingrediente que ninguna receta usa es peso que nadie va a mirar.
   const fotos = new Map<string, ArchivoCopiado>();
+  const faltantes = new Set<string>();
   const copiar = (prefijo: string, indice: Map<string, string>, id: string | null): void => {
     const origen = id === null ? undefined : indice.get(id);
-    if (origen !== undefined) {
-      const ruta = urlDeFoto(prefijo, id as string, origen).slice(1);
-      fotos.set(ruta, { ruta, origen });
+    if (origen === undefined) {
+      return;
     }
+    if (!existsSync(origen)) {
+      faltantes.add(relative(directorioAssets, origen));
+      return;
+    }
+    const ruta = urlDeFoto(prefijo, id as string, origen).slice(1);
+    fotos.set(ruta, { ruta, origen });
   };
   for (const r of recetas) {
-    copiar('recetas', fotosRecetas, r.plato);
+    copiar('recetas', chicasRecetas, r.plato);
     for (const i of r.ingredientes) {
-      copiar('ingredientes', fotosIngredientes, i.id);
+      copiar('ingredientes', chicasIngredientes, i.id);
     }
     for (const u of r.utensilios) {
-      copiar('utensilios', fotosUtensilios, u.id);
+      copiar('utensilios', chicasUtensilios, u.id);
     }
   }
 
-  return { json, fotos: [...fotos.values()] };
+  return { json, fotos: [...fotos.values()], faltantes: [...faltantes].sort() };
 }

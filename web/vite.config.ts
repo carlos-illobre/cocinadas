@@ -33,9 +33,12 @@ export default defineConfig({
       //   - main.tsx: raíz de composición; monta <App/> en el DOM y nada más.
       //   - catalogo/generar.ts: escribe a disco lo que planificar() decidió; sin
       //     decisiones propias, y corre en el build y no en el navegador.
+      //   - imagenes/optimizar.ts: maneja el navegador que convierte las imágenes y
+      //     escribe los archivos. Qué convertir y a cuánto lo decide plan.ts, que sí se
+      //     mide. Corre a mano con `pnpm optimizar`, no en el build.
       //   - pruebas/**: utilidades de las propias pruebas.
       //   - *.test.*: las pruebas no se miden a sí mismas.
-      exclude: ['src/main.tsx', 'src/catalogo/generar.ts', 'src/pruebas/**', 'src/**/*.test.{ts,tsx}'],
+      exclude: ['src/main.tsx', 'src/catalogo/generar.ts', 'src/imagenes/optimizar.ts', 'src/pruebas/**', 'src/**/*.test.{ts,tsx}'],
       reporter: ['text', 'json-summary', 'html'],
       thresholds: {
         lines: 100,

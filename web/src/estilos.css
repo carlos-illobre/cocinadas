@@ -68,6 +68,15 @@
   --display: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'Space Mono', ui-monospace, Menlo, monospace;
+  /* Solo para la marca escrita: es la tipografía del logo original. */
+  --lobster: 'Lobster', cursive;
+  /*
+   * El degradado de la palabra en el logo original: arranca en el naranja de marca y
+   * termina en el verde de las hojas de la olla. Los dos extremos y el paso por el
+   * amarillo están tomados del PNG, por eso hay valores literales y no solo tokens: el
+   * verde del token (--green) es más turquesa y no acompaña al ícono.
+   */
+  --degradado-marca: linear-gradient(100deg, #f4511e 0%, var(--brand) 26%, #f7a12a 50%, #7ab648 76%, #3f8f2e 100%);
   /* Solo para el lema de la pantalla de inicio. */
   --poppins: 'Poppins', var(--body);
   /* La del botón de Google, que es la de sus botones oficiales. */
@@ -285,10 +294,51 @@ h1 {
   color: var(--coral-deep);
 }
 
-.logo {
-  display: block;
-  width: 240px;
+/*
+ * La marca: la olla y la palabra. La palabra es texto en Lobster y no una imagen, así que
+ * el nombre del proyecto vive en un solo lugar (src/Logotipo.tsx).
+ */
+.logotipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18em;
+  line-height: 1;
+}
+
+.logotipo-olla {
+  /* Proporción del logo original: la olla ocupa cerca de un tercio del conjunto y sus
+     hojas asoman por encima de las mayúsculas. Con menos, parece un adorno al costado. */
+  width: 1.7em;
   height: auto;
+  flex: none;
+  /* Lobster apoya sobre una base alta; centrar la olla en la caja completa la deja
+     flotando, así que se la baja un poco para alinearla con el cuerpo de las letras. */
+  margin-top: 0.12em;
+}
+
+.logotipo-palabra {
+  font-family: var(--lobster);
+  font-weight: 400;
+  /* Lobster tiene descendentes largas; sin esto la «C» se corta contra lo de arriba. */
+  line-height: 1.15;
+  padding-right: 0.06em;
+  /* Respaldo: si el navegador no recorta el fondo al texto, se ve el naranja de marca en
+     vez de un hueco transparente. */
+  color: var(--brand);
+  background-image: var(--degradado-marca);
+}
+
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  .logotipo-palabra {
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* En la cabecera de la pantalla de servicios. */
+.logo {
+  font-size: 34px;
   margin: 0 0 20px;
 }
 
@@ -365,8 +415,9 @@ h1 {
 }
 
 .inicio-logo {
-  width: min(300px, 74vw);
-  height: auto;
+  font-size: min(52px, 13vw);
+  /* La sombra va sobre la caja entera —olla y palabra— para que se despeguen de la foto
+     de la mesada, que abajo tiene zonas claras. */
   filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
 }
 

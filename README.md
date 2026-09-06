@@ -14,7 +14,7 @@ recetas adentro. Las cocinadas se guardan en el `localStorage` del navegador. El
 | Carpeta | Qué es |
 |---|---|
 | `data/recetas/`, `data/ingredientes/`, `data/utencillos/` | **El catálogo**: recetas como POE (HTML + PDF imprimible + JSON de datos), fichas de ingredientes con foto y fichas de utensilios. Es contenido, no código; la app lo lee tal cual. |
-| `web/` | **La aplicación**: la SPA React + TypeScript y el generador que convierte el catálogo en los archivos que ella consume. |
+| `web/` | **La aplicación**: la SPA React + TypeScript, el generador que convierte el catálogo en los archivos que ella consume, y en `web/assets/` las versiones livianas de todas las imágenes. |
 | `tests/`, `docs/` | La compuerta de cobertura y la documentación. |
 
 ## Cómo se instala y se levanta
@@ -27,6 +27,10 @@ cd web && pnpm install && pnpm dev
 
 Abre en <http://localhost:5173>. `pnpm dev` genera antes el catálogo leyendo `data/`; si
 tocás una receta o una ficha, volvé a correr `pnpm generar:catalogo`.
+
+Las imágenes tienen los originales en `data/` y `docs/mockups/`, y las versiones que se
+publican —en WebP y al tamaño al que se muestran— en `web/assets/`. Si agregás o cambiás
+una foto: `cd web && pnpm optimizar` (necesita Chrome o Chromium).
 
 Para ver exactamente lo que se publica:
 

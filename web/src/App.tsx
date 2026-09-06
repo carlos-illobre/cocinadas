@@ -7,6 +7,7 @@ import { Cocina } from './Cocina';
 import { almacenSeguro, guardarCocinada, listarCocinadas, type Almacen, type Cocinada } from './historial/almacen';
 import { Historial } from './Historial';
 import { Inicio } from './Inicio';
+import { Logotipo } from './Logotipo';
 import { MiseEnPlace } from './MiseEnPlace';
 import { Perfil } from './Perfil';
 import { Portada } from './Portada';
@@ -224,7 +225,7 @@ export function Servicios({ fetchImpl = fetchNavegador, alVolver }: { readonly f
             ‹ Perfil
           </button>
         )}
-        <img className="logo" src="logo.png" alt="" width="240" height="90" />
+        <Logotipo className="logo" decorativo />
         <p className="saludo">Cero desperdicio · sin sal · 1 porción</p>
         <h1>Cocinadas</h1>
       </header>
