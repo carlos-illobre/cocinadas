@@ -79,6 +79,16 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/*
+ * `overscroll-behavior-y: contain` apaga el «tirar para abajo y recargar» del navegador
+ * del teléfono. Recargar en medio de una cocinada es perder el paso en el que estabas, y
+ * el gesto se hace sin querer con las manos ocupadas.
+ */
+html,
+body {
+  overscroll-behavior-y: contain;
+}
+
 body {
   margin: 0;
   background: var(--ground);

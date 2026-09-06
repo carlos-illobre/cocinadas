@@ -4,16 +4,24 @@ import type { Receta } from './api';
 import type { Avisador } from './cocina/sonido';
 import { Cocina } from './Cocina';
 import { recetaDosEtapas, recetaUnaEtapa } from './pruebas/datos';
+import type { Almacen } from './historial/almacen';
+import { CLAVE_EN_CURSO } from './cocina/enCurso';
 
 const T0 = 1_000_000;
 
-function armar(receta: Receta = recetaDosEtapas) {
+/** Un almacén en memoria: lo mismo que hace el teléfono, sin tocar el navegador. */
+export function memoria(inicial: Record<string, string> = {}): Almacen & { datos: Map<string, string> } {
+  const datos = new Map(Object.entries(inicial));
+  return { datos, getItem: (k) => datos.get(k) ?? null, setItem: (k, v) => void datos.set(k, v) };
+}
+
+function armar(receta: Receta = recetaDosEtapas, almacen: Almacen & { datos: Map<string, string> } = memoria()) {
   let ahoraMs = T0;
   const avisador: Avisador = { toque: vi.fn(), suave: vi.fn(), fuerte: vi.fn(), festejo: vi.fn() };
   const alVolver = vi.fn();
   const alTerminar = vi.fn();
   const alGuardar = vi.fn();
-  const vista = render(<Cocina receta={receta} avisador={avisador} alVolver={alVolver} alTerminar={alTerminar} alGuardar={alGuardar} cocinadas={[]} ahora={() => ahoraMs} tic_ms={500} />);
+  const vista = render(<Cocina receta={receta} avisador={avisador} alVolver={alVolver} alTerminar={alTerminar} alGuardar={alGuardar} cocinadas={[]} almacen={almacen} ahora={() => ahoraMs} tic_ms={500} />);
   /** Adelanta el reloj y deja correr los tics. */
   const pasar = (segundos: number) => {
     ahoraMs += segundos * 1000;
@@ -22,7 +30,7 @@ function armar(receta: Receta = recetaDosEtapas) {
     });
   };
   const listo = () => fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
-  return { ...vista, avisador, alVolver, alTerminar, alGuardar, pasar, listo };
+  return { ...vista, almacen, avisador, alVolver, alTerminar, alGuardar, pasar, listo };
 }
 
 beforeEach(() => {
@@ -220,7 +228,7 @@ it('el gantt dibuja una barra por paso y un carril por proceso, y se va llenando
 
   it('volver avisa a quien la monta', () => {
     const { alVolver } = armar();
-    fireEvent.click(screen.getByRole('button', { name: '‹ Portada' }));
+    fireEvent.click(screen.getByRole('button', { name: '‹ Volver' }));
     expect(alVolver).toHaveBeenCalledTimes(1);
   });
 });
@@ -484,6 +492,39 @@ describe('Cocina · final', () => {
     expect(logros.querySelectorAll('li')).toHaveLength(2);
     expect(logros).toHaveTextContent('Logros conseguidos');
     expect(logros).toHaveTextContent('Sin pasarse');
+  });
+
+  it('si la página se recarga en medio, se retoma donde iba', () => {
+    const almacen = memoria();
+    const primera = armar(recetaDosEtapas, almacen);
+    primera.listo();
+    primera.pasar(20);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Paso 2 de 3');
+    primera.unmount();
+
+    // Misma receta, mismo almacén: es lo que pasa al recargar.
+    armar(recetaDosEtapas, almacen);
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Paso 2 de 3');
+  });
+
+  it('salir a la portada descarta la cocinada en curso', () => {
+    const c = armar();
+    c.listo();
+    expect(c.almacen.datos.get(CLAVE_EN_CURSO)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '‹ Volver' }));
+
+    expect(c.alVolver).toHaveBeenCalledTimes(1);
+    expect(c.almacen.datos.get(CLAVE_EN_CURSO)).toBe('');
+  });
+
+  it('al terminar el plato ya no queda nada que retomar', () => {
+    const c = armar(recetaUnaEtapa);
+    c.listo();
+    c.listo();
+    c.listo();
+    expect(c.almacen.datos.get(CLAVE_EN_CURSO)).toBe('');
   });
 
   it('se puede salir sin guardar', () => {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { BASE_CATALOGO, reloj, type Proceso as ProcesoReceta, type Receta } from './api';
-import type { Cocinada } from './historial/almacen';
+import type { Almacen, Cocinada } from './historial/almacen';
 import {
   atenderAlarma,
   avanzarReloj,
@@ -25,6 +25,7 @@ import {
   type PasoHecho,
   type ProcesoVisible,
 } from './cocina/modelo';
+import { borrarEnCurso, guardarEnCurso, leerEnCurso } from './cocina/enCurso';
 import type { Avisador } from './cocina/sonido';
 import { logrosNuevos } from './logros';
 import { puntosDe } from './xp';
@@ -38,6 +39,8 @@ export interface PropiedadesCocina {
   readonly alGuardar: (cocinada: Omit<Cocinada, 'id'>) => void;
   /** Las cocinadas que ya estaban guardadas, para saber qué logro desbloquea esta. */
   readonly cocinadas: readonly Cocinada[];
+  /** Dónde se guarda la cocinada en curso, para no perderla si la página se recarga. */
+  readonly almacen: Almacen;
   /** Reloj inyectable; por omisión, el del navegador. */
   readonly ahora?: () => number;
   /** Cada cuánto se redibuja, en ms. */
@@ -52,8 +55,9 @@ const ICONO_PROCESO: Readonly<Record<string, string>> = { frio: '❄', calor: '�
  * vence un proceso crítico, la alarma tapa todo; entre etapas, la pausa; al final, el
  * resumen.
  */
-export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, cocinadas, ahora = () => Date.now(), tic_ms = 500 }: PropiedadesCocina): React.JSX.Element {
-  const [estado, setEstado] = useState<EstadoCocina>(() => empezar(receta, ahora()));
+export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, cocinadas, almacen, ahora = () => Date.now(), tic_ms = 500 }: PropiedadesCocina): React.JSX.Element {
+  // Si hay una cocinada de esta misma receta a medio hacer, se retoma donde quedó.
+  const [estado, setEstado] = useState<EstadoCocina>(() => leerEnCurso(almacen, receta, ahora()) ?? empezar(receta, ahora()));
   const [reloj_ms, setReloj] = useState(() => ahora());
   const [mostrarPorQue, setMostrarPorQue] = useState(false);
 
@@ -77,6 +81,16 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
     const id = setInterval(() => avisador.fuerte(), 2000);
     return () => clearInterval(id);
   }, [estado.fase, avisador]);
+
+  // Se guarda a cada cambio, no cada tanto: el navegador del celular puede descartar la
+  // pestaña en cualquier momento y no avisa.
+  useEffect(() => {
+    if (estado.fase === 'fin') {
+      borrarEnCurso(almacen);
+    } else {
+      guardarEnCurso(almacen, estado, ahora());
+    }
+  }, [estado, almacen, ahora]);
 
   const avisosPrevios = useRef(0);
   useEffect(() => {
@@ -120,8 +134,15 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
     <main className={critica ? 'pantalla cocina critica' : 'pantalla cocina'}>
       <header className="top">
         <div>
-          <button type="button" className="enlace volver" onClick={alVolver}>
-            ‹ Portada
+          <button
+            type="button"
+            className="enlace volver"
+            onClick={() => {
+              borrarEnCurso(almacen);
+              alVolver();
+            }}
+          >
+            ‹ Volver
           </button>
           <p className="eyebrow">{etapa.nombre}</p>
           <h1>
