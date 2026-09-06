@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { Portada } from './Portada';
 import { fetchDeCatalogo, nunca, recetaDosEtapas, recetaUnaEtapa, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
-import type { Fetch } from './salud';
+import type { Fetch } from './api';
 
 const nada = () => undefined;
 const ruta = '/recetas/spaghetti-integral-brocoli-camarones';

@@ -279,48 +279,6 @@ h1 {
   color: var(--muted);
 }
 
-/* ---------- servicios ---------- */
-.servicios {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.servicios li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-size: 14px;
-}
-
-.servicios .nombre {
-  font-weight: 700;
-}
-
-.servicios .detalle {
-  font-family: var(--mono);
-  font-size: 12px;
-  padding: 3px 8px;
-  border-radius: 999px;
-}
-
-.servicios .ok .detalle {
-  background: var(--green-soft);
-  color: var(--green-2);
-}
-
-.servicios .caido .detalle {
-  background: var(--coral-soft);
-  color: var(--coral-deep);
-}
-
 /*
  * La marca: la olla y la palabra. La palabra es texto en Lobster y no una imagen, así que
  * el nombre del proyecto vive en un solo lugar (src/Logotipo.tsx).
@@ -362,13 +320,6 @@ h1 {
     color: transparent;
   }
 }
-
-/* En la cabecera de la pantalla de servicios. */
-.logo {
-  font-size: 34px;
-  margin: 0 0 20px;
-}
-
 /* ---------- pantalla de inicio: la mesada en capas ---------- */
 .inicio {
   position: fixed;
@@ -1257,12 +1208,7 @@ h1 {
   outline: 3px solid var(--brand);
   outline-offset: -3px;
 }
-
-/* ---------- ajustes y servicios ---------- */
 .ajustes,
-.servicios-pantalla {
-  padding-top: 0;
-}
 
 .ajustes .cuerpo section + section {
   margin-top: 24px;
@@ -1413,7 +1359,6 @@ h1 {
 .sum .row { height: 42px; }
 @media (prefers-reduced-motion: reduce) { .proc.warn, .big .over, .track .ov, .alarma .ring { animation: none; } }
 
-
 /* ---------- historial ---------- */
 .historial { padding-top: 28px; }
 .historial-titulo { font-family: var(--display); font-size: 18px; letter-spacing: -0.02em; margin: 12px 0 8px; text-wrap: balance; }
@@ -1436,7 +1381,6 @@ h1 {
 .intentos .d { grid-area: desvio; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .intentos .d.plus { color: var(--coral); }
 .intentos .d.minus { color: var(--green); }
-
 
 /* ---------- interruptor de tema (Ajustes) ---------- */
 .boton-tema {

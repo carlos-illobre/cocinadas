@@ -1,12 +1,12 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { App, Servicios, versionPorOmision } from './App';
+import { App, versionPorOmision } from './App';
+import type { Fetch } from './api';
 import type { Avisador } from './cocina/sonido';
 import { CLAVE_HISTORIAL, type Almacen } from './historial/almacen';
 import { CLAVE_TEMA } from './tema';
 import { CLAVE_EN_CURSO } from './cocina/enCurso';
 import { fetchDeCatalogo, nunca, recetaDosEtapas, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
-import type { Fetch } from './salud';
 
 const ruta = '/recetas/spaghetti-integral-brocoli-camarones';
 
@@ -264,16 +264,6 @@ describe('el recorrido de la app', () => {
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Plato p');
   });
 
-  it('desde ajustes se llega al estado de los servicios y se vuelve', async () => {
-    montar();
-    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Perfil' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Estado de los servicios ›' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Cocinadas' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: '‹ Perfil' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Aprendiz' })).toBeInTheDocument();
-  });
-
   it('cambiar el modo de preparación pide la otra receta', async () => {
     montar();
     fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
@@ -343,70 +333,5 @@ describe('el recorrido de la app', () => {
     } finally {
       vi.unstubAllGlobals();
     }
-  });
-});
-
-describe('Servicios', () => {
-  it('lista cada servicio con su versión o su fallo', async () => {
-    const fetchImpl: Fetch = (url) =>
-      url.includes('catalogo')
-        ? Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ version: '0.1.0' }) })
-        : Promise.resolve({ ok: false, status: 503, json: () => Promise.resolve({}) });
-    render(<Servicios fetchImpl={fetchImpl} />);
-
-    expect(screen.getByRole('status')).toHaveTextContent('Consultando…');
-    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
-
-    const filas = screen.getAllByRole('listitem');
-    expect(filas).toHaveLength(3);
-    expect(filas[0]).toHaveClass('ok');
-    expect(filas[0]).toHaveTextContent('v0.1.0');
-    expect(filas[1]).toHaveClass('caido');
-    expect(filas[1]).toHaveTextContent('HTTP 503');
-    expect(screen.queryByRole('button', { name: '‹ Perfil' })).not.toBeInTheDocument();
-  });
-
-  it('usa el fetch del navegador cuando no se inyecta ninguno', async () => {
-    const original = globalThis.fetch;
-    globalThis.fetch = (() => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ version: '9.9.9' }) })) as unknown as typeof fetch;
-    try {
-      render(<Servicios />);
-      await waitFor(() => expect(screen.getAllByText('v9.9.9')).toHaveLength(3));
-    } finally {
-      globalThis.fetch = original;
-    }
-  });
-
-  it('si cambia el fetch, la respuesta tardía del anterior no pisa a la nueva', async () => {
-    let resolverViejo: (v: Awaited<ReturnType<Fetch>>) => void = () => undefined;
-    const viejo: Fetch = () =>
-      new Promise((resolve) => {
-        resolverViejo = resolve;
-      });
-    const nuevo: Fetch = () => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ version: '2.0.0' }) });
-    const { rerender } = render(<Servicios fetchImpl={viejo} />);
-    rerender(<Servicios fetchImpl={nuevo} />);
-    await waitFor(() => expect(screen.getAllByText('v2.0.0')).toHaveLength(3));
-
-    resolverViejo({ ok: true, status: 200, json: () => Promise.resolve({ version: '1.0.0' }) });
-    await Promise.resolve();
-    await Promise.resolve();
-
-    expect(screen.getAllByText('v2.0.0')).toHaveLength(3);
-    expect(screen.queryByText('v1.0.0')).not.toBeInTheDocument();
-  });
-
-  it('ignora la respuesta si se desmonta antes de que llegue', async () => {
-    let resolver: (v: Awaited<ReturnType<Fetch>>) => void = () => undefined;
-    const fetchImpl: Fetch = () =>
-      new Promise((resolve) => {
-        resolver = resolve;
-      });
-    const { unmount } = render(<Servicios fetchImpl={fetchImpl} />);
-    unmount();
-    resolver({ ok: true, status: 200, json: () => Promise.resolve({ version: '1' }) });
-
-    await Promise.resolve();
-    expect(screen.queryByRole('list')).not.toBeInTheDocument();
   });
 });

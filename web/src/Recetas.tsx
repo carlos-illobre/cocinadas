@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { BASE_CATALOGO, listarRecetas, minutos, versionesOrdenadas, type RecetaResumen } from './api';
+import { BASE_CATALOGO, listarRecetas, minutos, versionesOrdenadas, type Fetch, type RecetaResumen } from './api';
 import { BarraXp } from './BarraXp';
-import type { Fetch } from './salud';
 
 export interface PropiedadesRecetas {
   readonly fetchImpl: Fetch;

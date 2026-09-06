@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { versionesOrdenadas, type Receta, type RecetaResumen } from './api';
+import { versionesOrdenadas, type Fetch, type Receta, type RecetaResumen } from './api';
 import { BarraInferior, type Pestana } from './BarraInferior';
 import { borrarEnCurso, recetaEnCurso } from './cocina/enCurso';
 import { avisadorDelNavegador, SIN_AVISADOR, type Avisador } from './cocina/sonido';
@@ -7,12 +7,10 @@ import { Cocina } from './Cocina';
 import { almacenSeguro, guardarCocinada, listarCocinadas, type Almacen, type Cocinada } from './historial/almacen';
 import { Historial } from './Historial';
 import { Inicio } from './Inicio';
-import { Logotipo } from './Logotipo';
 import { MiseEnPlace } from './MiseEnPlace';
 import { Perfil } from './Perfil';
 import { Portada } from './Portada';
 import { Recetas } from './Recetas';
-import { consultarTodos, type EstadoServicio, type Fetch } from './salud';
 import { aplicarTema, elOtro, guardarTema, leerTema, type Tema } from './tema';
 import { experienciaDe } from './xp';
 import './estilos.css';
@@ -37,8 +35,7 @@ export type Pantalla =
   | { readonly nombre: 'mise'; readonly receta: Receta }
   | { readonly nombre: 'cocina'; readonly receta: Receta }
   | { readonly nombre: 'historial' }
-  | { readonly nombre: 'perfil' }
-  | { readonly nombre: 'servicios' };
+  | { readonly nombre: 'perfil' };
 
 const fetchNavegador: Fetch = (url) => fetch(url);
 
@@ -190,9 +187,7 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
     case 'historial':
       return conBarra('historial', <Historial cocinadas={cocinadas} />);
     case 'perfil':
-      return conBarra('perfil', <Perfil cocinadas={cocinadas} xp={experiencia} tema={tema} alCambiarTema={cambiarTema} alVerEstado={() => avanzar({ nombre: 'servicios' })} version={VERSION_APP} />);
-    case 'servicios':
-      return <Servicios fetchImpl={fetchImpl} alVolver={atras} />;
+      return conBarra('perfil', <Perfil cocinadas={cocinadas} xp={experiencia} tema={tema} alCambiarTema={cambiarTema} version={VERSION_APP} />);
   }
 }
 
@@ -200,55 +195,4 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
 export function versionPorOmision(resumen: RecetaResumen): string {
   const primera = versionesOrdenadas(resumen)[0];
   return primera === undefined ? '1' : primera.clave;
-}
-
-export function Servicios({ fetchImpl = fetchNavegador, alVolver }: { readonly fetchImpl?: Fetch; readonly alVolver?: () => void }): React.JSX.Element {
-  const [estados, setEstados] = useState<readonly EstadoServicio[] | null>(null);
-
-  useEffect(() => {
-    let vigente = true;
-    void consultarTodos(fetchImpl).then((resultado) => {
-      if (vigente) {
-        setEstados(resultado);
-      }
-    });
-    return () => {
-      vigente = false;
-    };
-  }, [fetchImpl]);
-
-  return (
-    <main className="pantalla servicios-pantalla">
-      <header className="cabecera">
-        {alVolver !== undefined && (
-          <button type="button" className="enlace volver" onClick={alVolver}>
-            ‹ Perfil
-          </button>
-        )}
-        <Logotipo className="logo" decorativo />
-        <p className="saludo">Cero desperdicio · sin sal · 1 porción</p>
-        <h1>Cocinadas</h1>
-      </header>
-
-      <div className="cuerpo">
-        <section aria-labelledby="titulo-servicios">
-          <h3 id="titulo-servicios" className="titulo-seccion">
-            Servicios
-          </h3>
-          {estados === null ? (
-            <p role="status">Consultando…</p>
-          ) : (
-            <ul className="servicios">
-              {estados.map((e) => (
-                <li key={e.servicio} className={e.estado === 'ok' ? 'ok' : 'caido'}>
-                  <span className="nombre">{e.servicio}</span>
-                  <span className="detalle">{e.estado === 'ok' ? `v${e.version}` : e.detalle}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-    </main>
-  );
 }

@@ -9,7 +9,6 @@ export interface PropiedadesPerfil {
   readonly xp: number;
   readonly tema: Tema;
   readonly alCambiarTema: () => void;
-  readonly alVerEstado: () => void;
   readonly version: string;
 }
 
@@ -18,7 +17,7 @@ export interface PropiedadesPerfil {
  * logros y el interruptor de tema. Todo sale de las cocinadas guardadas; mientras no
  * haya cuentas, no hay nombre ni sesión que cerrar.
  */
-export function Perfil({ cocinadas, xp, tema, alCambiarTema, alVerEstado, version }: PropiedadesPerfil): React.JSX.Element {
+export function Perfil({ cocinadas, xp, tema, alCambiarTema, version }: PropiedadesPerfil): React.JSX.Element {
   const nivel = nivelDe(xp);
   const progreso = progresoNivel(xp);
   const minutos = Math.round(cocinadas.reduce((suma, c) => suma + c.total_real_s, 0) / 60);
@@ -94,9 +93,6 @@ export function Perfil({ cocinadas, xp, tema, alCambiarTema, alVerEstado, versio
           <p className="lead">
             {cocinadas.length === 0 ? 'Todavía no hay cocinadas guardadas.' : `Suman ${reloj(cocinadas.reduce((s, c) => s + c.total_real_s, 0))} de cocina, guardadas en este teléfono.`} Con las cuentas de usuario van a sincronizarse con tu perfil.
           </p>
-          <button type="button" className="enlace" onClick={alVerEstado}>
-            Estado de los servicios ›
-          </button>
           <p className="perfil-version">Cocinadas {version}</p>
         </section>
       </div>

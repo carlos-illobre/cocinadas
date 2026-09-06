@@ -24,9 +24,8 @@ function cocinada(fecha: string, real: number, extra: Partial<Cocinada> = {}): C
 
 function montar(cocinadas: readonly Cocinada[], xp: number, tema: 'claro' | 'oscuro' = 'claro') {
   const alCambiarTema = vi.fn();
-  const alVerEstado = vi.fn();
-  render(<Perfil cocinadas={cocinadas} xp={xp} tema={tema} alCambiarTema={alCambiarTema} alVerEstado={alVerEstado} version="0.3.0" />);
-  return { alCambiarTema, alVerEstado };
+  render(<Perfil cocinadas={cocinadas} xp={xp} tema={tema} alCambiarTema={alCambiarTema} version="0.3.0" />);
+  return { alCambiarTema };
 }
 
 describe('Perfil', () => {
@@ -72,10 +71,8 @@ describe('Perfil', () => {
     expect(alCambiarTema).toHaveBeenCalledTimes(1);
   });
 
-  it('abre el estado de los servicios y muestra la versión', () => {
-    const { alVerEstado } = montar([], 0);
+  it('muestra la versión de la app', () => {
+    montar([], 0);
     expect(screen.getByText('Cocinadas 0.3.0')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Estado de los servicios ›' }));
-    expect(alVerEstado).toHaveBeenCalledTimes(1);
   });
 });

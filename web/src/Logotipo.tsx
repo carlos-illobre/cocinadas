@@ -13,19 +13,10 @@ import type React from 'react';
  * la de 192 y no la de 512: se muestra a unos 88 px, así que 192 alcanza para pantallas
  * del doble de densidad y pesa 42 KB en vez de 238. En la pantalla de inicio, que es lo
  * primero que se ve y muchas veces con datos móviles, esa diferencia se nota.
- *
- * `decorativo` es para donde la marca se repite con un encabezado al lado: ahí se oculta
- * a los lectores de pantalla para que no lean «Cocinadas» dos veces seguidas.
  */
-export function Logotipo({
-  className = '',
-  decorativo = false,
-}: {
-  readonly className?: string;
-  readonly decorativo?: boolean;
-}): React.JSX.Element {
+export function Logotipo({ className = '' }: { readonly className?: string }): React.JSX.Element {
   return (
-    <span className={`logotipo ${className}`.trim()} aria-hidden={decorativo ? true : undefined}>
+    <span className={`logotipo ${className}`.trim()}>
       <img className="logotipo-olla" src="icono-192.png" alt="" width="192" height="192" decoding="async" />
       <span className="logotipo-palabra">Cocinadas</span>
     </span>

@@ -11,7 +11,6 @@ describe('Logotipo', () => {
     const olla = container.querySelector('img.logotipo-olla');
     expect(olla).toHaveAttribute('src', 'icono-192.png');
     expect(olla).toHaveAttribute('alt', '');
-    expect(container.querySelector('.logotipo')).not.toHaveAttribute('aria-hidden');
   });
 
   it('agrega la clase que le pasan sin perder la propia', () => {
@@ -24,11 +23,5 @@ describe('Logotipo', () => {
     const { container } = render(<Logotipo />);
 
     expect(container.querySelector('span')?.getAttribute('class')).toBe('logotipo');
-  });
-
-  it('decorativo se esconde de los lectores de pantalla, para no repetir el nombre', () => {
-    const { container } = render(<Logotipo decorativo />);
-
-    expect(container.querySelector('.logotipo')).toHaveAttribute('aria-hidden', 'true');
   });
 });

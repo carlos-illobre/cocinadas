@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BASE_CATALOGO, minutos, obtenerReceta, urlFoto, versionesOrdenadas, type Receta, type RecetaResumen } from './api';
-import type { Fetch } from './salud';
+import { BASE_CATALOGO, minutos, obtenerReceta, urlFoto, versionesOrdenadas, type Fetch, type Receta, type RecetaResumen } from './api';
 
 export interface PropiedadesPortada {
   readonly fetchImpl: Fetch;
