@@ -56,7 +56,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Trivy sobre el repositorio
-        uses: aquasecurity/trivy-action@0.29.0
+        # OJO con el prefijo `v`: los tags de esta acción son `v0.36.0`, no `0.36.0`.
+        # Sin él GitHub no resuelve la acción y el job falla a los dos segundos con
+        # «Unable to resolve action», sin llegar a escanear nada. Estuvo así desde que
+        # se escribió el pipeline: Trivy nunca había corrido.
+        uses: aquasecurity/trivy-action@v0.36.0
         # `continue-on-error` también en el paso, y no solo en el job: sin esto, cuando
         # Trivy no puede bajar su base de datos, el PR queda con una cruz roja aunque el
         # job no bloquee. Una comprobación que avisa y siempre se ve en rojo enseña a
