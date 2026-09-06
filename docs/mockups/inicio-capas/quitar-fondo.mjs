@@ -18,7 +18,7 @@ const [ORIGEN, ARCHIVO, DESTINO] = process.argv.slice(2);
 const NOMBRE = ARCHIVO.replace(/\.png$/i, '');
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const PUERTO = 9338;
-const perfil = mkdtempSync(join(tmpdir(), 'templa-fondo-'));
+const perfil = mkdtempSync(join(tmpdir(), 'cocinadas-fondo-'));
 writeFileSync(join(ORIGEN, 'marco.html'), '<!doctype html><meta charset="utf-8"><title>fondo</title>');
 const chrome = spawn(CHROME, [`--remote-debugging-port=${PUERTO}`, '--headless=new', '--no-first-run', '--allow-file-access-from-files', `--user-data-dir=${perfil}`, 'about:blank'], { stdio: 'ignore' });
 

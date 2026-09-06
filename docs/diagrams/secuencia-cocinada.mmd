@@ -1,18 +1,16 @@
 sequenceDiagram
-  title Registrar una cocinada (diseño previsto; el esqueleto todavía no lo implementa)
+  title Cocinar y guardar la cocinada
   actor C as Cocinero
-  participant F as frontend (SPA)
-  participant P as reverse-proxy (Caddy)
-  participant K as cocinadas
-  participant DB as postgres
-  participant N as nats (JetStream)
-  C->>F: termina el plato · «Guardar esta vez»
-  F->>P: POST /api/cocinadas/cocinadas · Authorization: Bearer <JWT>
-  P->>K: POST /cocinadas (sin el prefijo)
-  K->>K: verifica la firma del JWT con JWT_SECRET (ADR-012)
-  K->>K: valida el cuerpo contra el esquema JSON (ADR-007)
-  K->>DB: BEGIN · INSERT cocinada · INSERT cocinada_paso × N · COMMIT
-  K->>N: publica templa.cocinadas.cocinada-registrada.v1 (sobre v1)
-  K-->>P: 201 { id, total_real_s, desvio_s }
-  P-->>F: 201
-  F-->>C: resumen y gráfico de progreso de la receta
+  participant F as la SPA
+  participant W as el sitio
+  participant L as localStorage del teléfono
+  C->>F: elige una receta y su versión
+  F->>W: GET /api/catalogo/recetas/<plato>/<version>.json
+  W-->>F: la receta entera, con las rutas de las fotos ya resueltas
+  Note over F: el modelo de la cocinada es puro (cocina/modelo.ts);<br/>la pantalla solo lo dibuja con un tic de medio segundo
+  F->>L: guarda la cocinada en curso en cada cambio
+  Note over F,L: por eso una recarga o el botón de atrás no cuestan el progreso
+  C->>F: termina el plato · «Guardar esta cocinada»
+  F->>L: agrega la cocinada al historial (cocinadas.historial)
+  F->>F: recalcula experiencia (xp.ts) y logros (logros.ts) sobre el historial
+  F-->>C: puntos ganados, logros desbloqueados y progreso de la receta

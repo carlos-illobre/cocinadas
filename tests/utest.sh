@@ -1,58 +1,53 @@
 #!/usr/bin/env bash
 #
-# Pruebas unitarias de todos los servicios, con la compuerta de cobertura (docs/TESTING.md).
+# Pruebas unitarias con la compuerta de cobertura (docs/TESTING.md).
 #
-#   bash tests/utest.sh              todos
-#   bash tests/utest.sh catalogo     uno solo
+#   bash tests/utest.sh
 #
-# Recorre microservices/*, corre la suite de cada uno con cobertura y vuelve a comprobar
-# el umbral leyendo coverage/coverage-summary.json: así el fallo se ve en una tabla que
-# dice qué archivo bajó y en qué métrica, en vez de en un error de la herramienta.
-# Sale con 1 si alguna suite falla o algún servicio baja del 100 %.
+# Corre la suite de web/ con cobertura y vuelve a comprobar el umbral leyendo
+# coverage/coverage-summary.json: así el fallo se ve en una tabla que dice qué archivo
+# bajó y en qué métrica, en vez de en un error de la herramienta.
+#
+# La compuerta está en dos lugares a propósito: los `thresholds` de vite.config.ts hacen
+# fallar `pnpm test:cov`, y esto lo vuelve a comprobar sobre el JSON que produjo la
+# herramienta. Los números no se escriben a mano: se desfasan.
 set -uo pipefail
-. "$(dirname "$0")/integration/comun.sh"
-cd "$(raiz_del_repositorio)" || morir "no encuentro la raíz del repositorio"
+cd "$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "no encuentro la raíz del repositorio"; exit 1; }
 
 UMBRAL=100
-fallos=0
+PROYECTO=web
 
-if [ $# -gt 0 ]; then
-    servicios=("$@")
-else
-    mapfile -t servicios < <(listar_servicios "$PWD")
+VERDE='\033[0;32m'; ROJO='\033[0;31m'; AMARILLO='\033[0;33m'; NC='\033[0m'
+ok()   { printf "  ${VERDE}✓${NC} %s\n" "$1"; }
+mal()  { printf "  ${ROJO}✗${NC} %s\n" "$1"; }
+nota() { printf "      %s\n" "$1"; }
+
+printf "\033[1m▶ %s\033[0m\n" "$PROYECTO"
+[ -f "$PROYECTO/package.json" ] || { mal "no existe $PROYECTO/package.json"; exit 1; }
+
+if [ ! -d "$PROYECTO/node_modules" ]; then
+    nota "instalando dependencias (pnpm install --frozen-lockfile)"
+    (cd "$PROYECTO" && pnpm install --frozen-lockfile --silent) || { mal "falló la instalación"; exit 1; }
 fi
 
-for servicio in "${servicios[@]}"; do
-    titulo "$servicio"
-    dir=microservices/$servicio
-    [ -f "$dir/package.json" ] || { mal "no existe $dir/package.json"; fallos=$((fallos+1)); continue; }
+salida=$(cd "$PROYECTO" && pnpm test:cov 2>&1)
+estado=$?
+# Vitest colorea la salida: se quitan las secuencias ANSI antes de leer los números.
+plano=$(printf '%s\n' "$salida" | sed 's/\x1b\[[0-9;]*m//g')
+pasaron=$(printf '%s\n' "$plano" | sed -n 's/.*Tests *\([0-9]*\) passed.*/\1/p' | tail -1)
+fallaron=$(printf '%s\n' "$plano" | sed -n 's/.*Tests *\([0-9]*\) failed.*/\1/p' | tail -1)
 
-    if [ ! -d "$dir/node_modules" ]; then
-        nota "instalando dependencias (pnpm install --frozen-lockfile)"
-        (cd "$dir" && pnpm install --frozen-lockfile --silent) || { mal "falló la instalación"; fallos=$((fallos+1)); continue; }
-    fi
+if [ "$estado" -ne 0 ]; then
+    printf '%s\n' "$salida" | tail -40
+    mal "la suite falló (${fallaron:-?} pruebas fallidas)"
+    exit 1
+fi
+ok "${pasaron:-0} pruebas pasaron"
 
-    salida=$(cd "$dir" && pnpm test:cov 2>&1)
-    estado=$?
-    # Vitest colorea la salida: se quitan las secuencias ANSI antes de leer los números.
-    plano=$(printf '%s\n' "$salida" | sed 's/\x1b\[[0-9;]*m//g')
-    pasaron=$(printf '%s\n' "$plano" | sed -n 's/.*Tests *\([0-9]*\) passed.*/\1/p' | tail -1)
-    fallaron=$(printf '%s\n' "$plano" | sed -n 's/.*Tests *\([0-9]*\) failed.*/\1/p' | tail -1)
+resumen=$PROYECTO/coverage/coverage-summary.json
+[ -f "$resumen" ] || { mal "no se generó $resumen"; exit 1; }
 
-    if [ "$estado" -ne 0 ]; then
-        printf '%s\n' "$salida" | tail -40
-        mal "la suite falló (${fallaron:-?} pruebas fallidas)"
-        fallos=$((fallos+1))
-        continue
-    fi
-    ok "${pasaron:-0} pruebas pasaron"
-
-    resumen=$dir/coverage/coverage-summary.json
-    [ -f "$resumen" ] || { mal "no se generó $resumen"; fallos=$((fallos+1)); continue; }
-
-    # Tabla por archivo y verificación del umbral, leyendo el JSON que produjo la
-    # herramienta: los números no se escriben a mano, se desfasan.
-    node - "$resumen" "$UMBRAL" <<'EOF'
+node - "$resumen" "$UMBRAL" <<'EOF'
 const [ruta, umbral] = process.argv.slice(2);
 const datos = require(require('path').resolve(ruta));
 const metricas = ['statements', 'branches', 'functions', 'lines'];
@@ -69,18 +64,10 @@ if (bajas.length > 0) {
   process.exit(1);
 }
 EOF
-    if [ $? -eq 0 ]; then
-        ok "cobertura ≥ ${UMBRAL} % en las cuatro métricas"
-    else
-        mal "cobertura por debajo del umbral"
-        fallos=$((fallos+1))
-    fi
-done
-
-printf '\n'
-if [ "$fallos" -eq 0 ]; then
-    printf "${VERDE}✓ %s servicio(s), todos en verde${NC}\n" "${#servicios[@]}"
-else
-    printf "${ROJO}✗ %s de %s servicio(s) fallaron${NC}\n" "$fallos" "${#servicios[@]}"
+if [ $? -ne 0 ]; then
+    mal "cobertura por debajo del umbral"
+    exit 1
 fi
-exit "$fallos"
+ok "cobertura ≥ ${UMBRAL} % en las cuatro métricas"
+
+printf "\n${VERDE}✓ todo en verde${NC}\n"

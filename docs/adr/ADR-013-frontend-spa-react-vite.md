@@ -1,6 +1,6 @@
 # ADR-013: El frontend como SPA React + Vite en su propia imagen
 
-**Estado:** Aceptado
+**Estado:** Aceptado, enmendado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -92,3 +92,12 @@ conoce los puertos internos.
 
 - [ADR-009](ADR-009-caddy-reverse-proxy-y-tls.md), [ADR-010](ADR-010-pnpm-vitest-y-stryker.md), [ADR-011](ADR-011-despliegue-en-vm-oracle-con-imagenes-por-sha.md).
 - `docs/mockups/app-cocina-mockup.html`.
+
+---
+
+## Enmienda (2026-09-06): [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+La SPA dejó de ser una pieza entre varias y pasó a ser la aplicación entera: el catálogo se
+genera en su build y no hay ningún otro contenedor. La imagen ya no se construye desde
+`microservices/frontend/` sino desde la raíz del repositorio, porque el build necesita
+`data/`.

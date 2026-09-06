@@ -1,6 +1,6 @@
 # ADR-002: Tres microservicios: catalogo, usuarios, cocinadas
 
-**Estado:** Aceptado
+**Estado:** Superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -84,3 +84,12 @@ le es indiferente.
 ## Referencias
 
 - [ADR-003](ADR-003-eventos-con-nats-jetstream.md), [ADR-012](ADR-012-autorizacion-con-jwt.md).
+
+---
+
+## Enmienda (2026-09-06): superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+Los tres servicios se redujeron a ninguno: `usuarios` y `cocinadas` nunca pasaron de
+`/health` y `catalogo` se volvió un paso del build. La división del dominio que describe
+este ADR sigue siendo válida como análisis; lo que no se sostuvo fue crear los servicios
+antes de tener qué poner adentro.

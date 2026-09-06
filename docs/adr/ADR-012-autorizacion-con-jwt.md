@@ -1,6 +1,6 @@
 # ADR-012: Autorización con JWT emitido por usuarios y verificado localmente
 
-**Estado:** Aceptado
+**Estado:** Superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -80,3 +80,11 @@ Opción 3. Detalles que fija este ADR:
 
 - [ADR-002](ADR-002-tres-microservicios.md), [ADR-003](ADR-003-eventos-con-nats-jetstream.md).
 - `docs/SECURITY.md`.
+
+---
+
+## Enmienda (2026-09-06): superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+No hay nada que autorizar: no existe el servicio que emitía los JWT ni el que los
+verificaba, y `JWT_SECRET` salió del `.env`. La decisión vuelve a estar abierta para
+cuando haya cuentas de verdad.

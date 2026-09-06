@@ -50,3 +50,22 @@ Siete medidas, todas en configuración y ninguna en la lógica de la aplicación
 - Lo que sigue sin cubrir es todo lo que llega con las cuentas: hash de contraseñas,
   límite de intentos de login, vida corta del token y verificación de que el dueño del
   recurso es el del token. Se resuelve al escribir esos endpoints, no antes.
+
+---
+
+## Enmienda (2026-09-06): [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+La superficie que había que endurecer se redujo sola: no hay base con credenciales, ni
+broker, ni proceso que interprete el cuerpo de una petición. Queda un file server con las
+mismas cabeceras de seguridad, el mismo `cap_drop: ALL` y el mismo `read_only`. El límite
+de peticiones por IP se fue con Fastify; el día que haya un endpoint que escriba, vuelve a
+hacer falta.
+
+---
+
+## Enmienda (2026-09-06): [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
+
+La mayor parte de este ADR era sobre contenedores: usuario sin privilegios, `cap_drop`,
+sistema de archivos de solo lectura, techos de memoria. Nada de eso aplica sin Docker. Lo
+que queda vigente es lo del navegador —CSP, no confiar en entrada ajena— y ahí hay una
+regresión honesta: la CSP se perdió con el Caddyfile y hay que rehacerla con `<meta>`.

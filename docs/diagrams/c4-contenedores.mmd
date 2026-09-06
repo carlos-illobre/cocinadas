@@ -1,22 +1,9 @@
 C4Container
-  title Templa · contenedores (docker compose en una VM)
+  title Cocinadas · qué hay corriendo (nada del lado del servidor)
   Person(cocinero, "Cocinero")
-  System_Boundary(vm, "VM Oracle · docker compose") {
-    Container(proxy, "reverse-proxy", "Caddy 2", "TLS · / → frontend · /api/<svc>/ → servicio. Único que publica hacia afuera (80, 443)")
-    Container(frontend, "frontend", "React 19 + Vite, servido por Caddy", "La SPA: cronómetros, alarmas, progreso")
-    Container(catalogo, "catalogo", "Node 22 · Fastify", "Recetas, ingredientes, utensilios; datos dentro de la imagen")
-    Container(usuarios, "usuarios", "Node 22 · Fastify · Drizzle", "Registro, sesión; emite JWT")
-    Container(cocinadas, "cocinadas", "Node 22 · Fastify · Drizzle", "Tiempos por paso, progreso; verifica JWT")
-    ContainerDb(postgres, "postgres", "PostgreSQL 17", "esquema usuarios · esquema cocinadas")
-    ContainerQueue(nats, "nats", "NATS 2 · JetStream", "eventos JSON con sobre y esquema versionado")
+  System_Boundary(pages, "GitHub Pages") {
+    Container(sitio, "el sitio", "archivos estáticos", "index.html, el bundle con hash, y el catálogo generado en el build bajo api/catalogo/")
   }
-  Rel(cocinero, proxy, "HTTPS", "443")
-  Rel(proxy, frontend, "HTTP", "8080")
-  Rel(proxy, catalogo, "HTTP", "3001 · /api/catalogo/*")
-  Rel(proxy, usuarios, "HTTP", "3002 · /api/usuarios/*")
-  Rel(proxy, cocinadas, "HTTP", "3003 · /api/cocinadas/*")
-  Rel(usuarios, postgres, "SQL", "5432")
-  Rel(cocinadas, postgres, "SQL", "5432")
-  Rel(usuarios, nats, "publica", "4222")
-  Rel(cocinadas, nats, "publica / consume", "4222")
-  Rel(catalogo, nats, "publica", "4222")
+  ContainerDb(tel, "localStorage", "Navegador del teléfono", "cocinadas.historial · cocinadas.cocinando · cocinadas.tema")
+  Rel(cocinero, sitio, "HTTPS", "todo lo que pide son archivos")
+  Rel(cocinero, tel, "lee y escribe", "no sale del teléfono")

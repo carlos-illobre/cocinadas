@@ -1,113 +1,96 @@
-# Templa
+# Cocinadas
+
+**La app: <https://carlos-illobre.github.io/cocinadas/>**
 
 La receta como línea de tiempo viva: una app de celular que guía la preparación de un
 plato paso a paso, cronometra cada paso, muestra los procesos que corren en paralelo
 (descongelado, agua, pasta, brócoli tapado) con alarmas, y guarda los tiempos de cada
 cocinada para ver cómo va mejorando cada receta.
 
-El repositorio tiene dos mitades que se alimentan entre sí:
+Es **solo frontend**: un sitio estático que se baja entero al teléfono, con el catálogo de
+recetas adentro. No hay servidor ni base de datos — las cocinadas se guardan en el
+`localStorage` del navegador. El porqué está en
+[ADR-017](docs/adr/ADR-017-sitio-estatico-en-github-pages.md).
 
 | Carpeta | Qué es |
 |---|---|
 | `data/recetas/`, `data/ingredientes/`, `data/utencillos/` | **El catálogo**: recetas como POE (HTML + PDF imprimible + JSON de datos), fichas de ingredientes con foto y fichas de utensilios. Es contenido, no código; la app lo lee tal cual. |
-| `microservices/`, `infrastructure/`, `tests/`, `deployment/`, `docs/` | **La aplicación**: tres microservicios Node + TypeScript, una SPA React, un reverse proxy, y todo lo necesario para probarla, desplegarla y entenderla. |
-| `docs/mockups/` | El diseño visual de la app: el mockup HTML de la pantalla de cocina (`app-cocina-mockup.html`), el concepto de la pantalla de bienvenida y en `inicio-capas/` los originales de las capas de esa pantalla, con el script que genera las versiones livianas que usa la app. |
+| `web/` | **La aplicación**: la SPA React + TypeScript y el generador que convierte el catálogo en los archivos que ella consume. |
+| `tests/`, `docs/` | La compuerta de cobertura y la documentación. |
 
-## El mockup navegable
+## Cómo se instala y se levanta
 
-El diseño de las pantallas de catálogo (lista de recetas, detalle, mise en place, progreso
-y ajustes) sale de un prototipo hecho en Figma Make, que se puede recorrer como si fuera la
-app:
-
-**https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Templa**
-
-Se abre el archivo y con el botón **Preview** se navega el prototipo a pantalla completa.
-Hace falta que Figma te haya dado acceso al archivo. De ahí salen los colores, las
-tipografías (Nunito y Space Mono) y los dos temas, claro y oscuro, que la app implementa
-en `microservices/frontend/src/estilos.css`. El prototipo tiene además pantallas que la app
-no implementa a propósito: login por nombre, logros, rachas y dificultad.
-
-## Cómo levantarlo
-
-Hace falta Docker con el plugin Compose, Node 22 y pnpm 10 (para las pruebas y el
-desarrollo fuera de Docker).
+Hace falta **Node 22** y **pnpm 10**. Nada más: ni Docker, ni base de datos, ni servidor.
 
 ```bash
-cp .env.example .env            # y cambiar POSTGRES_PASSWORD y JWT_SECRET
-docker compose up -d --build
+cd web && pnpm install && pnpm dev
 ```
 
-Cuando los ocho contenedores están `healthy`:
+Abre en <http://localhost:5173>. `pnpm dev` genera antes el catálogo leyendo `data/`; si
+tocás una receta o una ficha, volvé a correr `pnpm generar:catalogo`.
 
-| URL | Qué hay |
-|---|---|
-| http://localhost/ | La SPA, a través del reverse proxy |
-| http://localhost/api/catalogo/health | `catalogo`, con el inventario de recetas, ingredientes y utensilios que lleva la imagen |
-| http://localhost/api/usuarios/health | `usuarios` |
-| http://localhost/api/cocinadas/health | `cocinadas` |
-| http://localhost:3001 · 3002 · 3003 · 8080 | Los mismos servicios sin pasar por el proxy |
-
-Todos esos puertos del lado del host salen del `.env` (`PUERTO_HTTP`, `PUERTO_FRONTEND`,
-`PUERTO_CATALOGO`…): si la máquina ya tiene otra aplicación en el 80, el 443 o el 8080,
-se mueven ahí y nada más. Para compartir la VM con otra aplicación, ver
-«Convivir con otra aplicación en la misma VM» en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-
-Para desarrollar un servicio con recarga en caliente contra el resto del stack en Docker:
+Para ver exactamente lo que se publica:
 
 ```bash
-cd microservices/catalogo && pnpm install && pnpm dev
+cd web && pnpm build && pnpm preview
 ```
-
-Para el frontend, `pnpm dev` en `microservices/frontend` levanta Vite en el puerto 5173 con
-las llamadas a `/api/...` reenviadas a los servicios publicados por el compose.
 
 ## Cómo se prueba
 
 ```bash
-bash tests/utest.sh            # unitarias de todo, con compuerta del 100 % de cobertura
-bash tests/itest.sh --rapido   # paridad de configuración y contratos, sin levantar nada
-bash tests/itest.sh            # lo anterior más el camino de punta a punta (stack arriba)
-bash tests/mutation.sh         # mutation testing: informa, no reprueba
+bash tests/utest.sh
 ```
 
-El detalle de los niveles, las exclusiones de cobertura y el resultado del mutation
-testing está en [docs/TESTING.md](docs/TESTING.md).
+Unitarias con **compuerta del 100 %** en instrucciones, ramas, funciones y líneas. El
+detalle de qué se mide, qué está excluido y por qué, en [docs/TESTING.md](docs/TESTING.md).
 
-## Cómo se despliega
+## Cómo se publica
 
-Al mergear a `main`, el CI publica las imágenes y despliega solo. A mano, cuando hace
-falta volver atrás o probar:
+**Cada merge a `main` publica el sitio solo.** El CI corre las pruebas, compila y sube el
+resultado a GitHub Pages; no hay que apretar nada ni entrar a ningún servidor. El detalle
+está en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-En una VM de Oracle Cloud con Docker, por SHA de commit y con reversión:
+## El catálogo
 
-```bash
-python deployment/oracle-single/deploy.py          # el último commit verificado de main
-python deployment/oracle-single/deploy.py <sha>    # un commit concreto, o volver atrás
-```
+No hay API: el catálogo son archivos que se generan al compilar leyendo `data/`, y que la
+app pide como cualquier otro archivo del sitio.
 
-Guía completa en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-
-## La API
-
-Todos los servicios exponen `GET /health`. El catálogo, además (a través del proxy, con el
-prefijo `/api/catalogo`):
-
-| Método y ruta | Devuelve |
+| Archivo | Qué tiene |
 |---|---|
-| `GET /recetas` | Un resumen por plato: nombre, momento, porciones, nutrición, `foto` y sus `versiones` (número, clave, título, duración). |
-| `GET /recetas/:plato/:version` | La receta completa (`data/recetas/esquema-receta.md`) con la ruta de la foto de cada ingrediente y utensilio resuelta. `version` es la clave (`dos-etapas`) o el número (`2`). 404 si no existe. |
-| `GET /recetas/:plato/foto` | La foto del plato terminado (JPEG), con caché de un día. |
-| `GET /ingredientes/:id/foto`, `GET /utensilios/:id/foto` | La primera imagen enlazada en la ficha del ingrediente o utensilio. 404 si no tiene. |
+| `api/catalogo/recetas.json` | Un resumen por plato: nombre, momento, porciones, nutrición, `foto` y sus `versiones` (número, clave, título, duración). |
+| `api/catalogo/recetas/<plato>/<version>.json` | La receta completa ([esquema](data/recetas/esquema-receta.md)) con la ruta de la foto de cada ingrediente y utensilio resuelta. `<version>` es la clave (`dos-etapas`) o el número (`2`); se escriben las dos. |
+| `api/catalogo/fotos/recetas/<plato>.<ext>` | La foto del plato terminado. |
+| `api/catalogo/fotos/ingredientes/<id>.<ext>`, `api/catalogo/fotos/utensilios/<id>.<ext>` | La primera imagen enlazada en la ficha. Solo se copian las que alguna receta usa. |
 
-Los identificadores son los nombres de archivo de las fichas; cualquier otra cosa (mayúsculas,
-puntos, barras) responde 400 sin llegar al catálogo. Usuarios y cocinadas todavía no tienen
-endpoints de dominio.
+Se conserva el prefijo `api/` a propósito, aunque no haya ninguna API detrás: es por donde
+entraría un backend el día que las cocinadas tengan que salir del celular.
+
+Las cocinadas, el tema y la cocinada en curso viven en el `localStorage`
+(`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`). No salen del teléfono.
+
+## El mockup navegable
+
+El diseño de las pantallas sale de un prototipo hecho en Figma Make, que se puede recorrer
+como si fuera la app:
+
+**<https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Cocinadas>**
+
+Se abre el archivo y con el botón **Preview** se navega a pantalla completa. Hace falta que
+Figma te haya dado acceso. De ahí salen los colores, las tipografías (Nunito y Space Mono)
+y los dos temas, claro y oscuro, que la app implementa en `web/src/estilos.css`. El
+prototipo tiene además pantallas que la app no implementa a propósito: login por nombre,
+dificultad y los cronómetros por paso independientes.
+
+El resto del diseño visual está en `docs/mockups/`: el mockup HTML de la pantalla de
+cocina, el concepto de la bienvenida, y en `inicio-capas/` los originales de las capas de
+esa pantalla con el script que genera las versiones livianas.
 
 ## Dónde leer más
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): qué hace cada pieza, cómo se comunican y
-  qué ADR respalda cada decisión.
-- [docs/adr/README.md](docs/adr/README.md): el índice de decisiones de arquitectura.
-- [docs/SECURITY.md](docs/SECURITY.md): amenazas, qué las mitiga y qué queda abierto.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): qué hace cada pieza y qué ADR respalda cada
+  decisión.
+- [docs/adr/README.md](docs/adr/README.md): el índice de decisiones de arquitectura, con
+  las que se dieron de baja y por qué.
+- [docs/TESTING.md](docs/TESTING.md) y [docs/SECURITY.md](docs/SECURITY.md).
 - [data/recetas/README.md](data/recetas/README.md), [data/ingredientes/README.md](data/ingredientes/README.md),
   [data/utencillos/README.md](data/utencillos/README.md): las convenciones del catálogo.

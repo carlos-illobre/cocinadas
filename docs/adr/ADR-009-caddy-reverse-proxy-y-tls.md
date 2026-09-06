@@ -1,6 +1,6 @@
 # ADR-009: Caddy como reverse proxy con TLS automático
 
-**Estado:** Aceptado
+**Estado:** Aceptado, enmendado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md) , [ADR-016](ADR-016-proxy-de-la-maquina-como-pieza-aparte.md) y [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -89,3 +89,33 @@ proxy.
 
 - `.claude/skills/desplegar-en-oracle-cloud/referencias/operacion.md`, «El dominio y el certificado».
 - [ADR-013](ADR-013-frontend-spa-react-vite.md).
+
+---
+
+## Enmienda (2026-09-06): [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+Caddy sigue siendo la elección, y ahora es lo único que corre. Los dos Caddy que había —el
+del sistema, que terminaba el TLS y enrutaba `/api/<servicio>/`, y el del frontend, que
+servía los archivos— se fundieron en uno: sin servicios detrás, el primero solo le pasaba
+las peticiones al segundo. El Caddyfile pasó a viajar dentro de la imagen, así que la
+configuración del servidor cambia con el mismo SHA que el código.
+
+---
+
+## Enmienda (2026-09-06): [ADR-016](ADR-016-proxy-de-la-maquina-como-pieza-aparte.md)
+
+Caddy sigue siendo la elección, pero se parte en dos. El TLS y el reparto por dominio
+dejan de ser parte de la aplicación y pasan a un proxy de la MÁQUINA, en
+`infrastructure/proxy/`, que es optativo y se prende desde el `.env`: en esa VM corre más
+de una aplicación y el 80 y el 443 son de una sola. La aplicación queda como inquilina,
+escuchando en `:80` sin saber por qué dominio la llamaron, y conserva lo suyo —cabeceras
+de seguridad, política de contenido, ruteo de la SPA y caché— dentro de su imagen.
+
+---
+
+## Enmienda (2026-09-06): [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
+
+Caddy sale del proyecto: el sitio lo sirve GitHub Pages, con su TLS. Con él se van las
+cabeceras de seguridad y la CSP que vivían en el Caddyfile, porque Pages no deja definir
+cabeceras — queda pendiente recuperar la CSP con `<meta http-equiv>` (docs/SECURITY.md).
+Es la contrapartida concreta de no tener servidor propio.

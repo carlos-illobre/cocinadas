@@ -5,6 +5,8 @@ deployment/*/.env
 # Dependencias y artefactos de build de cada servicio
 node_modules/
 dist/
+# El catálogo se genera de data/ en cada build (ADR-015): la fuente es data/, no esto.
+web/public/api/
 coverage/
 reports/
 .stryker-tmp/
@@ -19,3 +21,9 @@ desktop.ini
 
 # Temporales de la sesión de Claude
 .claude/settings.local.json
+# Carpeta de trabajo descartable: nada de acá se versiona ni sobrevive a la tarea
+tmp/
+
+# Bytecode de Python (deploy.py se compila al verificarlo)
+__pycache__/
+*.pyc

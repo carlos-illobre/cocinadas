@@ -1,9 +1,7 @@
 C4Context
-  title Templa · contexto
+  title Cocinadas · contexto
   Person(cocinero, "Cocinero", "Usa la app desde el celular apoyado en la mesada")
-  System(templa, "Templa", "Línea de tiempo viva de la receta, cronómetros, alarmas y progreso por receta")
-  System_Ext(letsencrypt, "Let's Encrypt", "Certificados TLS, renovados por Caddy")
-  System_Ext(github, "GitHub · Actions · GHCR · Pages", "Código, CI, imágenes por SHA (amd64 + arm64) y sitio de documentación")
-  Rel(cocinero, templa, "HTTPS", "templa.duckdns.org")
-  Rel(templa, letsencrypt, "ACME HTTP-01", "puerto 80")
-  Rel(github, templa, "docker compose pull por SHA", "deploy.sh")
+  System(cocinadas, "Cocinadas", "Línea de tiempo viva de la receta, cronómetros, alarmas y progreso por receta")
+  System_Ext(github, "GitHub · Actions · Pages", "Código, CI y el hosting del sitio estático, con su TLS")
+  Rel(cocinero, cocinadas, "HTTPS", "carlos-illobre.github.io/cocinadas/")
+  Rel(github, cocinadas, "publica el sitio", "en cada merge a main")

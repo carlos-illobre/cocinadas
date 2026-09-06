@@ -1,6 +1,6 @@
 # ADR-005: PostgreSQL para usuarios y cocinadas
 
-**Estado:** Aceptado
+**Estado:** Superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -109,3 +109,12 @@ El catálogo sigue sin base de datos. Los servicios no comparten tablas.
 
 - [ADR-002](ADR-002-tres-microservicios.md), [ADR-006](ADR-006-catalogo-desde-el-repositorio-en-la-imagen.md), [ADR-008](ADR-008-drizzle-orm.md).
 - `data/recetas/esquema-receta.md`: los `paso_id` estables contra los que se guardan los tiempos.
+
+---
+
+## Enmienda (2026-09-06): superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+No hay usuarios ni cocinadas del lado del servidor: las cocinadas viven en el
+`localStorage` del teléfono. PostgreSQL se fue sin que nadie le hubiera escrito una fila.
+El análisis de este ADR sigue siendo el punto de partida para cuando el historial tenga
+que salir del celular.

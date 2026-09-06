@@ -1,6 +1,6 @@
 # ADR-003: Eventos entre servicios con NATS JetStream
 
-**Estado:** Aceptado
+**Estado:** Superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -94,3 +94,11 @@ síncrono contra cada servicio a través del proxy.
 
 - [ADR-004](ADR-004-mensajes-json-con-esquema-versionado.md).
 - `contratos/eventos/README.md`.
+
+---
+
+## Enmienda (2026-09-06): superado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+No quedó ningún par de servicios entre los que publicar un evento: hay un solo
+contenedor y es un file server. NATS se fue del compose sin haber transportado un solo
+mensaje.

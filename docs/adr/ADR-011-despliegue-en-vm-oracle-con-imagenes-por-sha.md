@@ -1,6 +1,6 @@
 # ADR-011: Despliegue en una VM de Oracle Cloud con imágenes multi-arquitectura por SHA
 
-**Estado:** Aceptado
+**Estado:** Superado por [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -94,3 +94,23 @@ El compose es el mismo en desarrollo y en la VM (ADR-001).
 
 - `.claude/skills/desplegar-en-oracle-cloud/referencias/instancia.md`, `despliegue.md`, `operacion.md`.
 - `docs/DEPLOYMENT.md`.
+
+---
+
+## Enmienda (2026-09-06): [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
+
+El mecanismo no cambia: imágenes multi-arquitectura etiquetadas por SHA en GHCR y
+`deploy.py` trayendo exactamente ese SHA. Lo que cambia es la cantidad: una sola imagen,
+`cocinadas`, en vez de cuatro. La comprobación de que quedó arriba dejó de mirar
+puertos publicados —en producción `SITE_ADDRESS` es el dominio, así que una petición a
+`localhost` no coincide con ningún sitio de Caddy— y pregunta por el sitio interno de
+salud desde adentro del contenedor.
+
+---
+
+## Enmienda (2026-09-06): superado por [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
+
+No hay VM ni imágenes: el sitio es estático y lo publica GitHub Pages en cada merge a
+`main`. Lo que este ADR resolvía —saber exactamente qué versión corre y poder revertir de
+forma determinística— ahora lo da el propio commit publicado. El análisis sigue valiendo
+como punto de partida el día que haya un backend que desplegar.

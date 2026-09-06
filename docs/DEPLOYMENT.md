@@ -1,231 +1,107 @@
 # Despliegue
 
-Una VM de Oracle Cloud (Always Free) con Docker, el mismo `docker-compose.yml` que en
-desarrollo, y las imágenes construidas por el CI y publicadas en GHCR etiquetadas por
-SHA de commit (ADR-011). Todo lo específico vive en `deployment/oracle-single/`.
+**Cada merge a `main` publica el sitio solo.** No hay servidor, ni claves, ni nada que
+apretar: el CI corre las pruebas, compila y sube el resultado a GitHub Pages.
 
-> La guía paso a paso de la instancia (crearla, conectarse, Security List, DNS,
-> certificado) se genera con la skill `desplegar-en-oracle-cloud` como `ORACLE.md` en
-> esa carpeta. Esta página describe la arquitectura del despliegue y la operación.
+**La app: <https://carlos-illobre.github.io/cocinadas/>**
 
-## Dominio y TLS
+El porqué de que no haya servidor está en
+[ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md).
 
-- Dominio: `templa.duckdns.org`, apuntado a la IP pública de la instancia.
-- TLS: Caddy pide el certificado a Let's Encrypt por HTTP-01 la primera vez que arranca
-  con `SITE_ADDRESS=templa.duckdns.org`, y lo renueva solo (ADR-009). Para que la
-  emisión funcione: **abrir 80 y 443 en la Security List → apuntar el DNS → esperar a que
-  `dig +short templa.duckdns.org` devuelva la IP → recién entonces levantar el proxy.**
-  Emitir antes quema uno de los pocos intentos por hora que Let's Encrypt permite.
-- Los certificados viven en el volumen `caddy-datos`.
+## El pipeline
 
-## Puertos
+`.github/workflows/ci.yml`, tres jobs:
 
-Adentro de los contenedores los puertos no cambian nunca. Del lado del host los decide
-el `.env`, para poder convivir con otra aplicación en la misma máquina.
-
-| Variable | Valor por omisión | Quién | Desde dónde |
-|---|---|---|---|
-| `PUERTO_HTTP`, `PUERTO_HTTPS` | 80, 443 (TCP y UDP) | `reverse-proxy` | La interfaz que diga `PROXY_ADDR`. **Los únicos que se abren en la Security List.** |
-| `PUERTO_CATALOGO`, `PUERTO_USUARIOS`, `PUERTO_COCINADAS`, `PUERTO_FRONTEND` | 3101, 3102, 3103, 8180 | catalogo, usuarios, cocinadas, frontend | Solo `127.0.0.1` de la VM (`PUBLISH_ADDR`). Los usa `deploy.py` para comprobar los `/health`. |
-| — | 5432, 4222, 8222 | postgres, nats | Solo la red interna del compose. Para mirarlos: `docker compose exec` o túnel SSH. |
-
-Los puertos que publica Docker no pasan por la cadena `INPUT` de iptables: `ufw` no
-los protege. Lo que decide qué está abierto es la Security List de la VCN.
-
-## Convivir con otra aplicación en la misma VM
-
-Dos aplicaciones pueden compartir la máquina, pero **el 80 y el 443 son de una sola**: el
-navegador no elige puerto. La que los tiene le pasa a la otra el tráfico de su dominio.
-
-Si Templa es la que los tiene, no hay nada que hacer: los valores de `.env.oracle`
-funcionan tal cual y Caddy emite el certificado de `templa.duckdns.org` solo.
-
-Si los tiene la otra aplicación, en el `.env` de Templa:
-
-```
-PROXY_ADDR=127.0.0.1
-PUERTO_HTTP=8280
-PUERTO_HTTPS=8243
-SITE_ADDRESS=http://templa.duckdns.org
-```
-
-`SITE_ADDRESS` con `http://` es lo que apaga el TLS de Caddy: el certificado lo maneja el
-otro proxy, que es el que ve Internet. `PROXY_ADDR=127.0.0.1` deja a Templa fuera del
-alcance de la red, solo accesible desde la propia VM.
-
-Del lado del otro proxy hay que agregar el dominio. Con nginx:
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name templa.duckdns.org;
-    # El mismo certificado que ya maneje ese proxy, emitido también para este dominio.
-    location / {
-        proxy_pass http://127.0.0.1:8280;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Y en la Security List de la VCN no se abre nada nuevo: el 8280 no sale de la máquina.
-
-Los demás puertos no chocan si cada aplicación usa los suyos. Para ver qué está tomado:
-
-```bash
-sudo ss -lntp
-```
-
-## Los dos `.env` de un despliegue
-
-| Archivo | Dónde | Qué tiene | Plantilla |
-|---|---|---|---|
-| `.env` de la **aplicación** | `RUTA_REMOTA/.env` en la VM | Las 13 variables del compose con valores de producción; `deploy.py` solo le cambia `TAG`. | `deployment/oracle-single/.env.oracle` |
-| `.env` del **despliegue** | `deployment/oracle-single/.env` en tu máquina | `SSH` y `RUTA_REMOTA`: cómo llegar a la VM. | `deployment/oracle-single/.env.deploy.example` |
-
-Los dos están en el `.gitignore`. `tests/integration/paridad-env.sh` comprueba que cada
-uno declare exactamente lo que su plantilla.
-
-## Primer despliegue
-
-1. `python deployment/oracle-single/deploy.py --preflight` desde tu máquina: verifica
-   memoria, disco, Docker, puertos y firewall en la instancia, sin tocar nada.
-2. En la VM: `mkdir -p ~/templa && cd ~/templa`, copiar `.env.oracle` como `.env`
-   y completar los marcadores (`REGISTRO`, contraseña, `JWT_SECRET` con
-   `openssl rand -base64 48`).
-3. En tu máquina: copiar `.env.deploy.example` a `deployment/oracle-single/.env` y
-   completar `SSH` y `RUTA_REMOTA`.
-4. Mergear a `main` y esperar a que el CI publique las imágenes (job `imagenes`).
-5. `python deployment/oracle-single/deploy.py`.
-
-## Despliegue automático al mergear a main
-
-El job `desplegar` del CI corre `deploy.py` con el SHA del commit, después de que el job
-`imagenes` publicó las cuatro imágenes. Un despliegue por vez y solo desde `main`.
-
-Hace falta cargar cuatro secretos en **Settings → Secrets and variables → Actions** del
-repositorio:
-
-| Secreto | Qué es | Cómo se obtiene |
+| Job | Cuándo | Qué hace |
 |---|---|---|
-| `SSH_DESTINO` | `usuario@ip-publica` de la instancia | Es el mismo valor que `SSH` en el `.env` local del despliegue. |
-| `RUTA_REMOTA` | Dónde vive el proyecto en la instancia | `/home/ubuntu/templa`. |
-| `SSH_CLAVE_PRIVADA` | Clave privada, entera, de una clave dedicada al CI | `ssh-keygen -t ed25519 -C templa-ci -f templa-ci` y pegar el contenido de `templa-ci`. |
-| `SSH_HOST_KEY` | La huella de la instancia | `ssh-keyscan -t ed25519 <IP_PUBLICA>` y pegar la línea que devuelve. |
+| `pruebas` | cada push y cada PR | `tests/utest.sh` con la compuerta del 100 %, y `validar-receta.py` sobre el catálogo. |
+| `vulnerabilidades` | cada push y cada PR | Trivy busca CVE y secretos filtrados. **Informa, no reprueba.** |
+| `publicar` | solo en `main`, después de `pruebas` | Compila `web/` y publica en Pages. |
 
-Y una variable (no secreta) `DOMINIO` con `templa.duckdns.org`, que es lo que el entorno
-muestra como enlace del despliegue.
+Todo merge a `main` —con commit de merge o con squash— es un push a `main`, así que
+`publicar` corre en cada merge. Si las pruebas fallan, no se publica nada.
 
-En la instancia, una sola vez:
+## Qué hay que tener configurado en GitHub
 
-```bash
-cat templa-ci.pub >> ~/.ssh/authorized_keys   # la PÚBLICA, no la privada
-```
+Una sola cosa, y una sola vez: **Settings → Pages → Build and deployment → Source:
+GitHub Actions**.
 
-La clave del CI conviene que sea **dedicada**: si se filtra, se borra esa línea de
-`authorized_keys` y no hay que rotar la clave personal.
+Nada más. Sin secretos, sin variables, sin entornos con revisores. El job se autentica con
+el token OIDC del propio workflow, que es para lo que están los permisos `pages: write` e
+`id-token: write`.
 
-**La huella se fija a mano** en vez de aceptar la que venga (`StrictHostKeyChecking=no`):
-aceptar cualquiera es aceptar a quien se ponga en el medio.
+El repositorio tiene que ser **público** para que Pages sea gratis. Lo es.
 
-**Para pedir aprobación antes de cada despliegue**: en Settings → Environments → `produccion`,
-agregar «Required reviewers». Sin revisores configurados, el despliegue corre solo.
+## Las dos trampas de Pages
 
-**Qué tiene que estar abierto**: el CI entra por SSH desde los runners de GitHub, que no
-tienen IP fija, así que el 22 de la instancia tiene que aceptar conexiones de internet.
-Si eso no se quiere, las alternativas son un runner propio dentro de la VM o una red
-privada tipo Tailscale; en los dos casos cambia solo este job, no el script.
+**1. El sitio se sirve en `/<repo>/`, no en la raíz.** O sea
+`carlos-illobre.github.io/cocinadas/`. Cualquier ruta que empiece con `/` apunta al dominio
+y da 404 **solo en producción**, que es el peor momento para enterarse.
 
-## Despliegues siguientes y reversión
+Por eso `vite.config.ts` tiene `base: './'` y el código usa rutas relativas
+(`logo.png`, `api/catalogo`, `inicio/1.jpg`). Con eso el mismo bundle sirve igual en una
+subcarpeta, en la raíz de un dominio propio o abierto desde el disco, y el nombre del
+repositorio no aparece en ninguna parte.
 
-```bash
-python deployment/oracle-single/deploy.py            # el último commit verificado de main
-python deployment/oracle-single/deploy.py <sha>      # un commit concreto
-python deployment/oracle-single/deploy.py <sha-anterior>   # volver atrás: es el mismo comando
-python deployment/oracle-single/deploy.py --dry-run  # ver qué haría, sin tocar la VM
-```
+El job `publicar` lo comprueba: si el `index.html` sale con una ruta absoluta, falla.
 
-El script anota qué SHA había antes y lo imprime, así la reversión es copiar ese comando.
-Da el despliegue por bueno solo cuando los cuatro `/health` contestan; si uno no
-contesta en dos minutos, muestra sus logs y dice cómo volver.
+Esto funciona porque **la app nunca cambia la URL**: `avanzar` en `App.tsx` hace
+`pushState(null, '')` sin tercer argumento, así que la barra de direcciones se queda en la
+base. El día que haya enlaces profundos de verdad (`/receta/...`) hay que revisarlo, y
+además Pages devuelve `404.html` con estado 404 para rutas que no existen como archivo.
 
-**Lo que la reversión no revierte:** los volúmenes. Si una versión migró datos, volver la
-imagen no vuelve los datos. Un cambio que toque el formato de lo persistido lo dice en el
-mensaje del commit y acá.
+**2. Pages no deja poner cabeceras HTTP.** Se perdieron la CSP, `Permissions-Policy`,
+`Referrer-Policy`, `X-Content-Type-Options` y HSTS, que vivían en el Caddyfile. Está
+anotado como pendiente en [SECURITY.md](SECURITY.md): la CSP se puede recuperar con
+`<meta http-equiv>` en el `index.html`.
 
-## Seguridad
+## Revertir
 
-El detalle y el porqué están en [ADR-014](adr/ADR-014-endurecimiento-antes-de-publicar.md).
-Lo que hay puesto:
-
-| Qué | Dónde se cambia |
-|---|---|
-| Techo del log por contenedor (hoy 1 MB) | `LOG_MAX_SIZE`, `LOG_MAX_FILES` |
-| Techo de CPU por contenedor | `CPU_LIMIT_*` |
-| Peticiones por minuto y por IP antes del 429 | `RATE_LIMIT_POR_MINUTO` |
-| Cabeceras de seguridad y política de contenido | `infrastructure/reverse-proxy/Caddyfile` |
-| Sin privilegios nuevos, sin capacidades, disco de solo lectura | `docker-compose.yml` |
-
-Antes de publicar, en la VM:
-
-- `chmod 600 ~/templa/.env`: ahí están la contraseña de la base y el secreto de los JWT.
-- En la Security List de la VCN, abrir solo los puertos del reverse proxy. Si Templa va
-  detrás de otro proxy, su `PUERTO_HTTP` **no** se abre: se llega por `127.0.0.1`.
-- Poner el respaldo en el cron (abajo).
-
-Lo que todavía no está cubierto es lo que llega con las cuentas: hash de contraseñas,
-límite de intentos de login, vida corta del token y que cada servicio verifique que el
-dueño del recurso es el del token.
-
-## Respaldo
-
-El estado vive en cuatro volúmenes. Qué se pierde con cada uno:
-
-| Volumen | Qué se pierde si se pierde | Urgencia |
-|---|---|---|
-| `postgres-datos` | **Todos los usuarios y todas las cocinadas.** No están en ningún otro lado. | Respaldar. |
-| `caddy-datos` | Los certificados TLS. Se reemiten, con los límites de intentos de Let's Encrypt. | Respaldar. |
-| `nats-datos` | Eventos publicados y no consumidos todavía. Se regenera con el uso. | No hace falta. |
-| `caddy-config` | Configuración derivada de Caddy. Se regenera al arrancar. | No hace falta. |
-
-Respaldo con un contenedor descartable, desde la VM:
+No hay comando de reversión: se revierte el commit y se mergea.
 
 ```bash
-docker run --rm -v templa_postgres-datos:/d -v "$PWD:/b" alpine tar czf /b/postgres-datos.tgz -C /d .
-docker run --rm -v templa_caddy-datos:/d -v "$PWD:/b" alpine tar czf /b/caddy-datos.tgz -C /d .
+git revert <sha>
 ```
 
-Para PostgreSQL, además, un volcado lógico es más portable:
-`docker compose exec postgres pg_dump -U templa templa > templa.sql`.
+El siguiente merge republica. Como el catálogo se genera en el build leyendo `data/`
+(ADR-006), **revertir el código revierte también las recetas**: el sitio publicado siempre
+corresponde a un commit entero.
 
-Eso mismo, automático, lo hace `deployment/oracle-single/respaldo.sh`: vuelca la base
-comprimida, copia los certificados, guarda los últimos siete días y borra los más viejos.
-Se corre **en la VM** y acepta `--dry-run` para ver qué haría. En el cron:
+Si hace falta ver qué se publicó y cuándo: **Actions → el run de `publicar`**, o
+**Settings → Pages**, que muestra el último despliegue.
 
-```
-17 3 * * * cd ~/templa && bash deployment/oracle-single/respaldo.sh >> ~/respaldos/registro.txt 2>&1
-```
+## Publicar a mano, sin esperar un merge
 
-## Disco
-
-Cada despliegue deja imágenes. `deploy.py` corre `docker image prune -af --filter
-until=24h` al final e informa cuánto liberó: sin `-a` no libera nada, porque las
-imágenes etiquetadas por SHA nunca están «colgadas».
-
-## Operación diaria
+Para ver exactamente lo que se publicaría, sin publicarlo:
 
 ```bash
-ssh <destino> 'cd ~/templa && docker compose ps'                        # qué corre y con qué TAG
-ssh <destino> 'cd ~/templa && docker compose logs -f --tail 100 cocinadas'
-ssh <destino> 'docker stats --no-stream'                                    # memoria por contenedor
-ssh <destino> 'df -h / && docker system df'                                 # disco
-ssh <destino> 'cd ~/templa && docker compose restart usuarios'
+cd web && pnpm build && pnpm preview
 ```
 
-## Límites del plan gratuito a tener presentes
+`pnpm preview` sirve `dist/` tal cual. Si querés reproducir la subcarpeta de Pages, copiá
+`dist/` dentro de una carpeta con el nombre del repositorio y servila desde el nivel de
+arriba:
 
-Transferencia de salida con tope mensual; balanceador de capa 7 limitado a 10 Mbps (el
-de capa 4, sin ese tope); el API Gateway no está en el plan gratuito; una instancia sin
-actividad puede ser reclamada. Verificar los valores vigentes en la documentación de
-Oracle antes de contar con ellos: cambian.
+```bash
+mkdir -p tmp/pages/cocinadas && cp -r web/dist/* tmp/pages/cocinadas/
+cd tmp/pages && python3 -m http.server 8099
+```
+
+y abrí <http://localhost:8099/cocinadas/>. Es la forma de detectar una ruta absoluta antes
+de que llegue a producción.
+
+## El día que haya backend
+
+Pages sirve archivos: no corre procesos ni tiene base de datos. Cuando las cocinadas tengan
+que salir del celular hay que traer un servidor, y ahí hay dos caminos, analizados en
+[ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md):
+
+- **Orígenes separados** (front en Pages, API en un servidor): trae CORS y empuja el token
+  de sesión a `localStorage`, porque una cookie entre sitios necesita `SameSite=None` y
+  Safari la bloquea por omisión — y esto es una app de celular.
+- **Un CDN delante de un dominio propio** (Cloudflare, `/api/*` al servidor): un solo
+  origen, sin CORS y con cookie normal. Cuesta un dominio y es la mejor de las dos.
+
+Lo que ya está preparado para ese día: el prefijo `api/` en las URL y el `Almacen`
+inyectable de `historial/almacen.ts`, que hoy es `localStorage` y mañana puede ser un
+cliente HTTP sin tocar las pantallas.
