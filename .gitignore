@@ -21,6 +21,8 @@ desktop.ini
 
 # Temporales de la sesión de Claude
 .claude/settings.local.json
+# Carpeta de trabajo descartable: nada de acá se versiona ni sobrevive a la tarea
+tmp/
 
 # Bytecode de Python (deploy.py se compila al verificarlo)
 __pycache__/

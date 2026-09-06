@@ -1,14 +1,9 @@
-# Pipeline (docs/TESTING.md, docs/DEPLOYMENT.md):
-#   pruebas   en cada push y PR: unitarias con la compuerta del 100 % + paridad de .env.
-#   mutacion  en cada push y PR, después de pruebas: Stryker en todos los proyectos.
-#             No bloquea; deja los informes como artefacto.
-#   imagen    solo en main y solo si las pruebas pasaron: construye la única imagen para
-#             amd64 y arm64 y la publica en GHCR etiquetada por SHA (ADR-011).
-#             deploy.py trae exactamente ese SHA a la instancia.
-#   sitio     solo en main: publica docs/ en GitHub Pages.
-#   desplegar solo en main y después de imagen: entra por SSH a la instancia de Oracle y
-#             corre deploy.py con el SHA de este commit. Como todo merge a main es un
-#             push a main, cada merge se despliega solo, sin apretar nada.
+# Pipeline (docs/TESTING.md):
+#   pruebas          en cada push y PR: unitarias con la compuerta del 100 %.
+#   vulnerabilidades en cada push y PR: CVE y secretos filtrados. Informa, no reprueba.
+#   publicar         solo en main y solo si las pruebas pasaron: compila la app y la
+#                    publica en GitHub Pages. Cada merge a main es un push a main, así
+#                    que cada merge se publica solo.
 name: ci
 
 on:
@@ -23,6 +18,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  VERSION_PNPM: 10.34.5
+  VERSION_NODE: 22
+
 jobs:
   pruebas:
     runs-on: ubuntu-latest
@@ -30,35 +29,26 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.34.5
+          version: ${{ env.VERSION_PNPM }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.VERSION_NODE }}
           cache: pnpm
-          cache-dependency-path: microservices/*/pnpm-lock.yaml
+          cache-dependency-path: web/pnpm-lock.yaml
       - name: Unitarias con compuerta de cobertura
         run: bash tests/utest.sh
-      - name: Integración sin stack (paridad de .env)
-        run: bash tests/itest.sh --rapido
-      - name: Compose resuelve sin variables sin definir
-        run: cp .env.example .env && docker compose config --quiet
-      - name: Sintaxis de los scripts de despliegue
-        run: |
-          python -m py_compile deployment/oracle-single/deploy.py
-          bash -n deployment/oracle-single/preflight.sh
-          # Sin .env el --dry-run usa valores de ejemplo: comprueba que el script
-          # entero corre y qué comandos mandaría, sin tocar ninguna instancia.
-          python deployment/oracle-single/deploy.py --dry-run > /dev/null
-      - name: Informes de cobertura
+      - name: El catálogo del repositorio es válido
+        run: python3 data/recetas/validar-receta.py
+      - name: Informe de cobertura
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cobertura
-          path: microservices/*/coverage/
+          path: web/coverage/
           retention-days: 7
 
   vulnerabilidades:
-    # Busca CVEs en las dependencias y secretos filtrados en el repositorio. No reprueba
+    # Busca CVE en las dependencias y secretos filtrados en el repositorio. No reprueba
     # el build: avisa. El día que una dependencia tenga un fallo grave, el aviso llega
     # acá y no cuando alguien lo explota.
     runs-on: ubuntu-latest
@@ -75,147 +65,55 @@ jobs:
           exit-code: '0'
           format: table
 
-  mutacion:
-    # Informa, no reprueba (docs/TESTING.md): tarda minutos, por eso corre solo acá y
-    # nunca en la máquina de desarrollo salvo pedido expreso. Los informes quedan como
-    # artefacto del run.
-    needs: pruebas
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.34.5
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: microservices/*/pnpm-lock.yaml
-      - name: Instalar dependencias
-        run: for d in microservices/*/; do (cd "$d" && pnpm install --frozen-lockfile); done
-      - name: Mutation testing de todos los servicios
-        run: bash tests/mutation.sh
-      - name: Informes de mutación
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mutacion
-          path: microservices/*/reports/mutation/
-          retention-days: 14
-
-  imagen:
+  publicar:
+    # Solo en main y solo si las pruebas pasaron. Todo merge a main —con commit de merge
+    # o con squash— es un push a main, así que esto corre en cada merge, sin apretar nada.
     needs: pruebas
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Construir y publicar cocinadas
-        uses: docker/build-push-action@v6
-        with:
-          # Contexto en la raíz: el build genera el catálogo leyendo data/ (ADR-006).
-          context: .
-          file: microservices/frontend/Dockerfile
-          # arm64 para la Ampere A1 y amd64 para desarrollo y para una Micro AMD. Construir
-          # arm64 sobre x86 con QEMU tarda varias veces más; se acepta a cambio de no
-          # depender de un runner ARM.
-          platforms: linux/amd64,linux/arm64
-          push: true
-          # Etiquetadas por SHA, nunca por `latest`: `docker compose ps` dice exactamente
-          # qué versión hay y la reversión es determinística.
-          tags: ghcr.io/${{ github.repository_owner }}/cocinadas-web:${{ github.sha }}
-          cache-from: type=gha,scope=web
-          cache-to: type=gha,scope=web,mode=max
-
-  desplegar:
-    # Después de la imagen: la instancia hace `docker compose pull` de este SHA, y si
-    # todavía no está publicada el despliegue falla.
-    needs: imagen
-    # Todo merge a main —con commit de merge o con squash— es un push a main, así que
-    # esta condición es «cada vez que se mergea a main». No hay disparador manual: el
-    # despliegue es automático a propósito.
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    # El entorno guarda el historial de qué se desplegó y cuándo, y da la URL. OJO: si en
-    # Settings → Environments → produccion se configuran «required reviewers», el
-    # despliegue deja de ser automático y queda esperando aprobación. Para que corra solo,
-    # ese entorno no tiene que tener revisores.
-    environment:
-      name: produccion
-      url: https://${{ vars.DOMINIO }}
-    # Un despliegue por vez: dos corriendo a la vez sobre la misma instancia dejan el
-    # .env remoto con el TAG de uno y los contenedores del otro.
-    concurrency:
-      group: despliegue-produccion
-      cancel-in-progress: false
-    steps:
-      # El script resuelve el SHA con git, así que necesita el repositorio, no solo el
-      # árbol de trabajo.
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Preparar el acceso por SSH
-        env:
-          CLAVE: ${{ secrets.SSH_CLAVE_PRIVADA }}
-          HOST_KEY: ${{ secrets.SSH_HOST_KEY }}
-        run: |
-          test -n "$CLAVE" || { echo "falta el secreto SSH_CLAVE_PRIVADA"; exit 1; }
-          test -n "$HOST_KEY" || { echo "falta el secreto SSH_HOST_KEY"; exit 1; }
-          mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          echo "$CLAVE" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          # La huella de la instancia se fija a mano y no con `ssh-keyscan` en caliente:
-          # aceptar la que venga es aceptar a cualquiera que se ponga en el medio.
-          echo "$HOST_KEY" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-
-      - name: Escribir la configuración del despliegue
-        env:
-          DESTINO: ${{ secrets.SSH_DESTINO }}
-          RUTA: ${{ secrets.RUTA_REMOTA }}
-        run: |
-          test -n "$DESTINO" || { echo "falta el secreto SSH_DESTINO"; exit 1; }
-          test -n "$RUTA" || { echo "falta el secreto RUTA_REMOTA"; exit 1; }
-          # REGISTRO no es un secreto ni hace falta configurarlo: es el mismo owner al que
-          # el job `imagen` acaba de publicar. deploy.py lo usa solo para crear el .env de
-          # la instancia la primera vez.
-          {
-            echo "SSH=$DESTINO"
-            echo "RUTA_REMOTA=$RUTA"
-            echo "REGISTRO=ghcr.io/${{ github.repository_owner }}"
-          } > deployment/oracle-single/.env
-
-      # El SHA va explícito: el script, sin argumento, desplegaría la punta de
-      # origin/main, que para cuando esto corre podría ser otro commit.
-      - name: Desplegar ${{ github.sha }}
-        run: python deployment/oracle-single/deploy.py "${{ github.sha }}"
-
-  sitio:
-    needs: pruebas
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    permissions:
       pages: write
+      # Para el token OIDC con el que deploy-pages se autentica; sin esto falla.
       id-token: write
+    # Una publicación por vez, y sin cancelar la que esté en curso: cortarla a mitad
+    # puede dejar el sitio a medias.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.publicar.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.VERSION_PNPM }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.VERSION_NODE }}
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
       - uses: actions/configure-pages@v5
+      - name: Instalar y compilar
+        # `pnpm build` genera antes el catálogo desde data/ (ADR-006): el sitio publicado
+        # trae las recetas del mismo commit.
+        working-directory: web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+      - name: Que el build no haya emitido rutas absolutas
+        # Pages sirve el sitio en /<repo>/, no en la raíz. Una ruta que empiece con `/`
+        # apuntaría al dominio y daría 404 solo en producción, que es el peor momento
+        # para enterarse. `base: './'` en vite.config.ts es lo que lo evita.
+        run: |
+          if grep -oE '(src|href)="/[^/][^"]*"' web/dist/index.html; then
+            echo "::error::el index.html tiene rutas absolutas: no van a resolver bajo /<repo>/"
+            exit 1
+          fi
+          echo "sin rutas absolutas en el index.html"
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: web/dist
       - id: publicar
         uses: actions/deploy-pages@v4
