@@ -8,6 +8,22 @@
     <link rel="preload" as="image" href="inicio/1.webp" fetchpriority="high" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="apple-touch-icon" href="icono-192.png" />
+    <!--
+      El manifest es lo que hace que, al agregar la app a la pantalla de inicio, se abra
+      sin la barra del navegador (`display: standalone`). Sus rutas son relativas, así que
+      funciona igual bajo /cocinadas/ de GitHub Pages que en la raíz de un dominio propio.
+
+      Las tres `apple-*` son para iOS, que hasta la 16.4 no leía el manifest y todavía
+      necesita estas para el nombre del ícono y para que la barra de estado no se coma
+      contenido. `black-translucent` deja la foto de la mesada llegar hasta arriba de todo,
+      que es lo que el diseño espera con `viewport-fit=cover` y los `env(safe-area-inset-*)`
+      del CSS.
+    -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Cocinadas" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <!-- Nunito para todo y Space Mono para los números (el prototipo de Figma), Lobster solo para la marca, Poppins solo para el lema de la pantalla de inicio y Roboto solo para el botón de Google. Hasta que la app sea instalable sin conexión, se cargan de Google Fonts. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

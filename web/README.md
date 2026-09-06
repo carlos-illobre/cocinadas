@@ -53,6 +53,22 @@ Los anchos salen de a qué tamaño se muestra cada cosa en el CSS: 128 px para i
 y utensilios (se ven a 38–52), 860 para la foto del plato (ocupa los 430 de ancho de la
 app, a 2×) y 1000 para las capas de inicio. Nunca se agranda.
 
+## Instalable en el teléfono (`manifest.webmanifest`)
+
+Con el manifest, agregar la app a la pantalla de inicio la abre **sin la barra del
+navegador** (`"display": "standalone"`). Todas sus rutas son relativas, así que resuelve
+igual bajo `/cocinadas/` en GitHub Pages que en la raíz de un dominio propio.
+
+Además del manifest hacen falta cuatro `meta` en el `index.html`: iOS no leyó el manifest
+hasta la 16.4 y todavía usa las `apple-*` para el nombre del ícono y la barra de estado.
+`black-translucent` está elegido a propósito: deja que la foto de la mesada llegue hasta
+arriba de todo, que es lo que el diseño espera con `viewport-fit=cover` y los
+`env(safe-area-inset-*)` del CSS.
+
+**Pendiente**: un ícono con `purpose: "maskable"`. Sin él, Android recorta el ícono a la
+forma del sistema —círculo o cuadrado redondeado— y se come las asas de la olla y las
+hojas. Hay que generar una variante con la olla al 60 % centrada sobre un fondo sólido.
+
 ## Archivos estáticos (`public/`)
 
 Lo que está acá se copia tal cual a la raíz del sitio al compilar. Vite no los procesa ni
@@ -78,7 +94,7 @@ Lo que queda son las imágenes **sin texto adentro**, que no envejecen:
 
 | Archivo | Qué es | Tamaño | Dónde se usa |
 |---|---|---|---|
-| `icono-512.png` | Solo la olla, lienzo cuadrado | 512 × 512 | **No está en `public/`**: vive en `docs/mockups/marca/`. Se publicaba sin que nada lo usara, y son 233 KB. Vuelve acá el día que haya un manifest de PWA que lo pida. |
+| `icono-512.png` | Solo la olla, lienzo cuadrado | 512 × 512 | El ícono grande del `manifest.webmanifest`: es el que usa Android para la pantalla de arranque al abrir la app instalada. |
 | `icono-192.png` | Ídem | 192 × 192 | La olla de la marca (`src/Logotipo.tsx`) y el `apple-touch-icon` de `index.html`. Se muestra a unos 88 px: 192 cubre pantallas del doble de densidad, y la de 512 pesaría 238 KB en vez de 42 |
 | `favicon.png` | Ídem | 64 × 64 | Favicon en `index.html` |
 | `inicio.jpg` | La foto de la mesada (brócoli, albahaca, limón, ajo, spaghetti sobre pizarra) que entregó Carlos como capa de fondo de la pantalla de inicio, sin la etiqueta "Made with AI" (se recortó la franja superior donde estaba) y comprimida a JPEG | 1024 × 1436 | Fondo de `src/Inicio.tsx`, con `object-fit: cover` y un velo radial oscuro en el centro para que el logo y el lema se lean |

@@ -1,0 +1,17 @@
+{
+  "name": "Cocinadas",
+  "short_name": "Cocinadas",
+  "description": "La receta como línea de tiempo viva: cronómetros por paso, alarmas para lo que corre solo, y el progreso de cada cocinada.",
+  "lang": "es-AR",
+  "dir": "ltr",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0d0d",
+  "theme_color": "#0d0d0d",
+  "icons": [
+    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
