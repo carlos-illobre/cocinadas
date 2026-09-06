@@ -6,7 +6,8 @@ describe('Inicio', () => {
   it('muestra el logo, el lema y las dos formas de entrar', () => {
     render(<Inicio alEntrar={() => undefined} />);
 
-    expect(screen.getByRole('img', { name: 'Cocinadas' })).toHaveAttribute('src', 'logo.png');
+    // La marca es texto, no una imagen: por eso se busca por texto y no por rol de imagen.
+    expect(screen.getByText('Cocinadas')).toBeInTheDocument();
     expect(screen.getByText('Tu receta, al punto justo')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Continuar con Google' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Entrar sin cuenta' })).toBeInTheDocument();
@@ -22,7 +23,7 @@ describe('Inicio', () => {
     expect(arriba.map((c) => c.getAttribute('src'))).toEqual(['inicio/2.webp', 'inicio/3.webp', 'inicio/4.webp', 'inicio/5.webp', 'inicio/6.webp']);
     // La hoja (10) queda debajo del ajo (11), y los dos debajo de los tallarines (9).
     expect(abajo.map((c) => c.getAttribute('src'))).toEqual(['inicio/7.webp', 'inicio/8.webp', 'inicio/10.webp', 'inicio/11.webp', 'inicio/9.webp']);
-    // Decorativas: el nombre del producto lo da el logo.
+    // Decorativas: el nombre del producto lo da la marca.
     expect([...arriba, ...abajo].every((c) => c.getAttribute('alt') === '')).toBe(true);
     expect(container.querySelector('.inicio-escena')).toHaveAttribute('aria-hidden', 'true');
   });
