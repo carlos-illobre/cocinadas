@@ -99,6 +99,44 @@ uno declare exactamente lo que su plantilla.
 4. Mergear a `main` y esperar a que el CI publique las imágenes (job `imagenes`).
 5. `bash deployment/oracle-single/deploy.sh`.
 
+## Despliegue automático al mergear a main
+
+El job `desplegar` del CI corre `deploy.sh` con el SHA del commit, después de que el job
+`imagenes` publicó las cuatro imágenes. Un despliegue por vez y solo desde `main`.
+
+Hace falta cargar cuatro secretos en **Settings → Secrets and variables → Actions** del
+repositorio:
+
+| Secreto | Qué es | Cómo se obtiene |
+|---|---|---|
+| `SSH_DESTINO` | `usuario@ip-publica` de la instancia | Es el mismo valor que `SSH` en el `.env` local del despliegue. |
+| `RUTA_REMOTA` | Dónde vive el proyecto en la instancia | `/home/ubuntu/templa`. |
+| `SSH_CLAVE_PRIVADA` | Clave privada, entera, de una clave dedicada al CI | `ssh-keygen -t ed25519 -C templa-ci -f templa-ci` y pegar el contenido de `templa-ci`. |
+| `SSH_HOST_KEY` | La huella de la instancia | `ssh-keyscan -t ed25519 <IP_PUBLICA>` y pegar la línea que devuelve. |
+
+Y una variable (no secreta) `DOMINIO` con `templa.duckdns.org`, que es lo que el entorno
+muestra como enlace del despliegue.
+
+En la instancia, una sola vez:
+
+```bash
+cat templa-ci.pub >> ~/.ssh/authorized_keys   # la PÚBLICA, no la privada
+```
+
+La clave del CI conviene que sea **dedicada**: si se filtra, se borra esa línea de
+`authorized_keys` y no hay que rotar la clave personal.
+
+**La huella se fija a mano** en vez de aceptar la que venga (`StrictHostKeyChecking=no`):
+aceptar cualquiera es aceptar a quien se ponga en el medio.
+
+**Para pedir aprobación antes de cada despliegue**: en Settings → Environments → `produccion`,
+agregar «Required reviewers». Sin revisores configurados, el despliegue corre solo.
+
+**Qué tiene que estar abierto**: el CI entra por SSH desde los runners de GitHub, que no
+tienen IP fija, así que el 22 de la instancia tiene que aceptar conexiones de internet.
+Si eso no se quiere, las alternativas son un runner propio dentro de la VM o una red
+privada tipo Tailscale; en los dos casos cambia solo este job, no el script.
+
 ## Despliegues siguientes y reversión
 
 ```bash

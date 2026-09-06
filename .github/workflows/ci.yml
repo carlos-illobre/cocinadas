@@ -6,6 +6,9 @@
 #             para amd64 y arm64 y las publica en GHCR etiquetadas por SHA (ADR-011).
 #             deploy.sh trae exactamente ese SHA a la instancia.
 #   sitio     solo en main: publica docs/ en GitHub Pages.
+#   desplegar solo en main y después de imagenes: entra por SSH a la instancia de Oracle
+#             y corre deploy.sh con el SHA de este commit. Las imágenes ya están
+#             publicadas, así que la instancia solo las trae y reemplaza contenedores.
 name: ci
 
 on:
@@ -142,6 +145,61 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/templa-${{ matrix.servicio }}:${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.servicio }}
           cache-to: type=gha,scope=${{ matrix.servicio }},mode=max
+
+  desplegar:
+    # Después de las imágenes: la instancia hace `docker compose pull` de este SHA, y si
+    # todavía no están publicadas el despliegue falla.
+    needs: imagenes
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # El entorno permite pedir aprobación manual antes de desplegar y guarda el historial
+    # de qué se desplegó y cuándo. Si no se configuran revisores, corre solo.
+    environment:
+      name: produccion
+      url: https://${{ vars.DOMINIO }}
+    # Un despliegue por vez: dos corriendo a la vez sobre la misma instancia dejan el
+    # .env remoto con el TAG de uno y los contenedores del otro.
+    concurrency:
+      group: despliegue-produccion
+      cancel-in-progress: false
+    steps:
+      # El script resuelve el SHA con git, así que necesita el repositorio, no solo el
+      # árbol de trabajo.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Preparar el acceso por SSH
+        env:
+          CLAVE: ${{ secrets.SSH_CLAVE_PRIVADA }}
+          HOST_KEY: ${{ secrets.SSH_HOST_KEY }}
+        run: |
+          test -n "$CLAVE" || { echo "falta el secreto SSH_CLAVE_PRIVADA"; exit 1; }
+          test -n "$HOST_KEY" || { echo "falta el secreto SSH_HOST_KEY"; exit 1; }
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "$CLAVE" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # La huella de la instancia se fija a mano y no con `ssh-keyscan` en caliente:
+          # aceptar la que venga es aceptar a cualquiera que se ponga en el medio.
+          echo "$HOST_KEY" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Escribir la configuración del despliegue
+        env:
+          DESTINO: ${{ secrets.SSH_DESTINO }}
+          RUTA: ${{ secrets.RUTA_REMOTA }}
+        run: |
+          test -n "$DESTINO" || { echo "falta el secreto SSH_DESTINO"; exit 1; }
+          test -n "$RUTA" || { echo "falta el secreto RUTA_REMOTA"; exit 1; }
+          {
+            echo "SSH=$DESTINO"
+            echo "RUTA_REMOTA=$RUTA"
+          } > deployment/oracle-single/.env
+
+      # El SHA va explícito: el script, sin argumento, desplegaría la punta de
+      # origin/main, que para cuando esto corre podría ser otro commit.
+      - name: Desplegar ${{ github.sha }}
+        run: bash deployment/oracle-single/deploy.sh "${{ github.sha }}"
 
   sitio:
     needs: pruebas

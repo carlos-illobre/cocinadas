@@ -75,6 +75,9 @@ testing está en [docs/TESTING.md](docs/TESTING.md).
 
 ## Cómo se despliega
 
+Al mergear a `main`, el CI publica las imágenes y despliega solo. A mano, cuando hace
+falta volver atrás o probar:
+
 En una VM de Oracle Cloud con Docker, por SHA de commit y con reversión:
 
 ```bash
