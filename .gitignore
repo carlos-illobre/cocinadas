@@ -6,7 +6,7 @@ deployment/*/.env
 node_modules/
 dist/
 # El catálogo se genera de data/ en cada build (ADR-015): la fuente es data/, no esto.
-microservices/frontend/public/api/
+web/public/api/
 coverage/
 reports/
 .stryker-tmp/
