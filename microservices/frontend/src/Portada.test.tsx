@@ -65,11 +65,11 @@ describe('Portada', () => {
     expect(etapas[0]).toHaveTextContent('Etapa 1 · Preparación');
     expect(etapas[0]).toHaveTextContent('11 min');
     expect(etapas[0]).toHaveTextContent('Al abrir el freezer.');
-    expect(etapas[0]).toHaveTextContent('2 pasos · 1 procesos en paralelo');
+    expect(etapas[0]).toHaveTextContent('3 pasos · 1 procesos en paralelo');
     expect(etapas[0]).not.toHaveTextContent('tiempo crítico');
     expect(etapas[0]).toHaveTextContent('Después puede haber pausa.');
     expect(etapas[1]).toHaveClass('hot');
-    expect(etapas[1]).toHaveTextContent('3 pasos · 2 procesos en paralelo · 2 con tiempo crítico');
+    expect(etapas[1]).toHaveTextContent('5 pasos · 2 procesos en paralelo · 3 con tiempo crítico');
     expect(etapas[1]).not.toHaveTextContent('pausa');
   });
 

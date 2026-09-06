@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Receta, RecetaResumen } from './api';
+import { avisadorDelNavegador, SIN_AVISADOR, type Avisador } from './cocina/sonido';
+import { Cocina } from './Cocina';
 import { Inicio } from './Inicio';
 import { Portada } from './Portada';
 import { Recetas } from './Recetas';
@@ -9,6 +11,10 @@ import './estilos.css';
 export interface PropiedadesApp {
   /** Inyectable para las pruebas; por omisión, el fetch del navegador. */
   readonly fetchImpl?: Fetch;
+  /** Inyectable para las pruebas; por omisión, el audio y la vibración del navegador. */
+  readonly crearAvisador?: () => Avisador;
+  /** Reloj inyectable para la cocina. */
+  readonly ahora?: () => number;
 }
 
 export type Pantalla =
@@ -21,17 +27,27 @@ export type Pantalla =
 const fetchNavegador: Fetch = (url) => fetch(url);
 
 /**
- * El recorrido: inicio → recetas → portada (con la versión elegida) → cocina. Sin
- * enrutador: son cuatro pantallas y el estado de navegación cabe en un objeto. Cuando haga
- * falta compartir un enlace a una receta, se agrega el enrutador y este objeto se mapea a
- * la URL.
+ * El recorrido: inicio → recetas → portada (con la versión elegida) → cocina → resumen.
+ * Sin enrutador: son cinco pantallas y el estado de navegación cabe en un objeto. Cuando
+ * haga falta compartir un enlace a una receta, se agrega el enrutador y este objeto se
+ * mapea a la URL.
  */
-export function App({ fetchImpl = fetchNavegador }: PropiedadesApp): React.JSX.Element {
+export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNavegador, ahora }: PropiedadesApp): React.JSX.Element {
   const [pantalla, setPantalla] = useState<Pantalla>({ nombre: 'inicio' });
+  // El navegador solo deja sonar después de un gesto: el avisador se crea al tocar
+  // «Empezar» en la pantalla de inicio, y de ahí en más se reutiliza.
+  const [avisador, setAvisador] = useState<Avisador>(SIN_AVISADOR);
 
   switch (pantalla.nombre) {
     case 'inicio':
-      return <Inicio alEmpezar={() => setPantalla({ nombre: 'recetas' })} />;
+      return (
+        <Inicio
+          alEmpezar={() => {
+            setAvisador(crearAvisador());
+            setPantalla({ nombre: 'recetas' });
+          }}
+        />
+      );
     case 'recetas':
       return (
         <Recetas
@@ -52,7 +68,15 @@ export function App({ fetchImpl = fetchNavegador }: PropiedadesApp): React.JSX.E
         />
       );
     case 'cocina':
-      return <Cocina receta={pantalla.receta} alVolver={() => setPantalla({ nombre: 'portada', resumen: pantalla.receta, version: pantalla.receta.version.clave })} />;
+      return (
+        <Cocina
+          receta={pantalla.receta}
+          avisador={avisador}
+          {...(ahora === undefined ? {} : { ahora })}
+          alVolver={() => setPantalla({ nombre: 'portada', resumen: pantalla.receta, version: pantalla.receta.version.clave })}
+          alTerminar={() => setPantalla({ nombre: 'recetas' })}
+        />
+      );
     case 'servicios':
       return <Servicios fetchImpl={fetchImpl} alVolver={() => setPantalla({ nombre: 'recetas' })} />;
   }
@@ -64,27 +88,7 @@ export function versionPorOmision(resumen: RecetaResumen): string {
   return ultima === undefined ? '1' : ultima.clave;
 }
 
-/**
- * La pantalla de cocina (cronómetros, carriles paralelos, alarmas) es el próximo cambio.
- * Hasta entonces, esta pantalla dice qué receta y versión se eligió y deja volver.
- */
-export function Cocina({ receta, alVolver }: { readonly receta: Receta; readonly alVolver: () => void }): React.JSX.Element {
-  return (
-    <main className="pantalla">
-      <button type="button" className="enlace volver" onClick={alVolver}>
-        ‹ Portada
-      </button>
-      <p className="eyebrow">Cocina · en construcción</p>
-      <h1>{receta.nombre}</h1>
-      <p className="lead">
-        Versión {receta.version.numero} · {receta.version.titulo} · {receta.tiempo_total_texto}.
-      </p>
-      <p className="lead">La pantalla de cocina, con los cronómetros por paso y las alarmas, es el próximo cambio.</p>
-    </main>
-  );
-}
-
-export function Servicios({ fetchImpl = fetchNavegador, alVolver }: PropiedadesApp & { readonly alVolver?: () => void }): React.JSX.Element {
+export function Servicios({ fetchImpl = fetchNavegador, alVolver }: { readonly fetchImpl?: Fetch; readonly alVolver?: () => void }): React.JSX.Element {
   const [estados, setEstados] = useState<readonly EstadoServicio[] | null>(null);
 
   useEffect(() => {
