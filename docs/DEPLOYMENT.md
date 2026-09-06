@@ -10,11 +10,11 @@ SHA de commit (ADR-011). Todo lo específico vive en `deployment/oracle-single/`
 
 ## Dominio y TLS
 
-- Dominio: `templa.duckdns.org`, apuntado a la IP pública de la instancia.
+- Dominio: `cocinadas.duckdns.org`, apuntado a la IP pública de la instancia.
 - TLS: Caddy pide el certificado a Let's Encrypt por HTTP-01 la primera vez que arranca
-  con `SITE_ADDRESS=templa.duckdns.org`, y lo renueva solo (ADR-009). Para que la
+  con `SITE_ADDRESS=cocinadas.duckdns.org`, y lo renueva solo (ADR-009). Para que la
   emisión funcione: **abrir 80 y 443 en la Security List → apuntar el DNS → esperar a que
-  `dig +short templa.duckdns.org` devuelva la IP → recién entonces levantar el proxy.**
+  `dig +short cocinadas.duckdns.org` devuelva la IP → recién entonces levantar el proxy.**
   Emitir antes quema uno de los pocos intentos por hora que Let's Encrypt permite.
 - Los certificados viven en el volumen `caddy-datos`.
 
@@ -37,20 +37,20 @@ los protege. Lo que decide qué está abierto es la Security List de la VCN.
 Dos aplicaciones pueden compartir la máquina, pero **el 80 y el 443 son de una sola**: el
 navegador no elige puerto. La que los tiene le pasa a la otra el tráfico de su dominio.
 
-Si Templa es la que los tiene, no hay nada que hacer: los valores de `.env.oracle`
-funcionan tal cual y Caddy emite el certificado de `templa.duckdns.org` solo.
+Si Cocinadas es la que los tiene, no hay nada que hacer: los valores de `.env.oracle`
+funcionan tal cual y Caddy emite el certificado de `cocinadas.duckdns.org` solo.
 
-Si los tiene la otra aplicación, en el `.env` de Templa:
+Si los tiene la otra aplicación, en el `.env` de Cocinadas:
 
 ```
 PROXY_ADDR=127.0.0.1
 PUERTO_HTTP=8280
 PUERTO_HTTPS=8243
-SITE_ADDRESS=http://templa.duckdns.org
+SITE_ADDRESS=http://cocinadas.duckdns.org
 ```
 
 `SITE_ADDRESS` con `http://` es lo que apaga el TLS de Caddy: el certificado lo maneja el
-otro proxy, que es el que ve Internet. `PROXY_ADDR=127.0.0.1` deja a Templa fuera del
+otro proxy, que es el que ve Internet. `PROXY_ADDR=127.0.0.1` deja a Cocinadas fuera del
 alcance de la red, solo accesible desde la propia VM.
 
 Del lado del otro proxy hay que agregar el dominio. Con nginx:
@@ -58,7 +58,7 @@ Del lado del otro proxy hay que agregar el dominio. Con nginx:
 ```nginx
 server {
     listen 443 ssl;
-    server_name templa.duckdns.org;
+    server_name cocinadas.duckdns.org;
     # El mismo certificado que ya maneje ese proxy, emitido también para este dominio.
     location / {
         proxy_pass http://127.0.0.1:8280;
@@ -91,7 +91,7 @@ uno declare exactamente lo que su plantilla.
 
 1. `python deployment/oracle-single/deploy.py --preflight` desde tu máquina: verifica
    memoria, disco, Docker, puertos y firewall en la instancia, sin tocar nada.
-2. En la VM: `mkdir -p ~/templa && cd ~/templa`, copiar `.env.oracle` como `.env`
+2. En la VM: `mkdir -p ~/cocinadas && cd ~/cocinadas`, copiar `.env.oracle` como `.env`
    y completar los marcadores (`REGISTRO`, contraseña, `JWT_SECRET` con
    `openssl rand -base64 48`).
 3. En tu máquina: copiar `.env.deploy.example` a `deployment/oracle-single/.env` y
@@ -110,17 +110,17 @@ repositorio:
 | Secreto | Qué es | Cómo se obtiene |
 |---|---|---|
 | `SSH_DESTINO` | `usuario@ip-publica` de la instancia | Es el mismo valor que `SSH` en el `.env` local del despliegue. |
-| `RUTA_REMOTA` | Dónde vive el proyecto en la instancia | `/home/ubuntu/templa`. |
-| `SSH_CLAVE_PRIVADA` | Clave privada, entera, de una clave dedicada al CI | `ssh-keygen -t ed25519 -C templa-ci -f templa-ci` y pegar el contenido de `templa-ci`. |
+| `RUTA_REMOTA` | Dónde vive el proyecto en la instancia | `/home/ubuntu/cocinadas`. |
+| `SSH_CLAVE_PRIVADA` | Clave privada, entera, de una clave dedicada al CI | `ssh-keygen -t ed25519 -C cocinadas-ci -f cocinadas-ci` y pegar el contenido de `cocinadas-ci`. |
 | `SSH_HOST_KEY` | La huella de la instancia | `ssh-keyscan -t ed25519 <IP_PUBLICA>` y pegar la línea que devuelve. |
 
-Y una variable (no secreta) `DOMINIO` con `templa.duckdns.org`, que es lo que el entorno
+Y una variable (no secreta) `DOMINIO` con `cocinadas.duckdns.org`, que es lo que el entorno
 muestra como enlace del despliegue.
 
 En la instancia, una sola vez:
 
 ```bash
-cat templa-ci.pub >> ~/.ssh/authorized_keys   # la PÚBLICA, no la privada
+cat cocinadas-ci.pub >> ~/.ssh/authorized_keys   # la PÚBLICA, no la privada
 ```
 
 La clave del CI conviene que sea **dedicada**: si se filtra, se borra esa línea de
@@ -169,8 +169,8 @@ Lo que hay puesto:
 
 Antes de publicar, en la VM:
 
-- `chmod 600 ~/templa/.env`: ahí están la contraseña de la base y el secreto de los JWT.
-- En la Security List de la VCN, abrir solo los puertos del reverse proxy. Si Templa va
+- `chmod 600 ~/cocinadas/.env`: ahí están la contraseña de la base y el secreto de los JWT.
+- En la Security List de la VCN, abrir solo los puertos del reverse proxy. Si Cocinadas va
   detrás de otro proxy, su `PUERTO_HTTP` **no** se abre: se llega por `127.0.0.1`.
 - Poner el respaldo en el cron (abajo).
 
@@ -192,19 +192,19 @@ El estado vive en cuatro volúmenes. Qué se pierde con cada uno:
 Respaldo con un contenedor descartable, desde la VM:
 
 ```bash
-docker run --rm -v templa_postgres-datos:/d -v "$PWD:/b" alpine tar czf /b/postgres-datos.tgz -C /d .
-docker run --rm -v templa_caddy-datos:/d -v "$PWD:/b" alpine tar czf /b/caddy-datos.tgz -C /d .
+docker run --rm -v cocinadas_postgres-datos:/d -v "$PWD:/b" alpine tar czf /b/postgres-datos.tgz -C /d .
+docker run --rm -v cocinadas_caddy-datos:/d -v "$PWD:/b" alpine tar czf /b/caddy-datos.tgz -C /d .
 ```
 
 Para PostgreSQL, además, un volcado lógico es más portable:
-`docker compose exec postgres pg_dump -U templa templa > templa.sql`.
+`docker compose exec postgres pg_dump -U cocinadas cocinadas > cocinadas.sql`.
 
 Eso mismo, automático, lo hace `deployment/oracle-single/respaldo.sh`: vuelca la base
 comprimida, copia los certificados, guarda los últimos siete días y borra los más viejos.
 Se corre **en la VM** y acepta `--dry-run` para ver qué haría. En el cron:
 
 ```
-17 3 * * * cd ~/templa && bash deployment/oracle-single/respaldo.sh >> ~/respaldos/registro.txt 2>&1
+17 3 * * * cd ~/cocinadas && bash deployment/oracle-single/respaldo.sh >> ~/respaldos/registro.txt 2>&1
 ```
 
 ## Disco
@@ -216,11 +216,11 @@ imágenes etiquetadas por SHA nunca están «colgadas».
 ## Operación diaria
 
 ```bash
-ssh <destino> 'cd ~/templa && docker compose ps'                        # qué corre y con qué TAG
-ssh <destino> 'cd ~/templa && docker compose logs -f --tail 100 cocinadas'
+ssh <destino> 'cd ~/cocinadas && docker compose ps'                        # qué corre y con qué TAG
+ssh <destino> 'cd ~/cocinadas && docker compose logs -f --tail 100 cocinadas'
 ssh <destino> 'docker stats --no-stream'                                    # memoria por contenedor
 ssh <destino> 'df -h / && docker system df'                                 # disco
-ssh <destino> 'cd ~/templa && docker compose restart usuarios'
+ssh <destino> 'cd ~/cocinadas && docker compose restart usuarios'
 ```
 
 ## Límites del plan gratuito a tener presentes

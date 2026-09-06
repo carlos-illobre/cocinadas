@@ -30,9 +30,6 @@ import time
 from pathlib import Path
 
 RAMA_PRINCIPAL = "main"
-# Puertos de /health publicados en 127.0.0.1 de la instancia. Los define el .env de la VM;
-# estos son el respaldo para --dry-run, que no llega a leerlo.
-PUERTOS_POR_OMISION = {"catalogo": 3101, "usuarios": 3102, "cocinadas": 3103, "frontend": 8180}
 INTENTOS_HEALTH = 30
 ESPERA_ENTRE_INTENTOS_S = 4
 
@@ -174,21 +171,6 @@ def resolver_sha(raiz: Path, pedido: str | None, dry_run: bool) -> str:
     return sha
 
 
-def puertos_de_la_instancia(vm: Instancia, ruta_remota: str) -> dict[str, int]:
-    """Los PUERTO_* del .env de la VM; si no se pueden leer, los de por omisión."""
-    if vm.dry_run:
-        return PUERTOS_POR_OMISION
-    codigo, salida = vm.correr(
-        f"sed -n 's/^PUERTO_\\(CATALOGO\\|USUARIOS\\|COCINADAS\\|FRONTEND\\)=//p' '{ruta_remota}/.env'",
-        silencioso=True,
-    )
-    valores = [linea for linea in salida.splitlines() if linea.strip()]
-    if codigo != 0 or len(valores) != 4:
-        info("no pude leer los PUERTO_* del .env remoto: uso los de por omisión")
-        return PUERTOS_POR_OMISION
-    return dict(zip(("catalogo", "usuarios", "cocinadas", "frontend"), (int(v) for v in valores)))
-
-
 def preflight(vm: Instancia, raiz: Path) -> int:
     """Corre las comprobaciones previas EN la instancia, sin tocar nada."""
     guion = raiz / "deployment" / "oracle-single" / "preflight.sh"
@@ -219,10 +201,8 @@ def desplegar(vm: Instancia, raiz: Path, ruta_remota: str, sha: str) -> None:
     if vm.copiar(raiz / "docker-compose.yml", f"{ruta_remota}/docker-compose.yml") != 0:
         morir("no pude copiar el docker-compose.yml")
     ok("docker-compose.yml")
-    vm.correr(f"mkdir -p '{ruta_remota}/infrastructure/reverse-proxy'")
-    if vm.copiar(raiz / "infrastructure" / "reverse-proxy" / "Caddyfile", f"{ruta_remota}/infrastructure/reverse-proxy/Caddyfile") != 0:
-        morir("no pude copiar el Caddyfile")
-    ok("infrastructure/reverse-proxy/Caddyfile")
+    # El Caddyfile ya no se copia: viaja dentro de la imagen (ADR-015), así que la
+    # configuración del servidor cambia con el mismo SHA que el código.
 
     codigo, _ = vm.correr(
         f"cd '{ruta_remota}' && test -f .env && sed -i '/^TAG=/d' .env && printf 'TAG=%s\\n' '{sha}' >> .env"
@@ -248,23 +228,38 @@ def desplegar(vm: Instancia, raiz: Path, ruta_remota: str, sha: str) -> None:
 
     paso("Comprobando que quedó arriba")
     # `docker compose ps` muestra «Up» un contenedor que se está reiniciando en bucle. Lo
-    # que dice que el despliegue salió bien es que los servicios CONTESTEN.
-    for servicio, puerto in puertos_de_la_instancia(vm, ruta_remota).items():
-        if vm.dry_run:
-            info(f"$ ssh {vm.destino} curl -sf http://localhost:{puerto}/health  (hasta {INTENTOS_HEALTH} intentos)")
-            continue
-        for intento in range(INTENTOS_HEALTH):
-            codigo, _ = vm.correr(f"curl -sf -o /dev/null http://localhost:{puerto}/health", silencioso=True)
+    # que dice que el despliegue salió bien es que el servidor CONTESTE.
+    #
+    # Se pregunta por el sitio interno de salud desde adentro del contenedor y no por el
+    # puerto publicado: en producción SITE_ADDRESS es el dominio, así que una petición a
+    # localhost no coincide con ningún sitio de Caddy y contestaría 404 con todo bien.
+    prueba = f"cd '{ruta_remota}' && docker compose exec -T web wget -qO- http://127.0.0.1:8081/salud"
+    if vm.dry_run:
+        info(f"$ ssh {vm.destino} \"{prueba}\"  (hasta {INTENTOS_HEALTH} intentos)")
+    else:
+        for _ in range(INTENTOS_HEALTH):
+            codigo, _salida = vm.correr(prueba, silencioso=True)
             if codigo == 0:
-                ok(f"{servicio} responde")
+                ok("el servidor responde")
                 break
             time.sleep(ESPERA_ENTRE_INTENTOS_S)
         else:
-            vm.correr(f"cd '{ruta_remota}' && docker compose logs --tail 40 '{servicio}'")
+            vm.correr(f"cd '{ruta_remota}' && docker compose logs --tail 40 web")
             morir(
-                f"{servicio} no respondió en {INTENTOS_HEALTH * ESPERA_ENTRE_INTENTOS_S // 60} minutos. "
+                f"el servidor no respondió en {INTENTOS_HEALTH * ESPERA_ENTRE_INTENTOS_S // 60} minutos. "
                 f"Para volver: python {Path(__file__).name} {anterior or '<sha-anterior>'}"
             )
+
+    # Que conteste no alcanza: el catálogo viaja dentro de la imagen (ADR-006, ADR-015) y
+    # una imagen construida sin data/ arrancaría igual y serviría una app sin recetas.
+    catalogo = f"cd '{ruta_remota}' && docker compose exec -T web wget -qO- http://127.0.0.1:8081/salud >/dev/null && docker compose exec -T web test -s /srv/api/catalogo/recetas.json"
+    if vm.dry_run:
+        info(f"$ ssh {vm.destino} \"{catalogo}\"")
+    else:
+        codigo, _salida = vm.correr(catalogo, silencioso=True)
+        if codigo != 0:
+            morir("la imagen no trae el catálogo: falta /srv/api/catalogo/recetas.json")
+        ok("la imagen trae el catálogo")
 
     paso("Liberando disco")
     # `-a` no es opcional: sin ella se borran solo las imágenes COLGADAS, y las etiquetadas
@@ -304,7 +299,7 @@ def main(argumentos: list[str]) -> int:
         # Sin configuración, --dry-run igual sirve para leer los comandos; es lo que corre
         # el CI para comprobar que este script no se rompió.
         info(f"(sin {config.relative_to(raiz).as_posix()}: --dry-run usa valores de ejemplo)")
-        destino, ruta_remota = "usuario@instancia", "/home/usuario/templa"
+        destino, ruta_remota = "usuario@instancia", "/home/usuario/cocinadas"
     else:
         morir(f"falta {config} — copiar .env.deploy.example y completarlo")
     if not destino or not ruta_remota:

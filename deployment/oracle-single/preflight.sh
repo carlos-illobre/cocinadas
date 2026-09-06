@@ -22,7 +22,7 @@ set -uo pipefail
 
 # Los que el compose publica hacia afuera (reverse-proxy) con la configuración por
 # omisión. Si la máquina ya tiene otra aplicación en el 80 y el 443, el aviso de acá es
-# justamente lo que hay que ver: Templa se mueve con PUERTO_HTTP y PUERTO_HTTPS en su
+# justamente lo que hay que ver: Cocinadas se mueve con PUERTO_HTTP y PUERTO_HTTPS en su
 # .env, y esa otra aplicación le pasa el tráfico (docs/DEPLOYMENT.md).
 PUERTOS=(80 443)
 # Suma de los mem_limit de .env.oracle: 128 (el único contenedor, MEM_LIMIT_PROXY).
@@ -99,7 +99,7 @@ for puerto in "${PUERTOS[@]}"; do
     if ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE "[:.]${puerto}\$"; then
         aviso "el $puerto ya está ocupado"
         nota "si el stack ya está corriendo, es esperable"
-        nota "si es otra aplicación: mové Templa con PUERTO_HTTP y PUERTO_HTTPS (docs/DEPLOYMENT.md)"
+        nota "si es otra aplicación: mové Cocinadas con PUERTO_HTTP y PUERTO_HTTPS (docs/DEPLOYMENT.md)"
     else
         ok "el $puerto está libre"
     fi

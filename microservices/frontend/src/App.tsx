@@ -226,7 +226,7 @@ export function Servicios({ fetchImpl = fetchNavegador, alVolver }: { readonly f
         )}
         <img className="logo" src="/logo.png" alt="" width="240" height="90" />
         <p className="saludo">Cero desperdicio · sin sal · 1 porción</p>
-        <h1>Templa</h1>
+        <h1>Cocinadas</h1>
       </header>
 
       <div className="cuerpo">

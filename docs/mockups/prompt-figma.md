@@ -1,4 +1,4 @@
-# Prompt para reproducir el diseño de Templa en Figma
+# Prompt para reproducir el diseño de Cocinadas en Figma
 
 Copiá desde la línea siguiente hasta el final y pegalo en ChatGPT. Adjuntá estos archivos
 de la carpeta del proyecto: `docs/mockups/app-cocina-mockup.html` (la referencia visual
@@ -11,13 +11,13 @@ exacta, abrila en un navegador para verla), `microservices/frontend/public/logo.
 
 ---
 
-Quiero que crees en mi cuenta de Figma un archivo llamado **Templa** con el diseño de una
+Quiero que crees en mi cuenta de Figma un archivo llamado **Cocinadas** con el diseño de una
 app móvil, siguiendo al pie de la letra la especificación de abajo. El diseño ya existe como
 mockup en HTML (adjunto `app-cocina-mockup.html`; abrilo para ver el resultado esperado):
 tu trabajo es reproducirlo en Figma con componentes, estilos y variables reutilizables, no
 reinterpretarlo. Donde la especificación y el HTML difieran, manda el HTML.
 
-## 1. Qué es Templa
+## 1. Qué es Cocinadas
 
 Una app de celular que guía la preparación de un plato como una **línea de tiempo viva**:
 muestra una sola tarea para las manos con su cronómetro, arriba los procesos que corren
@@ -266,7 +266,7 @@ exceso coral 14 % titilando con marca «1:00»), cada uno con una línea de expl
 
 ## 7. Entregables
 
-- El archivo Templa con las dos páginas, todas las pantallas nombradas como arriba, los
+- El archivo Cocinadas con las dos páginas, todas las pantallas nombradas como arriba, los
   componentes con variantes y las variables de color y texto.
 - Los prototipos enlazados: Inicio → A1 → A2 (tocar la tarjeta) → A3 (tocar la pestaña) →
   B1 (Empezar) → B2 → B3 → B4 (al llegar a 0:00) → B5.

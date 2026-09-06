@@ -1,5 +1,5 @@
 C4Container
-  title Templa · contenedores (docker compose en una VM)
+  title Cocinadas · contenedores (docker compose en una VM)
   Person(cocinero, "Cocinero")
   System_Boundary(vm, "VM Oracle · docker compose") {
     Container(proxy, "reverse-proxy", "Caddy 2", "TLS · / → frontend · /api/<svc>/ → servicio. Único que publica hacia afuera (80, 443)")

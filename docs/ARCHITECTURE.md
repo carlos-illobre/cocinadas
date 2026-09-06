@@ -10,14 +10,14 @@ Los diagramas de esta página están en [diagrams/](diagrams/) como Mermaid.
 
 ```mermaid
 C4Context
-  title Templa · contexto
+  title Cocinadas · contexto
   Person(cocinero, "Cocinero", "Usa la app desde el celular apoyado en la mesada")
-  System(templa, "Templa", "Línea de tiempo viva de la receta, cronómetros, alarmas y progreso")
+  System(cocinadas, "Cocinadas", "Línea de tiempo viva de la receta, cronómetros, alarmas y progreso")
   System_Ext(letsencrypt, "Let's Encrypt", "Certificados TLS")
   System_Ext(ghcr, "GitHub · GHCR · Pages", "Código, CI, imágenes por SHA y sitio de docs")
-  Rel(cocinero, templa, "HTTPS", "templa.duckdns.org")
-  Rel(templa, letsencrypt, "ACME HTTP-01")
-  Rel(ghcr, templa, "docker compose pull por SHA")
+  Rel(cocinero, cocinadas, "HTTPS", "cocinadas.duckdns.org")
+  Rel(cocinadas, letsencrypt, "ACME HTTP-01")
+  Rel(ghcr, cocinadas, "docker compose pull por SHA")
 ```
 
 ## Componentes
@@ -34,7 +34,7 @@ C4Context
 
 ```mermaid
 C4Container
-  title Templa · contenedores
+  title Cocinadas · contenedores
   Person(cocinero, "Cocinero")
   System_Boundary(vm, "VM Oracle · docker compose") {
     Container(proxy, "reverse-proxy", "Caddy", "TLS, / → frontend, /api/<svc>/ → servicio")
@@ -88,7 +88,7 @@ sequenceDiagram
   P->>K: POST /cocinadas
   K->>K: verifica el JWT con JWT_SECRET
   K->>DB: INSERT cocinada + tiempos por paso
-  K->>N: publica templa.cocinadas.cocinada-registrada.v1
+  K->>N: publica cocinadas.cocinadas.cocinada-registrada.v1
   K-->>P: 201 {id, total_s, desvio_s}
   P-->>F: 201
   F-->>C: resumen y progreso de la receta

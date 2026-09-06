@@ -1,4 +1,4 @@
-# Frontend de Templa
+# Frontend de Cocinadas
 
 La SPA (React 19 + TypeScript, Vite, Vitest). Cómo levantarla y probarla: ver el README de la raíz y `docs/TESTING.md`.
 
@@ -11,13 +11,13 @@ sirve con `Cache-Control: no-cache` salvo lo que esté bajo `/assets/`.
 ## La identidad visual
 
 Todos derivan de la imagen original que entregó Carlos el 2026-09-05 (la olla naranja
-con reloj y la palabra Templa en degradé naranja a verde), recortada, sin la etiqueta
+con reloj y la palabra Cocinadas en degradé naranja a verde), recortada, sin la etiqueta
 "Made with AI" y con fondo transparente.
 
 | Archivo | Qué es | Tamaño | Dónde se usa |
 |---|---|---|---|
 | `logo.png` | Ícono + palabra, completo | 978 × 325 | Cabecera de la app (`src/App.tsx`) y portada de la documentación (`docs/logo.png`) |
-| `marca.png` | Solo la palabra Templa | 642 × 243 | Reservado para cabeceras angostas o fondos oscuros |
+| `marca.png` | Solo la palabra Cocinadas | 642 × 243 | Reservado para cabeceras angostas o fondos oscuros |
 | `icono-512.png` | Solo la olla, lienzo cuadrado | 512 × 512 | Ícono de instalación (PWA) cuando exista el manifest |
 | `icono-192.png` | Ídem | 192 × 192 | `apple-touch-icon` en `index.html` y `docs/icono-192.png` |
 | `favicon.png` | Ídem | 64 × 64 | Favicon en `index.html` |

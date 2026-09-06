@@ -97,7 +97,7 @@ export function Perfil({ cocinadas, xp, tema, alCambiarTema, alVerEstado, versio
           <button type="button" className="enlace" onClick={alVerEstado}>
             Estado de los servicios ›
           </button>
-          <p className="perfil-version">Templa {version}</p>
+          <p className="perfil-version">Cocinadas {version}</p>
         </section>
       </div>
     </main>

@@ -1,4 +1,4 @@
-# Templa
+# Cocinadas
 
 Contexto que no se deduce leyendo el código. Lo demás está en el
 [README](README.md), en [docs/](docs/) y en los [ADR](docs/adr/), que son la explicación
@@ -37,7 +37,7 @@ larga de cada decisión: antes de cambiar algo que tenga un ADR, leelo.
   cerca que estuvo la cocinada de los tiempos de la receta (`src/xp.ts`, `puntosDe`). El
   criterio exacto todavía está por acordar con Carlos.
 - El diseño de las pantallas sale del prototipo de Figma Make, que es la fuente:
-  <https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Templa>. Cambia seguido; el código
+  <https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Cocinadas>. Cambia seguido; el código
   fuente se lee desde el bundle de su preview, no desde el conector de Figma.
 - Del prototipo se dejaron afuera a propósito: login por nombre, dificultad, y los
   cronómetros por paso independientes.

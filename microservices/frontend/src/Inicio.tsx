@@ -43,7 +43,7 @@ export function Inicio({ alEntrar }: PropiedadesInicio): React.JSX.Element {
       </div>
 
       <div className="inicio-contenido">
-        <img className="inicio-logo" src="/logo.png" alt="Templa" width="300" height="100" />
+        <img className="inicio-logo" src="/logo.png" alt="Cocinadas" width="300" height="100" />
         <p id="inicio-lema" className="inicio-lema">
           Tu receta, al punto justo
         </p>

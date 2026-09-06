@@ -9,7 +9,7 @@ const ORIGEN = process.argv[2];
 const DESTINO = process.argv[3];
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const PUERTO = 9335;
-const perfil = mkdtempSync(join(tmpdir(), 'templa-opt-'));
+const perfil = mkdtempSync(join(tmpdir(), 'cocinadas-opt-'));
 const chrome = spawn(CHROME, [`--remote-debugging-port=${PUERTO}`, '--headless=new', '--no-first-run', '--allow-file-access-from-files', `--user-data-dir=${perfil}`, 'about:blank'], { stdio: 'ignore' });
 
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));

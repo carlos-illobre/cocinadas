@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { describe, expect, it, vi } from 'vitest';
 import { App, Servicios, versionPorOmision } from './App';
 import type { Avisador } from './cocina/sonido';
-import { CLAVE_COCINADAS, type Almacen } from './historial/almacen';
+import { CLAVE_HISTORIAL, type Almacen } from './historial/almacen';
 import { CLAVE_TEMA } from './tema';
 import { CLAVE_EN_CURSO } from './cocina/enCurso';
 import { fetchDeCatalogo, nunca, recetaDosEtapas, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
@@ -119,7 +119,7 @@ describe('el recorrido de la app', () => {
     expect(screen.getByText('Plato listo · Mise en place primero')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
-    const guardadas = JSON.parse(almacen.datos.get(CLAVE_COCINADAS) ?? '[]') as { id: string; plato: string }[];
+    const guardadas = JSON.parse(almacen.datos.get(CLAVE_HISTORIAL) ?? '[]') as { id: string; plato: string }[];
     expect(guardadas).toHaveLength(1);
     expect(guardadas[0]).toMatchObject({ id: 'id-1', plato: 'spaghetti-integral-brocoli-camarones' });
 
@@ -254,7 +254,7 @@ describe('el recorrido de la app', () => {
 
   it('arranca con las cocinadas ya guardadas en el teléfono y su experiencia', () => {
     const cocinada = { id: 'x', plato: 'p', nombre: 'Plato p', version: { clave: 'c', titulo: 'T' }, fecha: '2026-09-05T10:00:00Z', total_previsto_s: 100, total_real_s: 90, etapas: [], pasos: [], criticos: 0, criticosATiempo: 0 };
-    montar({ almacen: memoria({ [CLAVE_COCINADAS]: JSON.stringify([cocinada]) }) });
+    montar({ almacen: memoria({ [CLAVE_HISTORIAL]: JSON.stringify([cocinada]) }) });
     fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     // 90 s contra 100 s previstos: 90 puntos.
     expect(document.querySelector('.xp-puntos')).toHaveTextContent('90 XP');
@@ -269,7 +269,7 @@ describe('el recorrido de la app', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     fireEvent.click(screen.getByRole('button', { name: 'Perfil' }));
     fireEvent.click(screen.getByRole('button', { name: 'Estado de los servicios ›' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Templa' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Cocinadas' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '‹ Perfil' }));
     expect(screen.getByRole('heading', { level: 1, name: 'Aprendiz' })).toBeInTheDocument();
   });

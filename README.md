@@ -1,4 +1,4 @@
-# Templa
+# Cocinadas
 
 La receta como línea de tiempo viva: una app de celular que guía la preparación de un
 plato paso a paso, cronometra cada paso, muestra los procesos que corren en paralelo
@@ -19,7 +19,7 @@ El diseño de las pantallas de catálogo (lista de recetas, detalle, mise en pla
 y ajustes) sale de un prototipo hecho en Figma Make, que se puede recorrer como si fuera la
 app:
 
-**https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Templa**
+**https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Cocinadas**
 
 Se abre el archivo y con el botón **Preview** se navega el prototipo a pantalla completa.
 Hace falta que Figma te haya dado acceso al archivo. De ahí salen los colores, las

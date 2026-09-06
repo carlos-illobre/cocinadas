@@ -74,7 +74,7 @@ describe('Perfil', () => {
 
   it('abre el estado de los servicios y muestra la versión', () => {
     const { alVerEstado } = montar([], 0);
-    expect(screen.getByText('Templa 0.3.0')).toBeInTheDocument();
+    expect(screen.getByText('Cocinadas 0.3.0')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Estado de los servicios ›' }));
     expect(alVerEstado).toHaveBeenCalledTimes(1);
   });

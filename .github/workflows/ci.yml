@@ -2,13 +2,13 @@
 #   pruebas   en cada push y PR: unitarias con la compuerta del 100 % + paridad de .env.
 #   mutacion  en cada push y PR, después de pruebas: Stryker en todos los proyectos.
 #             No bloquea; deja los informes como artefacto.
-#   imagenes  solo en main y solo si las pruebas pasaron: construye las imágenes
-#             para amd64 y arm64 y las publica en GHCR etiquetadas por SHA (ADR-011).
+#   imagen    solo en main y solo si las pruebas pasaron: construye la única imagen para
+#             amd64 y arm64 y la publica en GHCR etiquetada por SHA (ADR-011).
 #             deploy.py trae exactamente ese SHA a la instancia.
 #   sitio     solo en main: publica docs/ en GitHub Pages.
-#   desplegar solo en main y después de imagenes: entra por SSH a la instancia de Oracle
-#             y corre deploy.py con el SHA de este commit. Las imágenes ya están
-#             publicadas, así que la instancia solo las trae y reemplaza contenedores.
+#   desplegar solo en main y después de imagen: entra por SSH a la instancia de Oracle y
+#             corre deploy.py con el SHA de este commit. Como todo merge a main es un
+#             push a main, cada merge se despliega solo, sin apretar nada.
 name: ci
 
 on:
@@ -104,19 +104,13 @@ jobs:
           path: microservices/*/reports/mutation/
           retention-days: 14
 
-  imagenes:
+  imagen:
     needs: pruebas
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        include:
-          - servicio: frontend
-            contexto: .
-            dockerfile: microservices/frontend/Dockerfile
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -126,11 +120,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Construir y publicar ${{ matrix.servicio }}
+      - name: Construir y publicar cocinadas-web
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.contexto }}
-          file: ${{ matrix.dockerfile }}
+          # Contexto en la raíz: el build genera el catálogo leyendo data/ (ADR-006).
+          context: .
+          file: microservices/frontend/Dockerfile
           # arm64 para la Ampere A1 y amd64 para desarrollo y para una Micro AMD. Construir
           # arm64 sobre x86 con QEMU tarda varias veces más; se acepta a cambio de no
           # depender de un runner ARM.
@@ -138,18 +133,23 @@ jobs:
           push: true
           # Etiquetadas por SHA, nunca por `latest`: `docker compose ps` dice exactamente
           # qué versión hay y la reversión es determinística.
-          tags: ghcr.io/${{ github.repository_owner }}/templa-${{ matrix.servicio }}:${{ github.sha }}
-          cache-from: type=gha,scope=${{ matrix.servicio }}
-          cache-to: type=gha,scope=${{ matrix.servicio }},mode=max
+          tags: ghcr.io/${{ github.repository_owner }}/cocinadas-web:${{ github.sha }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
 
   desplegar:
-    # Después de las imágenes: la instancia hace `docker compose pull` de este SHA, y si
-    # todavía no están publicadas el despliegue falla.
-    needs: imagenes
+    # Después de la imagen: la instancia hace `docker compose pull` de este SHA, y si
+    # todavía no está publicada el despliegue falla.
+    needs: imagen
+    # Todo merge a main —con commit de merge o con squash— es un push a main, así que
+    # esta condición es «cada vez que se mergea a main». No hay disparador manual: el
+    # despliegue es automático a propósito.
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    # El entorno permite pedir aprobación manual antes de desplegar y guarda el historial
-    # de qué se desplegó y cuándo. Si no se configuran revisores, corre solo.
+    # El entorno guarda el historial de qué se desplegó y cuándo, y da la URL. OJO: si en
+    # Settings → Environments → produccion se configuran «required reviewers», el
+    # despliegue deja de ser automático y queda esperando aprobación. Para que corra solo,
+    # ese entorno no tiene que tener revisores.
     environment:
       name: produccion
       url: https://${{ vars.DOMINIO }}

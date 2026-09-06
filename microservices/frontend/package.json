@@ -1,7 +1,7 @@
 {
-  "name": "templa-frontend",
+  "name": "cocinadas-web",
   "version": "0.1.0",
-  "description": "La SPA de Templa: React + TypeScript, compilada con Vite y servida como archivos estáticos.",
+  "description": "La SPA de Cocinadas: React + TypeScript, compilada con Vite y servida como archivos estáticos.",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.34.5",

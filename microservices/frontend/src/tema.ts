@@ -8,7 +8,7 @@ import type { Almacen } from './historial/almacen';
  */
 export type Tema = 'claro' | 'oscuro';
 
-export const CLAVE_TEMA = 'templa.tema';
+export const CLAVE_TEMA = 'cocinadas.tema';
 
 export function esTema(valor: unknown): valor is Tema {
   return valor === 'claro' || valor === 'oscuro';

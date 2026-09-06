@@ -5,7 +5,7 @@ flowchart LR
   end
   subgraph gh["GitHub"]
     ci{"CI: utest.sh 100 %<br/>itest.sh --rapido<br/>compose config"}
-    ghcr[("GHCR<br/>templa-*:&lt;sha&gt;<br/>amd64 + arm64")]
+    ghcr[("GHCR<br/>cocinadas-web:&lt;sha&gt;<br/>amd64 + arm64")]
     pages["GitHub Pages<br/>docs/"]
   end
   subgraph vm["VM Oracle · Always Free"]

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { almacenSeguro, CLAVE_COCINADAS, fechaCorta, guardarCocinada, listarCocinadas, progresoPorReceta, type Almacen, type Cocinada } from './almacen';
+import { almacenSeguro, CLAVE_HISTORIAL, fechaCorta, guardarCocinada, listarCocinadas, progresoPorReceta, type Almacen, type Cocinada } from './almacen';
 
 function memoria(inicial: Record<string, string> = {}): Almacen & { datos: Map<string, string> } {
   const datos = new Map(Object.entries(inicial));
@@ -29,16 +29,16 @@ describe('listarCocinadas', () => {
   });
 
   it('devuelve de la más reciente a la más antigua', () => {
-    const a = memoria({ [CLAVE_COCINADAS]: JSON.stringify([cocinada('1', '2026-09-01T10:00:00Z', 1300), cocinada('2', '2026-09-05T10:00:00Z', 1200)]) });
+    const a = memoria({ [CLAVE_HISTORIAL]: JSON.stringify([cocinada('1', '2026-09-01T10:00:00Z', 1300), cocinada('2', '2026-09-05T10:00:00Z', 1200)]) });
     expect(listarCocinadas(a).map((c) => c.id)).toEqual(['2', '1']);
   });
 
   it.each(['{no es json', '"texto"', '42', '{}'])('con basura guardada (%s) devuelve vacío en vez de romper', (basura) => {
-    expect(listarCocinadas(memoria({ [CLAVE_COCINADAS]: basura }))).toEqual([]);
+    expect(listarCocinadas(memoria({ [CLAVE_HISTORIAL]: basura }))).toEqual([]);
   });
 
   it('ignora los elementos que no tienen forma de cocinada', () => {
-    const a = memoria({ [CLAVE_COCINADAS]: JSON.stringify([cocinada('1', '2026-09-01T10:00:00Z', 1300), { id: 5 }, null, 'x']) });
+    const a = memoria({ [CLAVE_HISTORIAL]: JSON.stringify([cocinada('1', '2026-09-01T10:00:00Z', 1300), { id: 5 }, null, 'x']) });
     expect(listarCocinadas(a).map((c) => c.id)).toEqual(['1']);
   });
 });

@@ -13,7 +13,7 @@ import type { EstadoCocina } from './modelo';
  * que de verdad pasó mientras la página no estaba: es lo correcto para una cocina, donde
  * el agua siguió hirviendo.
  */
-export const CLAVE_EN_CURSO = 'templa.cocinando';
+export const CLAVE_EN_CURSO = 'cocinadas.cocinando';
 
 /**
  * Pasado este tiempo sin tocar nada, la cocinada guardada se descarta. Una receta dura

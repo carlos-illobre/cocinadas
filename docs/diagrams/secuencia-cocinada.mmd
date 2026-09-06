@@ -12,7 +12,7 @@ sequenceDiagram
   K->>K: verifica la firma del JWT con JWT_SECRET (ADR-012)
   K->>K: valida el cuerpo contra el esquema JSON (ADR-007)
   K->>DB: BEGIN · INSERT cocinada · INSERT cocinada_paso × N · COMMIT
-  K->>N: publica templa.cocinadas.cocinada-registrada.v1 (sobre v1)
+  K->>N: publica cocinadas.cocinadas.cocinada-registrada.v1 (sobre v1)
   K-->>P: 201 { id, total_real_s, desvio_s }
   P-->>F: 201
   F-->>C: resumen y gráfico de progreso de la receta

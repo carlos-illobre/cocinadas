@@ -6,7 +6,7 @@ describe('Inicio', () => {
   it('muestra el logo, el lema y las dos formas de entrar', () => {
     render(<Inicio alEntrar={() => undefined} />);
 
-    expect(screen.getByRole('img', { name: 'Templa' })).toHaveAttribute('src', '/logo.png');
+    expect(screen.getByRole('img', { name: 'Cocinadas' })).toHaveAttribute('src', '/logo.png');
     expect(screen.getByText('Tu receta, al punto justo')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Continuar con Google' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Entrar sin cuenta' })).toBeInTheDocument();

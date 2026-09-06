@@ -66,7 +66,7 @@ export interface Cocinada {
   readonly criticosATiempo: number;
 }
 
-export const CLAVE_COCINADAS = 'templa.cocinadas';
+export const CLAVE_HISTORIAL = 'cocinadas.historial';
 
 function esCocinada(x: unknown): x is Cocinada {
   return typeof x === 'object' && x !== null && typeof (x as Cocinada).id === 'string' && typeof (x as Cocinada).plato === 'string' && typeof (x as Cocinada).total_real_s === 'number';
@@ -74,7 +74,7 @@ function esCocinada(x: unknown): x is Cocinada {
 
 /** Lee todas, de la más reciente a la más antigua. Lo que no se pueda leer se ignora, no rompe. */
 export function listarCocinadas(almacen: Almacen): readonly Cocinada[] {
-  const crudo = almacen.getItem(CLAVE_COCINADAS);
+  const crudo = almacen.getItem(CLAVE_HISTORIAL);
   if (crudo === null) {
     return [];
   }
@@ -91,7 +91,7 @@ export function listarCocinadas(almacen: Almacen): readonly Cocinada[] {
 
 export function guardarCocinada(almacen: Almacen, cocinada: Cocinada): readonly Cocinada[] {
   const todas = [cocinada, ...listarCocinadas(almacen).filter((c) => c.id !== cocinada.id)];
-  almacen.setItem(CLAVE_COCINADAS, JSON.stringify(todas));
+  almacen.setItem(CLAVE_HISTORIAL, JSON.stringify(todas));
   return todas;
 }
 
