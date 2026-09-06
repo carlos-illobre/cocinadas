@@ -1,0 +1,39 @@
+# Avisos de dependencias con vulnerabilidades y actualizaciones.
+#
+# Sin esto nadie se entera de un CVE en una dependencia hasta que lo cuenta alguien.
+# Semanal y agrupado para que no sea una lluvia de pull requests: lo que importa es que
+# el aviso llegue, no que llegue una vez por paquete.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directories:
+      - /microservices/catalogo
+      - /microservices/usuarios
+      - /microservices/cocinadas
+      - /microservices/frontend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # Las de desarrollo van todas juntas: no llegan a producción.
+      desarrollo:
+        dependency-type: development
+      produccion:
+        dependency-type: production
+
+  # Las imágenes base de los Dockerfile (node, caddy).
+  - package-ecosystem: docker
+    directories:
+      - /microservices/catalogo
+      - /microservices/usuarios
+      - /microservices/cocinadas
+      - /microservices/frontend
+    schedule:
+      interval: weekly
+
+  # Las acciones del CI, que corren con acceso al repositorio.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

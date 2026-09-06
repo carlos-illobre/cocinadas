@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { LARGO_MINIMO_SECRETO, leerConfig, obligatoria, puertoDesde, secretoDesde } from '../src/config.js';
+import { LARGO_MINIMO_SECRETO, leerConfig, limiteDesde, obligatoria, puertoDesde, secretoDesde } from '../src/config.js';
 
 const secreto = 'x'.repeat(LARGO_MINIMO_SECRETO);
 const completo = {
   PUERTO: '3003',
   LOG_LEVEL: 'info',
+  RATE_LIMIT_POR_MINUTO: '120',
   NATS_URL: 'nats://nats:4222',
   DATABASE_URL: 'postgres://u:p@postgres:5432/db',
   JWT_SECRET: secreto,
@@ -53,11 +54,26 @@ describe('secretoDesde', () => {
   });
 });
 
+describe('limiteDesde', () => {
+  it('acepta un límite razonable', () => {
+    expect(limiteDesde('120')).toBe(120);
+  });
+
+  it.each(['0', '-1', '1.5', 'muchas', ''])('corta con %s, que dejaría la API sin protección', (valor) => {
+    expect(() => limiteDesde(valor)).toThrow('RATE_LIMIT_POR_MINUTO inválido');
+  });
+
+  it('el borde: 1 es válido', () => {
+    expect(limiteDesde('1')).toBe(1);
+  });
+});
+
 describe('leerConfig', () => {
   it('arma la configuración completa', () => {
     expect(leerConfig(completo)).toEqual({
       puerto: 3003,
       logLevel: 'info',
+      limitePorMinuto: 120,
       natsUrl: 'nats://nats:4222',
       databaseUrl: 'postgres://u:p@postgres:5432/db',
       jwtSecret: secreto,

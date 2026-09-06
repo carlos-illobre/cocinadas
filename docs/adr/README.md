@@ -24,3 +24,4 @@ no cambia, cuándo revisarla y referencias.
 | [011](ADR-011-despliegue-en-vm-oracle-con-imagenes-por-sha.md) | Despliegue en una VM de Oracle Cloud con imágenes multi-arquitectura por SHA | Aceptado | 2026-09-05 |
 | [012](ADR-012-autorizacion-con-jwt.md) | Autorización con JWT emitido por usuarios y verificado localmente | Aceptado | 2026-09-05 |
 | [013](ADR-013-frontend-spa-react-vite.md) | El frontend como SPA React + Vite en su propia imagen | Aceptado | 2026-09-05 |
+| [014](ADR-014-endurecimiento-antes-de-publicar.md) | Endurecimiento antes de publicar a internet | Aceptado | 2026-09-06 |

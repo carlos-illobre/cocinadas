@@ -17,7 +17,7 @@ const config = leerConfig(process.env);
 const base = conectarBase(config.databaseUrl);
 await base.verificar();
 const nats = await conectarNats(config.natsUrl, NOMBRE);
-const app = crearApp({ nombre: NOMBRE, version, logLevel: config.logLevel });
+const app = await crearApp({ nombre: NOMBRE, version, logLevel: config.logLevel, limitePorMinuto: config.limitePorMinuto });
 
 app.addHook('onClose', async () => {
   await nats.drain();

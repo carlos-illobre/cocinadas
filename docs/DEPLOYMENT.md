@@ -116,6 +116,30 @@ contesta en dos minutos, muestra sus logs y dice cómo volver.
 imagen no vuelve los datos. Un cambio que toque el formato de lo persistido lo dice en el
 mensaje del commit y acá.
 
+## Seguridad
+
+El detalle y el porqué están en [ADR-014](adr/ADR-014-endurecimiento-antes-de-publicar.md).
+Lo que hay puesto:
+
+| Qué | Dónde se cambia |
+|---|---|
+| Techo del log por contenedor (hoy 1 MB) | `LOG_MAX_SIZE`, `LOG_MAX_FILES` |
+| Techo de CPU por contenedor | `CPU_LIMIT_*` |
+| Peticiones por minuto y por IP antes del 429 | `RATE_LIMIT_POR_MINUTO` |
+| Cabeceras de seguridad y política de contenido | `infrastructure/reverse-proxy/Caddyfile` |
+| Sin privilegios nuevos, sin capacidades, disco de solo lectura | `docker-compose.yml` |
+
+Antes de publicar, en la VM:
+
+- `chmod 600 ~/templa/.env`: ahí están la contraseña de la base y el secreto de los JWT.
+- En la Security List de la VCN, abrir solo los puertos del reverse proxy. Si Templa va
+  detrás de otro proxy, su `PUERTO_HTTP` **no** se abre: se llega por `127.0.0.1`.
+- Poner el respaldo en el cron (abajo).
+
+Lo que todavía no está cubierto es lo que llega con las cuentas: hash de contraseñas,
+límite de intentos de login, vida corta del token y que cada servicio verifique que el
+dueño del recurso es el del token.
+
 ## Respaldo
 
 El estado vive en cuatro volúmenes. Qué se pierde con cada uno:
@@ -136,6 +160,14 @@ docker run --rm -v templa_caddy-datos:/d -v "$PWD:/b" alpine tar czf /b/caddy-da
 
 Para PostgreSQL, además, un volcado lógico es más portable:
 `docker compose exec postgres pg_dump -U templa templa > templa.sql`.
+
+Eso mismo, automático, lo hace `deployment/oracle-single/respaldo.sh`: vuelca la base
+comprimida, copia los certificados, guarda los últimos siete días y borra los más viejos.
+Se corre **en la VM** y acepta `--dry-run` para ver qué haría. En el cron:
+
+```
+17 3 * * * cd ~/templa && bash deployment/oracle-single/respaldo.sh >> ~/respaldos/registro.txt 2>&1
+```
 
 ## Disco
 

@@ -49,6 +49,24 @@ jobs:
           path: microservices/*/coverage/
           retention-days: 7
 
+  vulnerabilidades:
+    # Busca CVEs en las dependencias y secretos filtrados en el repositorio. No reprueba
+    # el build: avisa. El día que una dependencia tenga un fallo grave, el aviso llega
+    # acá y no cuando alguien lo explota.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy sobre el repositorio
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scanners: vuln,secret,misconfig
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+          format: table
+
   mutacion:
     # Informa, no reprueba (docs/TESTING.md): tarda minutos, por eso corre solo acá y
     # nunca en la máquina de desarrollo salvo pedido expreso. Los informes quedan como

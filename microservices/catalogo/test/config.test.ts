@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { leerConfig, obligatoria, puertoDesde } from '../src/config.js';
+import { leerConfig, limiteDesde, obligatoria, puertoDesde } from '../src/config.js';
 
 const completo = {
   PUERTO: '3001',
   LOG_LEVEL: 'info',
+  RATE_LIMIT_POR_MINUTO: '120',
   NATS_URL: 'nats://nats:4222',
   DIRECTORIO_DATOS: '/datos',
 };
@@ -38,11 +39,26 @@ describe('puertoDesde', () => {
   });
 });
 
+describe('limiteDesde', () => {
+  it('acepta un límite razonable', () => {
+    expect(limiteDesde('120')).toBe(120);
+  });
+
+  it.each(['0', '-1', '1.5', 'muchas', ''])('corta con %s, que dejaría la API sin protección', (valor) => {
+    expect(() => limiteDesde(valor)).toThrow('RATE_LIMIT_POR_MINUTO inválido');
+  });
+
+  it('el borde: 1 es válido', () => {
+    expect(limiteDesde('1')).toBe(1);
+  });
+});
+
 describe('leerConfig', () => {
   it('arma la configuración completa', () => {
     expect(leerConfig(completo)).toEqual({
       puerto: 3001,
       logLevel: 'info',
+      limitePorMinuto: 120,
       natsUrl: 'nats://nats:4222',
       directorioDatos: '/datos',
     });
