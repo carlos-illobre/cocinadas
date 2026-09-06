@@ -110,6 +110,33 @@ body {
   max-width: 430px;
   margin: 0 auto;
   padding: 48px 20px;
+  /*
+   * Cada pantalla entra deslizándose desde abajo, como en el prototipo de Figma: ahí
+   * todas montan con `screen screen-enter`, que es este mismo movimiento. Los 30px, los
+   * 0.35s y la curva salen de su bundle publicado.
+   *
+   * Va en la clase que comparten todas las pantallas y no en cada una: la animación se
+   * dispara al montar, y App cambia de componente en cada navegación.
+   */
+  animation: entrar-pantalla 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes entrar-pantalla {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Quien pidió menos movimiento ve el cambio de pantalla, no el deslizamiento. */
+@media (prefers-reduced-motion: reduce) {
+  .pantalla {
+    animation: none;
+  }
 }
 
 .eyebrow {
