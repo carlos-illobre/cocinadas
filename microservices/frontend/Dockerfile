@@ -5,7 +5,7 @@
 # imagen final no lleva Node ni node_modules, solo los archivos estáticos.
 
 # ── 1. Dependencias ──────────────────────────────────────────────────────────
-FROM node:22-alpine AS deps
+FROM node:26-alpine AS deps
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
 COPY package.json pnpm-lock.yaml ./
