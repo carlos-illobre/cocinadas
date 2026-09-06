@@ -1,5 +1,7 @@
 # Balanza digital de cocina Masuya SF-400
 
+![Balanza digital Masuya SF-400](fotos/balanza-masuya-sf400.webp)
+
 | Especificación | Dato |
 |---|---|
 | Tipo | Balanza digital de cocina |

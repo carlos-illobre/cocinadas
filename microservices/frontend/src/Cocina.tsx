@@ -1,33 +1,43 @@
 import { useEffect, useRef, useState } from 'react';
-import { BASE_CATALOGO, minutos, reloj, type Proceso as ProcesoReceta, type Receta } from './api';
+import { BASE_CATALOGO, reloj, type Proceso as ProcesoReceta, type Receta } from './api';
+import type { Cocinada } from './historial/almacen';
 import {
   atenderAlarma,
   avanzarReloj,
-  carriles,
   desvio,
   empezar,
   empezarEtapa,
   esperaPrevia_s,
   etapaActual,
+  frenteGantt,
+  gantt,
   listo,
   pasoActual,
   procesosVisibles,
   progresoPaso,
   proximoVencimiento_s,
+  reiniciarPaso,
   resumen,
   tildar,
   transcurridoEtapa_s,
   type EstadoCocina,
+  type FilaGantt,
   type PasoHecho,
   type ProcesoVisible,
 } from './cocina/modelo';
 import type { Avisador } from './cocina/sonido';
+import { logrosNuevos } from './logros';
+import { puntosDe } from './xp';
 
 export interface PropiedadesCocina {
   readonly receta: Receta;
   readonly avisador: Avisador;
   readonly alVolver: () => void;
   readonly alTerminar: () => void;
+  /** Guarda la cocinada terminada (el id lo pone quien guarda). */
+  readonly alGuardar: (cocinada: Omit<Cocinada, 'id'>) => void;
+  /** Las cocinadas que ya estaban guardadas, para saber qué logro desbloquea esta. */
+  readonly cocinadas: readonly Cocinada[];
   /** Reloj inyectable; por omisión, el del navegador. */
   readonly ahora?: () => number;
   /** Cada cuánto se redibuja, en ms. */
@@ -42,7 +52,7 @@ const ICONO_PROCESO: Readonly<Record<string, string>> = { frio: '❄', calor: '�
  * vence un proceso crítico, la alarma tapa todo; entre etapas, la pausa; al final, el
  * resumen.
  */
-export function Cocina({ receta, avisador, alVolver, alTerminar, ahora = () => Date.now(), tic_ms = 500 }: PropiedadesCocina): React.JSX.Element {
+export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, cocinadas, ahora = () => Date.now(), tic_ms = 500 }: PropiedadesCocina): React.JSX.Element {
   const [estado, setEstado] = useState<EstadoCocina>(() => empezar(receta, ahora()));
   const [reloj_ms, setReloj] = useState(() => ahora());
   const [mostrarPorQue, setMostrarPorQue] = useState(false);
@@ -76,8 +86,11 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, ahora = () => D
     }
   }, [estado.avisosSuaves, avisador]);
 
-  const accion = (f: (e: EstadoCocina, t: number) => EstadoCocina) => () => {
+  const accion = (f: (e: EstadoCocina, t: number) => EstadoCocina, sonar = false) => () => {
     const t = ahora();
+    if (sonar) {
+      avisador.toque();
+    }
     setReloj(t);
     setEstado((e) => f(e, t));
     setMostrarPorQue(false);
@@ -90,7 +103,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, ahora = () => D
     return <FinDeEtapa estado={estado} alSeguir={accion(empezarEtapa)} />;
   }
   if (estado.fase === 'fin') {
-    return <Final estado={estado} alVolver={alTerminar} />;
+    return <Final estado={estado} alVolver={alTerminar} alGuardar={alGuardar} cocinadas={cocinadas} avisador={avisador} fecha={() => new Date(ahora()).toISOString()} />;
   }
 
   const etapa = etapaActual(estado);
@@ -197,8 +210,11 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, ahora = () => D
         )}
 
         <div className="actions">
-          <button type="button" className={critica ? 'btn hot' : 'btn primary'} onClick={accion(listo)}>
+          <button type="button" className={critica ? 'btn hot' : 'btn primary'} onClick={accion(listo, true)}>
             {esperaPrevia > 0 ? 'Ya lo hice ✓' : paso.espera ? 'Seguir ✓' : 'Listo, siguiente ✓'}
+          </button>
+          <button type="button" className="btn ghost" aria-label="Reiniciar el paso" title="Reiniciar el paso" onClick={accion(reiniciarPaso)}>
+            ↺
           </button>
           <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => setMostrarPorQue((v) => !v)}>
             ?
@@ -206,9 +222,34 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, ahora = () => D
         </div>
       </section>
 
-      <Riel estado={estado} />
+      <Riel estado={estado} ahora={reloj_ms} />
     </main>
   );
+}
+
+interface Papelito {
+  readonly id: number;
+  readonly color: string;
+  readonly izquierda: number;
+  readonly demora: number;
+  readonly duracion: number;
+  readonly tamano: number;
+  readonly redondo: boolean;
+}
+
+const COLORES_CONFETI = ['#FF6B35', '#FFD166', '#06D6A0', '#4ECDC4', '#FF6B9D', '#C77DFF'];
+
+/** Los papelitos del festejo, sorteados una sola vez al llegar a la pantalla. */
+function confeti(cuantos: number): readonly Papelito[] {
+  return Array.from({ length: cuantos }, (_, id) => ({
+    id,
+    color: COLORES_CONFETI[id % COLORES_CONFETI.length] as string,
+    izquierda: Math.random() * 100,
+    demora: Math.random() * 1.5,
+    duracion: 2.5 + Math.random() * 2,
+    tamano: 6 + Math.random() * 8,
+    redondo: id % 2 === 0,
+  }));
 }
 
 function fotoDe(receta: Receta, id: string | null): string | null {
@@ -241,34 +282,49 @@ function Proceso({ visible, receta }: { readonly visible: ProcesoVisible; readon
   );
 }
 
-function Riel({ estado }: { readonly estado: EstadoCocina }): React.JSX.Element {
+function Riel({ estado, ahora }: { readonly estado: EstadoCocina; readonly ahora: number }): React.JSX.Element {
   const etapa = etapaActual(estado);
   const hechos = estado.hechos[estado.etapa] as readonly PasoHecho[];
-  const lanes = carriles(etapa);
-  const ALTO = 50;
+  const g = gantt(etapa);
+  const frente = frenteGantt(estado, ahora, g);
+  /** Qué parte de una barra quedó atrás del frente, de 0 a 1. */
+  const relleno = (top: number, alto: number): number => Math.max(0, Math.min(1, (frente - top) / Math.max(1, alto)));
+
   return (
     <section className="rail" aria-label="Línea de tiempo">
       <p className="eyebrow">
         Línea de tiempo <span>{hechos.length} de {etapa.pasos.length} hechos</span>
       </p>
-      <div className="rows withlanes">
-        {lanes.map((c, i) => (
-          <div
-            key={c.proceso.id}
-            className={`lane ${c.proceso.critico ? 'hot' : 'cold'}${i > 0 ? ' l2' : ''}`}
-            style={{ top: c.desde * ALTO + 6, height: Math.max(0, (c.hasta - c.desde) * ALTO - 12) }}
-            aria-hidden="true"
-          >
-            {i === 0 && <span className="tag">{c.proceso.nombre}</span>}
-          </div>
-        ))}
+      <div className="rows withlanes" style={{ '--carriles': g.carriles.length } as React.CSSProperties}>
+        {/* El gantt: el tiempo baja, las manos en la primera barra y cada proceso en la suya. */}
+        <div className="gantt" aria-hidden="true">
+          {g.filas.map((f) => {
+            const top = f.top + 4;
+            const alto = Math.max(8, f.altoBarra - 8);
+            return (
+              <div key={f.paso.id} className={f.paso.espera ? 'barra espera' : 'barra'} style={{ top, height: alto }}>
+                <i style={{ height: `${relleno(top, alto) * 100}%` }} />
+              </div>
+            );
+          })}
+          {g.carriles.map((c, i) => {
+            const top = c.top + 4;
+            const alto = Math.max(8, c.alto - 8);
+            return (
+              <div key={c.proceso.id} className={c.proceso.critico ? 'carril hot' : 'carril cold'} style={{ top, height: alto, '--i': i } as React.CSSProperties}>
+                <i style={{ height: `${relleno(top, alto) * 100}%` }} />
+                {i === 0 && <span className="tag">{c.proceso.nombre}</span>}
+              </div>
+            );
+          })}
+        </div>
         {etapa.pasos.map((p, i) => {
           const hecho = hechos[i];
           const actual = i === estado.paso;
           const d = hecho === undefined ? null : desvio(hecho.previsto_s, hecho.real_s, reloj);
           const claseFila = hecho !== undefined ? 'row done' : actual ? 'row cur' : p.espera ? 'row wait' : 'row';
           return (
-            <div key={p.id} className={claseFila} aria-current={actual ? 'step' : undefined}>
+            <div key={p.id} className={claseFila} style={{ height: (g.filas[i] as FilaGantt).alto }} aria-current={actual ? 'step' : undefined}>
               <span className="t">{reloj(p.inicio_s)}</span>
               <span className="dot">
                 <i />
@@ -339,6 +395,26 @@ function FinDeEtapa({ estado, alSeguir }: { readonly estado: EstadoCocina; reado
       </div>
       <p className={`lead desvio ${d.signo}`}>{d.signo === 'igual' ? 'Justo a tiempo.' : `${d.texto} respecto de lo previsto.`}</p>
       {etapa.pausa_despues !== null && <p className="lead">{etapa.pausa_despues}</p>}
+      <section className="rail" aria-label="Pasos hechos">
+        <p className="eyebrow">
+          Hecho <span>previsto → real</span>
+        </p>
+        <div className="rows">
+          {(estado.hechos[estado.etapa] as readonly PasoHecho[]).map((p) => {
+            const dp = desvio(p.previsto_s, p.real_s, reloj);
+            return (
+              <div key={p.id} className="row done">
+                <span className="t">{reloj(p.previsto_s)}</span>
+                <span className="dot">
+                  <i />
+                </span>
+                <span className="n">{p.titulo}</span>
+                <span className={`d ${dp.signo === 'mas' ? 'plus' : dp.signo === 'menos' ? 'minus' : ''}`.trimEnd()}>{dp.texto}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
       {siguiente !== undefined && (
         <div className="cta">
           <button type="button" className="btn primary" onClick={alSeguir}>
@@ -351,16 +427,64 @@ function FinDeEtapa({ estado, alSeguir }: { readonly estado: EstadoCocina; reado
   );
 }
 
-function Final({ estado, alVolver }: { readonly estado: EstadoCocina; readonly alVolver: () => void }): React.JSX.Element {
+function Final({
+  estado,
+  alVolver,
+  alGuardar,
+  cocinadas,
+  avisador,
+  fecha,
+}: {
+  readonly estado: EstadoCocina;
+  readonly alVolver: () => void;
+  readonly alGuardar: (cocinada: Omit<Cocinada, 'id'>) => void;
+  readonly cocinadas: readonly Cocinada[];
+  readonly avisador: Avisador;
+  readonly fecha: () => string;
+}): React.JSX.Element {
   const r = resumen(estado);
+  const [guardada, setGuardada] = useState<Cocinada | null>(null);
+  const [papelitos] = useState(() => confeti(40));
+
+  // El festejo suena una sola vez, al llegar.
+  useEffect(() => {
+    avisador.festejo();
+  }, [avisador]);
+
+  const guardar = () => {
+    const cocinada: Omit<Cocinada, 'id'> = {
+      plato: estado.receta.plato,
+      nombre: estado.receta.nombre,
+      version: { clave: estado.receta.version.clave, titulo: estado.receta.version.titulo },
+      fecha: fecha(),
+      total_previsto_s: r.total_previsto_s,
+      total_real_s: r.total_real_s,
+      etapas: r.etapas.map((e) => ({ nombre: e.nombre, previsto_s: e.previsto_s, real_s: e.real_s })),
+      pasos: r.etapas.flatMap((e) => e.pasos),
+      criticos: r.criticos,
+      criticosATiempo: r.criticosATiempo,
+    };
+    alGuardar(cocinada);
+    setGuardada({ ...cocinada, id: 'recien-guardada' });
+  };
   const d = desvio(r.total_previsto_s, r.total_real_s, reloj);
+  const nuevos = guardada === null ? [] : logrosNuevos(cocinadas, guardada);
+  const puntos = puntosDe({ total_previsto_s: r.total_previsto_s, total_real_s: r.total_real_s });
   return (
     <main className="pantalla sum">
+      <div className="confeti" aria-hidden="true">
+        {papelitos.map((p) => (
+          <i key={p.id} className={p.redondo ? 'redondo' : ''} style={{ left: `${p.izquierda}%`, width: p.tamano, height: p.tamano, background: p.color, animationDelay: `${p.demora}s`, animationDuration: `${p.duracion}s` }} />
+        ))}
+      </div>
       <p className="eyebrow">Plato listo · {estado.receta.version.titulo}</p>
       <div className="big">
         {reloj(r.total_real_s)}
         <small>totales</small>
       </div>
+      <p className="puntos-ganados">
+        <b>+{puntos} XP</b> por lo cerca que estuviste de los tiempos
+      </p>
       <p className="vs">
         Previsto {reloj(r.total_previsto_s)} · <b className={d.signo}>{d.texto}</b>
       </p>
@@ -407,11 +531,31 @@ function Final({ estado, alVolver }: { readonly estado: EstadoCocina; readonly a
           ))}
         </div>
       </section>
+      {nuevos.length > 0 && (
+        <section className="logros-nuevos" aria-label="Logros conseguidos">
+          <p className="eyebrow">{nuevos.length === 1 ? 'Logro conseguido' : 'Logros conseguidos'}</p>
+          <ul>
+            {nuevos.map((l) => (
+              <li key={l.id}>
+                <span aria-hidden="true">{l.icono}</span>
+                <b>{l.nombre}</b>
+                <small>{l.descripcion}</small>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <div className="cta">
-        <button type="button" className="btn primary" onClick={alVolver}>
-          Volver a las recetas
+        {guardada !== null ? (
+          <p className="over-note ok">✓ Guardada en este teléfono. Se ve en Progreso.</p>
+        ) : (
+          <button type="button" className="btn primary" onClick={guardar}>
+            Guardar esta cocinada
+          </button>
+        )}
+        <button type="button" className={guardada !== null ? 'btn primary' : 'btn ghost ancho'} onClick={alVolver}>
+          {guardada !== null ? 'Ver el progreso' : 'Salir sin guardar'}
         </button>
-        <p className="hint">Guardar esta cocinada en tu perfil llega con las cuentas de usuario. {minutos(r.total_real_s)} en total.</p>
       </div>
     </main>
   );

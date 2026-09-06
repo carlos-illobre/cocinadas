@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react';
-import { BASE_CATALOGO, listarRecetas, minutos, type RecetaResumen } from './api';
+import { BASE_CATALOGO, listarRecetas, minutos, versionesOrdenadas, type RecetaResumen } from './api';
+import { BarraXp } from './BarraXp';
 import type { Fetch } from './salud';
 
 export interface PropiedadesRecetas {
   readonly fetchImpl: Fetch;
+  /** La experiencia acumulada, para la barra de nivel de la cabecera. */
+  readonly xp: number;
   readonly alElegir: (receta: RecetaResumen) => void;
-  readonly alVerEstado: () => void;
 }
 
 type Carga = { readonly estado: 'cargando' } | { readonly estado: 'error'; readonly detalle: string } | { readonly estado: 'lista'; readonly recetas: readonly RecetaResumen[] };
 
 /**
- * Selección de receta (mockup A1): una tarjeta por plato con su foto, tiempo, calorías y
- * proteína, y cuántas versiones tiene. Tocar la tarjeta abre la portada.
+ * La pantalla de inicio del prototipo de Figma: cabecera oscura con el saludo y la
+ * barra de experiencia, y una tarjeta grande por plato, con su foto a sangre y los
+ * datos en chips sobre la foto. Tocar la tarjeta abre la receta.
  */
-export function Recetas({ fetchImpl, alElegir, alVerEstado }: PropiedadesRecetas): React.JSX.Element {
+export function Recetas({ fetchImpl, xp, alElegir }: PropiedadesRecetas): React.JSX.Element {
   const [carga, setCarga] = useState<Carga>({ estado: 'cargando' });
 
   useEffect(() => {
@@ -33,52 +36,66 @@ export function Recetas({ fetchImpl, alElegir, alVerEstado }: PropiedadesRecetas
   }, [fetchImpl]);
 
   return (
-    <main className="pantalla pick">
-      <header className="pick-cabecera">
-        <p className="eyebrow">Cero desperdicio · sin sal · 1 porción</p>
-        <h1>Recetas</h1>
+    <main className="pantalla inicio-recetas">
+      <header className="cabecera">
+        <p className="saludo">¡Hola!</p>
+        <h1>¿Qué cocinamos hoy?</h1>
+        <BarraXp xp={xp} />
       </header>
 
-      {carga.estado === 'cargando' && <p role="status">Buscando recetas…</p>}
-      {carga.estado === 'error' && (
-        <p role="alert" className="aviso-error">
-          No se pudo leer el catálogo: {carga.detalle}
-        </p>
-      )}
-      {carga.estado === 'lista' && (
-        <ul className="lista-recetas">
-          {carga.recetas.map((r) => (
-            <li key={r.plato}>
-              <button type="button" className="rcard" onClick={() => alElegir(r)}>
-                {r.foto === null ? (
-                  <span className="plato plato-vacio" aria-hidden="true">
-                    {r.nombre.charAt(0)}
-                  </span>
-                ) : (
-                  <img className="plato" src={`${BASE_CATALOGO}${r.foto}`} alt="" />
-                )}
-                <span className="rcard-texto">
-                  <b>{r.nombre}</b>
-                  <span className="m">
-                    {minutos(r.versiones[0]?.tiempo_total_s ?? 0)} · {r.nutricion['kcal']} kcal · {r.nutricion['proteina_g']} g proteína
-                    <br />
-                    {r.versiones.length === 1 ? '1 versión' : `${r.versiones.length} versiones`}
-                  </span>
-                </span>
-                <span className="go" aria-hidden="true">
-                  ›
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="cuerpo">
+        <div className="fila-titulo">
+          <h2>Recetas</h2>
+          {carga.estado === 'lista' && <span>{carga.recetas.length === 1 ? '1 disponible' : `${carga.recetas.length} disponibles`}</span>}
+        </div>
 
-      <footer className="pie">
-        <button type="button" className="enlace" onClick={alVerEstado}>
-          Estado del sistema
-        </button>
-      </footer>
+        {carga.estado === 'cargando' && <p role="status">Buscando recetas…</p>}
+        {carga.estado === 'error' && (
+          <p role="alert" className="aviso-error">
+            No se pudo leer el catálogo: {carga.detalle}
+          </p>
+        )}
+        {carga.estado === 'lista' && (
+          <ul className="lista-recetas">
+            {carga.recetas.map((r) => (
+              <li key={r.plato}>
+                <TarjetaReceta resumen={r} alElegir={() => alElegir(r)} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </main>
+  );
+}
+
+function TarjetaReceta({ resumen, alElegir }: { readonly resumen: RecetaResumen; readonly alElegir: () => void }): React.JSX.Element {
+  // El tiempo que se muestra es el del modo propuesto: el más lento, el de cocinar con calma.
+  const propuesta = versionesOrdenadas(resumen)[0];
+  return (
+    <button type="button" className="tarjeta-receta" onClick={alElegir}>
+      {resumen.foto === null ? (
+        <span className="tarjeta-foto tarjeta-sin-foto" aria-hidden="true">
+          {resumen.nombre.charAt(0)}
+        </span>
+      ) : (
+        <img className="tarjeta-foto" src={`${BASE_CATALOGO}${resumen.foto}`} alt="" />
+      )}
+      <span className="tarjeta-velo" aria-hidden="true" />
+      <span className="tarjeta-texto">
+        <b className="tarjeta-titulo">{resumen.nombre}</b>
+        <span className="chips">
+          <span className="chip">
+            <span aria-hidden="true">⏱</span> {minutos(propuesta?.tiempo_total_s ?? 0)}
+          </span>
+          <span className="chip">
+            <span aria-hidden="true">🍽</span> {resumen.porciones} porc
+          </span>
+          <span className="chip">
+            <span aria-hidden="true">🔥</span> {resumen.nutricion['kcal']} kcal
+          </span>
+        </span>
+      </span>
+    </button>
   );
 }

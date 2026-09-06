@@ -4,7 +4,9 @@ import { recetaDosEtapas, recetaUnaEtapa } from '../pruebas/datos';
 import {
   atenderAlarma,
   avanzarReloj,
-  carriles,
+  ALTO_MINIMO_FILA,
+  frenteGantt,
+  gantt,
   desvio,
   empezar,
   empezarEtapa,
@@ -296,22 +298,72 @@ describe('procesosVisibles y proximoVencimiento_s', () => {
   });
 });
 
-describe('carriles', () => {
-  it('abarca desde la fila siguiente al paso que arranca el proceso hasta el paso que lo atiende', () => {
-    const [c] = carriles(recetaDosEtapas.etapas[0] as (typeof recetaDosEtapas.etapas)[number]);
-    expect(c).toMatchObject({ desde: 1, hasta: 2 });
-    expect(c?.proceso.id).toBe('e1-camarones');
+describe('gantt', () => {
+  const etapa1 = recetaDosEtapas.etapas[0] as (typeof recetaDosEtapas.etapas)[number];
+
+  it('apila las filas en orden, con alto proporcional al tiempo y un mínimo legible', () => {
+    const g = gantt(etapa1);
+
+    // Pasos de 30, 150 y 120 s: el corto queda en el mínimo, los otros crecen.
+    expect(g.filas.map((f) => [f.paso.id, f.top, f.alto])).toEqual([
+      ['e1-p1', 0, ALTO_MINIMO_FILA],
+      ['e1-p2', ALTO_MINIMO_FILA, 93],
+      ['e1-p3', ALTO_MINIMO_FILA + 93, 74],
+    ]);
+    expect(g.alto).toBe(ALTO_MINIMO_FILA + 93 + 74);
+    // Sin huecos entre pasos, la barra de manos ocupa toda la fila.
+    expect(g.filas.map((f) => f.altoBarra)).toEqual([ALTO_MINIMO_FILA, 93, 74]);
   });
 
-  it('sin paso que lo atienda llega hasta el final; sin paso que lo arranque no se dibuja', () => {
-    const etapa = recetaDosEtapas.etapas[1] as (typeof recetaDosEtapas.etapas)[number];
-    const sinFin = { ...etapa, procesos: etapa.procesos.map((p) => ({ ...p, al_terminar: null })) };
-    expect(carriles(sinFin).map((c) => [c.proceso.id, c.desde, c.hasta])).toEqual([
-      ['e2-pasta', 3, 5],
-      ['e2-brocoli', 2, 5],
-    ]);
-    const sinInicio = { ...etapa, pasos: etapa.pasos.map((p) => ({ ...p, inicia_procesos: [] })) };
-    expect(carriles(sinInicio)).toEqual([]);
+  it('un hueco entre dos pasos deja la barra de manos más corta que la fila', () => {
+    const conHueco = { ...etapa1, pasos: [{ ...(etapa1.pasos[0] as (typeof etapa1.pasos)[number]), duracion_s: 10 }, ...etapa1.pasos.slice(1)] };
+    const g = gantt(conHueco);
+    expect(g.filas[0]?.alto).toBe(ALTO_MINIMO_FILA);
+    expect(g.filas[0]?.altoBarra).toBe(15);
+  });
+
+  it('los procesos se ubican con la misma escala que las filas', () => {
+    const g = gantt(etapa1);
+    const [c] = g.carriles;
+    expect(c?.proceso.id).toBe('e1-camarones');
+    // Arranca con la etapa y termina a los 600 s, dentro del último paso.
+    expect(c?.top).toBe(0);
+    expect((c?.top ?? 0) + (c?.alto ?? 0)).toBe(g.alto);
+  });
+
+  it('una etapa sin pasos da un gantt vacío', () => {
+    const g = gantt({ ...etapa1, pasos: [], procesos: [] });
+    expect(g).toEqual({ filas: [], carriles: [], alto: 0 });
+  });
+
+  it('un proceso de una etapa sin pasos queda pegado al cero', () => {
+    const g = gantt({ ...etapa1, pasos: [] });
+    expect(g.carriles.map((c) => [c.top, c.alto])).toEqual([[0, 12]]);
+  });
+});
+
+describe('frenteGantt', () => {
+  it('avanza con el cronómetro del paso actual y no se pasa de su barra', () => {
+    const g = gantt(recetaDosEtapas.etapas[0] as (typeof recetaDosEtapas.etapas)[number]);
+    const e = empezar(recetaDosEtapas, T0);
+
+    expect(frenteGantt(e, T0, g)).toBe(0);
+    expect(frenteGantt(e, s(15), g)).toBe(ALTO_MINIMO_FILA / 2);
+    // Pasado de tiempo, el frente se queda al final de la barra.
+    expect(frenteGantt(e, s(300), g)).toBe(ALTO_MINIMO_FILA);
+  });
+
+  it('con el paso fuera del gantt (la etapa ya terminó) llega hasta abajo de todo', () => {
+    const g = gantt(recetaUnaEtapa.etapas[0] as (typeof recetaUnaEtapa.etapas)[number]);
+    const e = { ...empezar(recetaUnaEtapa, T0), paso: g.filas.length };
+    expect(frenteGantt(e, s(300), g)).toBe(g.alto);
+  });
+
+  it('un paso sin duración prevista se da por lleno', () => {
+    const etapa = recetaUnaEtapa.etapas[0] as (typeof recetaUnaEtapa.etapas)[number];
+    const receta = { ...recetaUnaEtapa, etapas: [{ ...etapa, pasos: etapa.pasos.map((p) => ({ ...p, duracion_s: 0 })) }] };
+    const g = gantt(receta.etapas[0] as (typeof receta.etapas)[number]);
+    expect(frenteGantt(empezar(receta, T0), T0, g)).toBe(g.filas[0]?.altoBarra);
   });
 });
 

@@ -1,5 +1,7 @@
 # Juego de tablas de corte Tramontina Mix Color
 
+![Juego de tablas de corte Tramontina Mix Color](fotos/tablas-tramontina-mix-25099940.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Marca/modelo | Tramontina Mix Color, 25099/940 |
@@ -29,4 +31,3 @@
 
 - 4 tablas de corte.
 - 1 soporte de ABS.
-

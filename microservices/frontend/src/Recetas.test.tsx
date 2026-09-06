@@ -5,45 +5,53 @@ import { fetchDeCatalogo, nunca, resumenSinFoto, resumenSpaghetti } from './prue
 import type { Fetch } from './salud';
 
 describe('Recetas', () => {
-  it('muestra el estado de carga mientras espera al catálogo', () => {
-    render(<Recetas fetchImpl={nunca} alElegir={() => undefined} alVerEstado={() => undefined} />);
+  it('saluda, muestra la experiencia y el estado de carga mientras espera al catálogo', () => {
+    render(<Recetas fetchImpl={nunca} xp={0} alElegir={() => undefined} />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Recetas' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: '¿Qué cocinamos hoy?' })).toBeInTheDocument();
+    expect(screen.getByText('Nivel 1 — Aprendiz')).toBeInTheDocument();
+    expect(document.querySelector('.xp-puntos')).toHaveTextContent('0 XP');
+    expect(screen.getByRole('heading', { level: 2, name: 'Recetas' })).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Buscando recetas…');
+    expect(screen.queryByText(/disponible/)).not.toBeInTheDocument();
   });
 
-  it('lista cada plato con foto o inicial, tiempo, valores y cantidad de versiones', async () => {
+  it('una tarjeta por plato, con foto o inicial, y el tiempo del modo propuesto, porciones y calorías', async () => {
     const fetchImpl = fetchDeCatalogo({ '/recetas': [resumenSpaghetti, resumenSinFoto] });
-    render(<Recetas fetchImpl={fetchImpl} alElegir={() => undefined} alVerEstado={() => undefined} />);
+    render(<Recetas fetchImpl={fetchImpl} xp={620} alElegir={() => undefined} />);
 
-    const tarjetas = await screen.findAllByRole('button', { name: /versi/ });
+    const tarjetas = await screen.findAllByRole('button', { name: /porc/ });
     expect(tarjetas).toHaveLength(2);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByText('2 disponibles')).toBeInTheDocument();
+    expect(screen.getByText('Nivel 2 — Cocinero')).toBeInTheDocument();
 
-    expect(tarjetas[0]).toHaveTextContent('Spaghetti integral con brócoli, champiñones y camarones al limón');
-    expect(tarjetas[0]).toHaveTextContent('16 min · 720 kcal · 38 g proteína');
-    expect(tarjetas[0]).toHaveTextContent('2 versiones');
-    expect(tarjetas[0]?.querySelector('img.plato')).toHaveAttribute('src', '/api/catalogo/recetas/spaghetti-integral-brocoli-camarones/foto');
+    expect(tarjetas[0]?.querySelector('.tarjeta-titulo')).toHaveTextContent('Spaghetti integral con brócoli, champiñones y camarones al limón');
+    // 21 min: el modo más lento es el propuesto, aunque no sea el primero de la lista.
+    expect(tarjetas[0]).toHaveTextContent('21 min');
+    expect(tarjetas[0]).toHaveTextContent('1 porc');
+    expect(tarjetas[0]).toHaveTextContent('720 kcal');
+    expect(tarjetas[0]?.querySelector('img.tarjeta-foto')).toHaveAttribute('src', '/api/catalogo/recetas/spaghetti-integral-brocoli-camarones/foto');
 
-    expect(tarjetas[1]).toHaveTextContent('25 min · 600 kcal · 40 g proteína');
-    expect(tarjetas[1]).toHaveTextContent('1 versión');
-    expect(tarjetas[1]?.querySelector('img.plato')).toBeNull();
-    expect(tarjetas[1]?.querySelector('.plato-vacio')).toHaveTextContent(/^M$/);
+    expect(tarjetas[1]).toHaveTextContent('25 min');
+    expect(tarjetas[1]).toHaveTextContent('2 porc');
+    expect(tarjetas[1]?.querySelector('img')).toBeNull();
+    expect(tarjetas[1]?.querySelector('.tarjeta-sin-foto')).toHaveTextContent(/^M$/);
   });
 
-  it('un plato sin versiones muestra 0 min sin romperse', async () => {
+  it('con un solo plato lo dice en singular, y sin versiones muestra 0 min sin romperse', async () => {
     const fetchImpl = fetchDeCatalogo({ '/recetas': [{ ...resumenSinFoto, versiones: [] }] });
-    render(<Recetas fetchImpl={fetchImpl} alElegir={() => undefined} alVerEstado={() => undefined} />);
+    render(<Recetas fetchImpl={fetchImpl} xp={0} alElegir={() => undefined} />);
 
-    const [tarjeta] = await screen.findAllByRole('button', { name: /versi/ });
+    const [tarjeta] = await screen.findAllByRole('button', { name: /porc/ });
     expect(tarjeta).toHaveTextContent('0 min');
-    expect(tarjeta).toHaveTextContent('0 versiones');
+    expect(screen.getByText('1 disponible')).toBeInTheDocument();
   });
 
   it('avisa a quien la monta con el resumen elegido', async () => {
     const alElegir = vi.fn();
     const fetchImpl = fetchDeCatalogo({ '/recetas': [resumenSpaghetti] });
-    render(<Recetas fetchImpl={fetchImpl} alElegir={alElegir} alVerEstado={() => undefined} />);
+    render(<Recetas fetchImpl={fetchImpl} xp={0} alElegir={alElegir} />);
 
     fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
 
@@ -52,25 +60,16 @@ describe('Recetas', () => {
 
   it('muestra el error con su detalle si el catálogo falla', async () => {
     const fetchImpl = fetchDeCatalogo({}, { '/recetas': 503 });
-    render(<Recetas fetchImpl={fetchImpl} alElegir={() => undefined} alVerEstado={() => undefined} />);
+    render(<Recetas fetchImpl={fetchImpl} xp={0} alElegir={() => undefined} />);
 
     expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo leer el catálogo: el catálogo respondió HTTP 503 a /recetas');
   });
 
   it('convierte a texto un fallo que no es un Error', async () => {
     const fetchImpl: Fetch = () => Promise.reject('se cortó');
-    render(<Recetas fetchImpl={fetchImpl} alElegir={() => undefined} alVerEstado={() => undefined} />);
+    render(<Recetas fetchImpl={fetchImpl} xp={0} alElegir={() => undefined} />);
 
     expect(await screen.findByRole('alert')).toHaveTextContent('se cortó');
-  });
-
-  it('ofrece ver el estado del sistema', () => {
-    const alVerEstado = vi.fn();
-    render(<Recetas fetchImpl={nunca} alElegir={() => undefined} alVerEstado={alVerEstado} />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Estado del sistema' }));
-
-    expect(alVerEstado).toHaveBeenCalledTimes(1);
   });
 
   it('si cambia el fetch, la respuesta tardía del anterior no pisa a la nueva', async () => {
@@ -80,8 +79,8 @@ describe('Recetas', () => {
         resolverViejo = resolve;
       });
     const nuevo = fetchDeCatalogo({ '/recetas': [resumenSinFoto] });
-    const { rerender } = render(<Recetas fetchImpl={viejo} alElegir={() => undefined} alVerEstado={() => undefined} />);
-    rerender(<Recetas fetchImpl={nuevo} alElegir={() => undefined} alVerEstado={() => undefined} />);
+    const { rerender } = render(<Recetas fetchImpl={viejo} xp={0} alElegir={() => undefined} />);
+    rerender(<Recetas fetchImpl={nuevo} xp={0} alElegir={() => undefined} />);
     await screen.findByRole('button', { name: /Merluza/ });
 
     resolverViejo({ ok: true, status: 200, json: () => Promise.resolve([resumenSpaghetti]) });
@@ -99,8 +98,8 @@ describe('Recetas', () => {
         rechazarViejo = reject;
       });
     const nuevo = fetchDeCatalogo({ '/recetas': [resumenSinFoto] });
-    const { rerender } = render(<Recetas fetchImpl={viejo} alElegir={() => undefined} alVerEstado={() => undefined} />);
-    rerender(<Recetas fetchImpl={nuevo} alElegir={() => undefined} alVerEstado={() => undefined} />);
+    const { rerender } = render(<Recetas fetchImpl={viejo} xp={0} alElegir={() => undefined} />);
+    rerender(<Recetas fetchImpl={nuevo} xp={0} alElegir={() => undefined} />);
     await screen.findByRole('button', { name: /Merluza/ });
 
     rechazarViejo(new Error('tarde'));
@@ -116,7 +115,7 @@ describe('Recetas', () => {
       new Promise((resolve) => {
         resolver = resolve;
       });
-    const { unmount } = render(<Recetas fetchImpl={fetchImpl} alElegir={() => undefined} alVerEstado={() => undefined} />);
+    const { unmount } = render(<Recetas fetchImpl={fetchImpl} xp={0} alElegir={() => undefined} />);
     unmount();
     resolver({ ok: true, status: 200, json: () => Promise.resolve([resumenSpaghetti]) });
 

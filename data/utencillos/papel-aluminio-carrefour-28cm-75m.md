@@ -1,5 +1,7 @@
 # Papel de aluminio Carrefour
 
+![Papel de aluminio Carrefour](fotos/papel-aluminio-carrefour-28cm-75m.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Tipo | Papel de aluminio para cocina |

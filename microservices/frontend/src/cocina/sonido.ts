@@ -14,7 +14,10 @@ export interface Oscilador {
 }
 
 export interface Ganancia {
-  gain: { value: number };
+  gain: {
+    setValueAtTime(valor: number, cuando: number): void;
+    linearRampToValueAtTime(valor: number, cuando: number): void;
+  };
   connect(destino: unknown): void;
 }
 
@@ -28,24 +31,35 @@ export interface ContextoAudio {
 }
 
 export interface Avisador {
+  /** Un toque seco al dar un paso por hecho: confirma sin interrumpir. */
+  toque(): void;
   /** Un «tin» corto: un proceso no crítico venció, o un paso llegó a su tiempo. */
   suave(): void;
-  /** Tres notas insistentes, para repetir mientras la alarma esté en pantalla. */
+  /** Notas insistentes, para repetir mientras la alarma esté en pantalla. */
   fuerte(): void;
+  /** Un arpegio corto: el plato está listo. */
+  festejo(): void;
 }
 
-export const SIN_AVISADOR: Avisador = { suave: () => undefined, fuerte: () => undefined };
+export const SIN_AVISADOR: Avisador = { toque: () => undefined, suave: () => undefined, fuerte: () => undefined, festejo: () => undefined };
 
-function nota(ctx: ContextoAudio, frecuencia: number, desde_s: number, duracion_s: number, volumen: number): void {
+/**
+ * Una nota con entrada y salida suaves. Sin esa rampa el oscilador arranca y corta de
+ * golpe, y en el parlante del teléfono se escucha un chasquido en vez de un tono.
+ */
+function nota(ctx: ContextoAudio, frecuencia: number, desde_s: number, duracion_s: number, volumen: number, tipo: string): void {
+  const t0 = ctx.currentTime + desde_s;
   const osc = ctx.createOscillator();
   const gan = ctx.createGain();
-  osc.type = 'sine';
+  osc.type = tipo;
   osc.frequency.value = frecuencia;
-  gan.gain.value = volumen;
+  gan.gain.setValueAtTime(0, t0);
+  gan.gain.linearRampToValueAtTime(volumen, t0 + 0.012);
+  gan.gain.linearRampToValueAtTime(0, t0 + duracion_s);
   osc.connect(gan);
   gan.connect(ctx.destination);
-  osc.start(ctx.currentTime + desde_s);
-  osc.stop(ctx.currentTime + desde_s + duracion_s);
+  osc.start(t0);
+  osc.stop(t0 + duracion_s + 0.02);
 }
 
 /**
@@ -58,8 +72,10 @@ export function crearAvisador(
 ): Avisador {
   if (Contexto === undefined) {
     return {
+      toque: () => undefined,
       suave: () => vibrar?.(120),
       fuerte: () => vibrar?.([300, 120, 300, 120, 300]),
+      festejo: () => vibrar?.([80, 60, 80, 60, 200]),
     };
   }
   const ctx = new Contexto();
@@ -69,17 +85,29 @@ export function crearAvisador(
     }
   };
   return {
+    toque() {
+      despertar();
+      nota(ctx, 660, 0, 0.07, 0.18, 'sine');
+    },
     suave() {
       despertar();
-      nota(ctx, 880, 0, 0.15, 0.25);
+      nota(ctx, 880, 0, 0.12, 0.3, 'sine');
+      nota(ctx, 1175, 0.13, 0.16, 0.3, 'sine');
       vibrar?.(120);
     },
     fuerte() {
+      // Dos tonos que se alternan, como un despertador: se oyen sobre el ruido de la cocina.
       despertar();
-      nota(ctx, 988, 0, 0.18, 0.5);
-      nota(ctx, 1319, 0.22, 0.18, 0.5);
-      nota(ctx, 988, 0.44, 0.3, 0.5);
+      for (let i = 0; i < 4; i += 1) {
+        nota(ctx, i % 2 === 0 ? 988 : 1319, i * 0.2, 0.16, 0.55, 'triangle');
+      }
       vibrar?.([300, 120, 300, 120, 300]);
+    },
+    festejo() {
+      // Do, mi, sol, do: sube y cierra arriba, que es como suena un festejo.
+      despertar();
+      [523, 659, 784, 1047].forEach((f, i) => nota(ctx, f, i * 0.11, i === 3 ? 0.5 : 0.14, 0.35, 'sine'));
+      vibrar?.([80, 60, 80, 60, 200]);
     },
   };
 }

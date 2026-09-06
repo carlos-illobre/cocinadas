@@ -56,6 +56,19 @@ def validar(ruta, ing_ids, ut_ids):
     elif not foto.lower().endswith((".jpg", ".jpeg", ".webp")):
         e(f"fuentes.foto tiene que ser JPEG o WebP (fotos, sin transparencia): {foto}")
 
+    icono = r.get("version", {}).get("icono")
+    if not isinstance(icono, str) or not icono.strip():
+        e("version.icono falta: un emoji que identifica el modo en la app")
+    criterios = r.get("criterios")
+    if not isinstance(criterios, list) or not criterios:
+        e("criterios falta o está vacío: la sección «Criterios de diseño» del documento")
+    else:
+        for n, c in enumerate(criterios):
+            if not isinstance(c, dict) or not c.get("titulo") or not c.get("texto"):
+                e(f"criterios[{n}]: necesita titulo y texto")
+    if not isinstance(r.get("seguridad"), list) or not r.get("seguridad"):
+        e("seguridad falta o está vacía")
+
     for i in r.get("ingredientes", []):
         if i.get("id") is not None and i["id"] not in ing_ids:
             e(f"ingrediente sin ficha: {i['id']}")

@@ -9,10 +9,11 @@ const T0 = 1_000_000;
 
 function armar(receta: Receta = recetaDosEtapas) {
   let ahoraMs = T0;
-  const avisador: Avisador = { suave: vi.fn(), fuerte: vi.fn() };
+  const avisador: Avisador = { toque: vi.fn(), suave: vi.fn(), fuerte: vi.fn(), festejo: vi.fn() };
   const alVolver = vi.fn();
   const alTerminar = vi.fn();
-  const vista = render(<Cocina receta={receta} avisador={avisador} alVolver={alVolver} alTerminar={alTerminar} ahora={() => ahoraMs} tic_ms={500} />);
+  const alGuardar = vi.fn();
+  const vista = render(<Cocina receta={receta} avisador={avisador} alVolver={alVolver} alTerminar={alTerminar} alGuardar={alGuardar} cocinadas={[]} ahora={() => ahoraMs} tic_ms={500} />);
   /** Adelanta el reloj y deja correr los tics. */
   const pasar = (segundos: number) => {
     ahoraMs += segundos * 1000;
@@ -21,7 +22,7 @@ function armar(receta: Receta = recetaDosEtapas) {
     });
   };
   const listo = () => fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
-  return { ...vista, avisador, alVolver, alTerminar, pasar, listo };
+  return { ...vista, avisador, alVolver, alTerminar, alGuardar, pasar, listo };
 }
 
 beforeEach(() => {
@@ -117,12 +118,25 @@ describe('Cocina · etapa tranquila', () => {
     expect(screen.getByText('Corre solo')).toBeInTheDocument();
   });
 
-  it('el carril del proceso abarca las filas que corresponden y lleva su nombre', () => {
-    armar();
-    const carril = document.querySelector('.lane');
+it('el gantt dibuja una barra por paso y un carril por proceso, y se va llenando', () => {
+    const { pasar } = armar();
+    const barras = [...document.querySelectorAll('.gantt .barra')];
+    expect(barras).toHaveLength(3);
+    // El primer paso dura 30 s y queda en el alto mínimo; el segundo dura 150 s y crece.
+    expect(barras[0]).toHaveStyle({ top: '4px', height: '38px' });
+    expect(barras[1]).toHaveStyle({ top: '50px' });
+    // La espera lleva su propio rayado.
+    expect(barras[2]).toHaveClass('espera');
+    // Nada hecho todavía: ninguna barra pintada.
+    expect(barras[0]?.querySelector('i')).toHaveStyle({ height: '0%' });
+
+    const carril = document.querySelector('.gantt .carril');
     expect(carril).toHaveClass('cold');
-    expect(carril).toHaveStyle({ top: '56px', height: '38px' });
     expect(carril).toHaveTextContent('Camarones en agua fría');
+
+    // A la mitad del primer paso, su barra va por la mitad.
+    pasar(15);
+    expect(document.querySelector('.gantt .barra i')).toHaveStyle({ height: '50%' });
   });
 
   it('un proceso no crítico que vence da un aviso suave y desaparece', () => {
@@ -189,6 +203,21 @@ describe('Cocina · etapa tranquila', () => {
     expect(screen.getByText('de 2:30 previstos')).toBeInTheDocument();
   });
 
+  it('«Reiniciar el paso» vuelve el cronómetro a cero y destilda los sub-pasos, sin tocar los procesos', () => {
+    const { pasar, listo } = armar();
+    listo(); // arranca los camarones
+    pasar(50);
+    fireEvent.click(screen.getByRole('button', { name: 'Lavar.' }));
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '33');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reiniciar el paso' }));
+
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
+    expect(screen.getByRole('button', { name: 'Lavar.' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('timer', { name: 'Camarones en agua fría' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Paso 2 de 3');
+  });
+
   it('volver avisa a quien la monta', () => {
     const { alVolver } = armar();
     fireEvent.click(screen.getByRole('button', { name: '‹ Portada' }));
@@ -215,6 +244,13 @@ describe('Cocina · fin de etapa y etapa crítica', () => {
     expect(screen.getByText('−5:56 respecto de lo previsto.')).toHaveClass('menos');
     expect(screen.getByText('Puede haber pausa.')).toBeInTheDocument();
     expect(screen.getByText('Cuando el agua rompe hervor.')).toBeInTheDocument();
+    // Los pasos hechos de la etapa, con su desvío.
+    const hechos = document.querySelectorAll('.row.done');
+    expect(hechos).toHaveLength(3);
+    expect(hechos[0]).toHaveTextContent('Pesar y poner a descongelar los camarones');
+    expect(hechos[0]?.querySelector('.d')).toHaveTextContent('+0:04');
+    expect(hechos[1]?.querySelector('.d')).toHaveTextContent('0:00');
+    expect(hechos[2]?.querySelector('.d')).toHaveTextContent('0:00');
 
     fireEvent.click(screen.getByRole('button', { name: 'Empezar Etapa 2' }));
     expect(screen.getByText('Etapa 2 · Cocción y plato')).toBeInTheDocument();
@@ -368,7 +404,7 @@ describe('Cocina · final', () => {
     c.pasar(30);
     c.listo(); // Mantecar, crítico −0:30 → fin
 
-    expect(screen.getByText('Plato listo · Dos etapas')).toBeInTheDocument();
+    expect(screen.getByText('Plato listo · Mise en place primero')).toBeInTheDocument();
     expect(screen.getByText('8:39', { selector: '.big' })).toBeInTheDocument();
     expect(screen.getByText('−12:21')).toHaveClass('menos');
     const kpis = document.querySelectorAll('.kpi');
@@ -383,9 +419,80 @@ describe('Cocina · final', () => {
     expect(filas[3]?.querySelector('.d')).toHaveTextContent('0:00');
     expect(filas[5]?.querySelector('.d')).toHaveClass('plus');
     expect(filas[7]?.querySelector('.d')).toHaveClass('minus');
-    expect(screen.getByText(/9 min en total/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Volver a las recetas' }));
+    // Guardar: manda la cocinada completa y cambia los botones.
+    expect(screen.getByRole('button', { name: 'Salir sin guardar' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
+    expect(c.alGuardar).toHaveBeenCalledTimes(1);
+    const guardada = c.alGuardar.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(guardada).toMatchObject({
+      plato: 'spaghetti-integral-brocoli-camarones',
+      version: { clave: 'dos-etapas', titulo: 'Mise en place primero' },
+      total_previsto_s: 1260,
+      total_real_s: 519,
+      criticos: 3,
+      criticosATiempo: 2,
+    });
+    expect(guardada['fecha']).toBe(new Date(T0 + 519 * 1000).toISOString());
+    expect((guardada['pasos'] as unknown[]).length).toBe(8);
+    expect((guardada['etapas'] as unknown[]).length).toBe(2);
+    expect(screen.getByText('✓ Guardada en este teléfono. Se ve en Progreso.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Guardar esta cocinada' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver el progreso' }));
+    expect(c.alTerminar).toHaveBeenCalledTimes(1);
+  });
+
+  it('el plato terminado se festeja: confeti, sonido y los puntos de la cocinada', () => {
+    const c = armar(recetaUnaEtapa);
+    c.listo();
+    c.listo();
+    c.listo();
+
+    expect(c.avisador.festejo).toHaveBeenCalledTimes(1);
+    expect(document.querySelectorAll('.confeti i')).toHaveLength(40);
+    // Cocinada en 0 s contra 960 previstos: el desvío se come todos los puntos.
+    expect(screen.getByText('+0 XP', { exact: false })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Logros conseguidos')).not.toBeInTheDocument();
+  });
+
+  it('al guardar muestra los logros que desbloqueó esa cocinada', () => {
+    const c = armar(recetaUnaEtapa);
+    c.listo();
+    c.listo();
+    c.listo();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
+
+    const logros = screen.getByLabelText('Logros conseguidos');
+    expect(logros).toHaveTextContent('Primera receta');
+    // Sin críticos a tiempo ni racha, es el único.
+    expect(logros.querySelectorAll('li')).toHaveLength(1);
+  });
+
+  it('con más de un logro nuevo lo dice en plural', () => {
+    const etapa = recetaUnaEtapa.etapas[0] as (typeof recetaUnaEtapa.etapas)[number];
+    const conCritico = { ...recetaUnaEtapa, etapas: [{ ...etapa, pasos: etapa.pasos.map((p, i) => (i === 0 ? { ...p, critico: true } : p)) }] };
+    const c = armar(conCritico);
+    c.listo();
+    c.listo();
+    c.listo();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
+
+    const logros = screen.getByLabelText('Logros conseguidos');
+    expect(logros.querySelectorAll('li')).toHaveLength(2);
+    expect(logros).toHaveTextContent('Logros conseguidos');
+    expect(logros).toHaveTextContent('Sin pasarse');
+  });
+
+  it('se puede salir sin guardar', () => {
+    const c = armar(recetaUnaEtapa);
+    c.listo();
+    c.listo();
+    c.listo();
+    fireEvent.click(screen.getByRole('button', { name: 'Salir sin guardar' }));
+    expect(c.alGuardar).not.toHaveBeenCalled();
     expect(c.alTerminar).toHaveBeenCalledTimes(1);
   });
 

@@ -11,7 +11,21 @@ El repositorio tiene dos mitades que se alimentan entre sí:
 |---|---|
 | `data/recetas/`, `data/ingredientes/`, `data/utencillos/` | **El catálogo**: recetas como POE (HTML + PDF imprimible + JSON de datos), fichas de ingredientes con foto y fichas de utensilios. Es contenido, no código; la app lo lee tal cual. |
 | `microservices/`, `infrastructure/`, `tests/`, `deployment/`, `docs/` | **La aplicación**: tres microservicios Node + TypeScript, una SPA React, un reverse proxy, y todo lo necesario para probarla, desplegarla y entenderla. |
-| `docs/mockups/` | El diseño visual aprobado de la app (`app-cocina-mockup.html`), del que sale el sistema de diseño del frontend. |
+| `docs/mockups/` | El diseño visual de la app: el mockup HTML de la pantalla de cocina (`app-cocina-mockup.html`), el concepto de la pantalla de bienvenida y en `inicio-capas/` los originales de las capas de esa pantalla, con el script que genera las versiones livianas que usa la app. |
+
+## El mockup navegable
+
+El diseño de las pantallas de catálogo (lista de recetas, detalle, mise en place, progreso
+y ajustes) sale de un prototipo hecho en Figma Make, que se puede recorrer como si fuera la
+app:
+
+**https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Templa**
+
+Se abre el archivo y con el botón **Preview** se navega el prototipo a pantalla completa.
+Hace falta que Figma te haya dado acceso al archivo. De ahí salen los colores, las
+tipografías (Nunito y Space Mono) y los dos temas, claro y oscuro, que la app implementa
+en `microservices/frontend/src/estilos.css`. El prototipo tiene además pantallas que la app
+no implementa a propósito: login por nombre, logros, rachas y dificultad.
 
 ## Cómo levantarlo
 
@@ -32,6 +46,11 @@ Cuando los ocho contenedores están `healthy`:
 | http://localhost/api/usuarios/health | `usuarios` |
 | http://localhost/api/cocinadas/health | `cocinadas` |
 | http://localhost:3001 · 3002 · 3003 · 8080 | Los mismos servicios sin pasar por el proxy |
+
+Todos esos puertos del lado del host salen del `.env` (`PUERTO_HTTP`, `PUERTO_FRONTEND`,
+`PUERTO_CATALOGO`…): si la máquina ya tiene otra aplicación en el 80, el 443 o el 8080,
+se mueven ahí y nada más. Para compartir la VM con otra aplicación, ver
+«Convivir con otra aplicación en la misma VM» en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 Para desarrollar un servicio con recarga en caliente contra el resto del stack en Docker:
 
@@ -56,11 +75,14 @@ testing está en [docs/TESTING.md](docs/TESTING.md).
 
 ## Cómo se despliega
 
+Al mergear a `main`, el CI publica las imágenes y despliega solo. A mano, cuando hace
+falta volver atrás o probar:
+
 En una VM de Oracle Cloud con Docker, por SHA de commit y con reversión:
 
 ```bash
-bash deployment/oracle-single/deploy.sh          # el último commit verificado de main
-bash deployment/oracle-single/deploy.sh <sha>    # un commit concreto, o volver atrás
+python deployment/oracle-single/deploy.py          # el último commit verificado de main
+python deployment/oracle-single/deploy.py <sha>    # un commit concreto, o volver atrás
 ```
 
 Guía completa en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).

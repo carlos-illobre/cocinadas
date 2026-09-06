@@ -1,5 +1,7 @@
 # Rollo de cocina Carrefour Essential Maxi
 
+![Rollo de cocina Carrefour Essential Maxi](fotos/rollo-cocina-carrefour-essential-200-panos.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Tipo | Rollo de cocina |

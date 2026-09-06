@@ -6,6 +6,8 @@
 export interface Config {
   readonly puerto: number;
   readonly logLevel: string;
+  /** Peticiones por minuto y por IP antes de contestar 429. */
+  readonly limitePorMinuto: number;
   readonly natsUrl: string;
   readonly directorioDatos: string;
 }
@@ -34,10 +36,20 @@ export function puertoDesde(valor: string): number {
   return puerto;
 }
 
+export function limiteDesde(valor: string): number {
+  const limite = Number(valor);
+  // Un límite de cero o negativo dejaría la API sin protección sin que nadie lo note.
+  if (!Number.isInteger(limite) || limite < 1) {
+    throw new Error(`RATE_LIMIT_POR_MINUTO inválido: ${valor}`);
+  }
+  return limite;
+}
+
 export function leerConfig(entorno: Entorno): Config {
   return {
     puerto: puertoDesde(obligatoria(entorno, 'PUERTO')),
     logLevel: obligatoria(entorno, 'LOG_LEVEL'),
+    limitePorMinuto: limiteDesde(obligatoria(entorno, 'RATE_LIMIT_POR_MINUTO')),
     natsUrl: obligatoria(entorno, 'NATS_URL'),
     directorioDatos: obligatoria(entorno, 'DIRECTORIO_DATOS'),
   };

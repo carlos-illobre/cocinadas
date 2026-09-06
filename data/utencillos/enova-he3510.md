@@ -1,5 +1,7 @@
 # Horno eléctrico Enova HE3510
 
+![Horno eléctrico Enova HE3510](fotos/enova-he3510.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Tipo | Horno eléctrico de mesa |
@@ -25,4 +27,3 @@
 - Bandeja recogemigas.
 - Juego de pinche para espiedo.
 - Pinza para espiedo.
-

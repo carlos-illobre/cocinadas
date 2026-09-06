@@ -4,8 +4,11 @@
 #             No bloquea; deja los informes como artefacto.
 #   imagenes  solo en main y solo si las pruebas pasaron: construye las cuatro imágenes
 #             para amd64 y arm64 y las publica en GHCR etiquetadas por SHA (ADR-011).
-#             deploy.sh trae exactamente ese SHA a la instancia.
+#             deploy.py trae exactamente ese SHA a la instancia.
 #   sitio     solo en main: publica docs/ en GitHub Pages.
+#   desplegar solo en main y después de imagenes: entra por SSH a la instancia de Oracle
+#             y corre deploy.py con el SHA de este commit. Las imágenes ya están
+#             publicadas, así que la instancia solo las trae y reemplaza contenedores.
 name: ci
 
 on:
@@ -40,7 +43,13 @@ jobs:
       - name: Compose resuelve sin variables sin definir
         run: cp .env.example .env && docker compose config --quiet
       - name: Sintaxis de los scripts de despliegue
-        run: bash -n deployment/oracle-single/deploy.sh && bash -n deployment/oracle-single/preflight.sh
+        run: |
+          python -m py_compile deployment/oracle-single/deploy.py
+          bash -n deployment/oracle-single/preflight.sh
+          bash -n deployment/oracle-single/respaldo.sh
+          # Sin .env el --dry-run usa valores de ejemplo: comprueba que el script
+          # entero corre y qué comandos mandaría, sin tocar ninguna instancia.
+          python deployment/oracle-single/deploy.py --dry-run > /dev/null
       - name: Informes de cobertura
         if: always()
         uses: actions/upload-artifact@v4
@@ -48,6 +57,24 @@ jobs:
           name: cobertura
           path: microservices/*/coverage/
           retention-days: 7
+
+  vulnerabilidades:
+    # Busca CVEs en las dependencias y secretos filtrados en el repositorio. No reprueba
+    # el build: avisa. El día que una dependencia tenga un fallo grave, el aviso llega
+    # acá y no cuando alguien lo explota.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy sobre el repositorio
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scanners: vuln,secret,misconfig
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+          format: table
 
   mutacion:
     # Informa, no reprueba (docs/TESTING.md): tarda minutos, por eso corre solo acá y
@@ -124,6 +151,61 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/templa-${{ matrix.servicio }}:${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.servicio }}
           cache-to: type=gha,scope=${{ matrix.servicio }},mode=max
+
+  desplegar:
+    # Después de las imágenes: la instancia hace `docker compose pull` de este SHA, y si
+    # todavía no están publicadas el despliegue falla.
+    needs: imagenes
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # El entorno permite pedir aprobación manual antes de desplegar y guarda el historial
+    # de qué se desplegó y cuándo. Si no se configuran revisores, corre solo.
+    environment:
+      name: produccion
+      url: https://${{ vars.DOMINIO }}
+    # Un despliegue por vez: dos corriendo a la vez sobre la misma instancia dejan el
+    # .env remoto con el TAG de uno y los contenedores del otro.
+    concurrency:
+      group: despliegue-produccion
+      cancel-in-progress: false
+    steps:
+      # El script resuelve el SHA con git, así que necesita el repositorio, no solo el
+      # árbol de trabajo.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Preparar el acceso por SSH
+        env:
+          CLAVE: ${{ secrets.SSH_CLAVE_PRIVADA }}
+          HOST_KEY: ${{ secrets.SSH_HOST_KEY }}
+        run: |
+          test -n "$CLAVE" || { echo "falta el secreto SSH_CLAVE_PRIVADA"; exit 1; }
+          test -n "$HOST_KEY" || { echo "falta el secreto SSH_HOST_KEY"; exit 1; }
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "$CLAVE" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # La huella de la instancia se fija a mano y no con `ssh-keyscan` en caliente:
+          # aceptar la que venga es aceptar a cualquiera que se ponga en el medio.
+          echo "$HOST_KEY" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Escribir la configuración del despliegue
+        env:
+          DESTINO: ${{ secrets.SSH_DESTINO }}
+          RUTA: ${{ secrets.RUTA_REMOTA }}
+        run: |
+          test -n "$DESTINO" || { echo "falta el secreto SSH_DESTINO"; exit 1; }
+          test -n "$RUTA" || { echo "falta el secreto RUTA_REMOTA"; exit 1; }
+          {
+            echo "SSH=$DESTINO"
+            echo "RUTA_REMOTA=$RUTA"
+          } > deployment/oracle-single/.env
+
+      # El SHA va explícito: el script, sin argumento, desplegaría la punta de
+      # origin/main, que para cuando esto corre podría ser otro commit.
+      - name: Desplegar ${{ github.sha }}
+        run: python deployment/oracle-single/deploy.py "${{ github.sha }}"
 
   sitio:
     needs: pruebas

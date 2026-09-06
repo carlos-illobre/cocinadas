@@ -1,5 +1,7 @@
 # Papel manteca Rolopac
 
+![Papel manteca Rolopac](fotos/papel-manteca-rolopac-5m.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Tipo | Papel manteca para cocina |

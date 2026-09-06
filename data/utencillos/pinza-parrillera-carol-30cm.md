@@ -1,5 +1,7 @@
 # Pinza parrillera Carol 30 cm
 
+![Pinza parrillera Carol 30 cm](fotos/pinza-parrillera-carol-30cm.webp)
+
 | Especificación | Dato |
 |---|---|
 | Marca | Carol |
@@ -13,4 +15,3 @@
 ## Incluye
 
 - 1 pinza parrillera Carol de 30 cm.
-

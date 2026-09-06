@@ -1,5 +1,7 @@
 # Freidora de aire Suono Air Fryer mecánica 3,2 L
 
+![Freidora de aire Suono 3,2 L](fotos/suono-air-fryer-32l.webp)
+
 | Especificación | Dato |
 |---|---|
 | Marca | Suono |
@@ -22,4 +24,3 @@
 
 - Cesto o canasto antiadherente extraíble.
 - Bandeja/base interior del cesto.
-

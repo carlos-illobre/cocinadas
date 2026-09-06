@@ -16,10 +16,11 @@ const { version } = JSON.parse(readFileSync(new URL('../package.json', import.me
 const config = leerConfig(process.env);
 const nats = await conectarNats(config.natsUrl, NOMBRE);
 const catalogo = cargarCatalogo(config.directorioDatos, (mensaje) => console.warn(mensaje));
-const app = crearApp({
+const app = await crearApp({
   nombre: NOMBRE,
   version,
   logLevel: config.logLevel,
+  limitePorMinuto: config.limitePorMinuto,
   inventariar: () => inventariar(config.directorioDatos),
   catalogo,
 });

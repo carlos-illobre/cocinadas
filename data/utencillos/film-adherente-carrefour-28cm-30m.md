@@ -1,5 +1,7 @@
 # Film adherente Carrefour
 
+![Film adherente Carrefour](fotos/film-adherente-carrefour-28cm-30m.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Tipo | Film adherente para cocina |

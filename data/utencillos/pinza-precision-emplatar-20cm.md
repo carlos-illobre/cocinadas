@@ -1,5 +1,7 @@
 # Pinza de precisión recta para emplatar 20 cm
 
+![Pinza de precisión para emplatar 20 cm](fotos/pinza-precision-emplatar-20cm.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Tipo | Pinza recta de precisión |
@@ -12,4 +14,3 @@
 ## Incluye
 
 - 1 pinza recta de precisión de 20 cm.
-

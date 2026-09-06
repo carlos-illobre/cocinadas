@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Receta } from '../api';
 import v1 from '../../../../data/recetas/spaghetti-integral-brocoli-camarones/spaghetti-integral-brocoli-camarones-v1-linea-de-tiempo.json';
 import v2 from '../../../../data/recetas/spaghetti-integral-brocoli-camarones/spaghetti-integral-brocoli-camarones-v2-dos-etapas.json';
-import { atenderAlarma, avanzarReloj, carriles, empezar, empezarEtapa, listo, pasoActual, resumen } from './modelo';
+import { ALTO_MINIMO_FILA, atenderAlarma, avanzarReloj, empezar, empezarEtapa, gantt, listo, pasoActual, resumen } from './modelo';
 
 /**
  * La receta real del repositorio, tal como la sirve el catálogo (menos las fotos, que el
@@ -18,15 +18,23 @@ describe.each([
   ['versión 1', comoServida(v1)],
   ['versión 2', comoServida(v2)],
 ])('la receta real, %s', (_nombre, receta) => {
-  it('tiene carriles para cada proceso que algún paso arranca, dentro de las filas de su etapa', () => {
+  it('arma un gantt donde las filas van en orden y los procesos caen dentro de la etapa', () => {
     for (const etapa of receta.etapas) {
-      const lanes = carriles(etapa);
-      const arrancados = etapa.procesos.filter((p) => etapa.pasos.some((paso) => paso.inicia_procesos.includes(p.id)));
-      expect(lanes).toHaveLength(arrancados.length);
-      for (const c of lanes) {
-        expect(c.desde).toBeGreaterThanOrEqual(1);
-        expect(c.hasta).toBeLessThanOrEqual(etapa.pasos.length);
-        expect(c.hasta).toBeGreaterThanOrEqual(c.desde);
+      const g = gantt(etapa);
+      expect(g.filas).toHaveLength(etapa.pasos.length);
+      let esperado = 0;
+      for (const f of g.filas) {
+        expect(f.top).toBe(esperado);
+        expect(f.alto).toBeGreaterThanOrEqual(ALTO_MINIMO_FILA);
+        expect(f.altoBarra).toBeGreaterThan(0);
+        expect(f.altoBarra).toBeLessThanOrEqual(f.alto);
+        esperado += f.alto;
+      }
+      expect(g.alto).toBe(esperado);
+      expect(g.carriles).toHaveLength(etapa.procesos.length);
+      for (const c of g.carriles) {
+        expect(c.top).toBeGreaterThanOrEqual(0);
+        expect(c.top + c.alto).toBeLessThanOrEqual(g.alto);
       }
     }
   });

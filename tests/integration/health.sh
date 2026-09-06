@@ -41,10 +41,16 @@ comprobar() {
 }
 
 titulo "Puertos publicados"
-comprobar catalogo  "http://localhost:3001/health" catalogo
-comprobar usuarios  "http://localhost:3002/health" usuarios
-comprobar cocinadas "http://localhost:3003/health" cocinadas
-if esperar_200 "http://localhost:8080/health"; then ok "frontend → http://localhost:8080/health"; else mal "frontend no contestó"; fallos=$((fallos+1)); fi
+# Los puertos del host salen del .env: si se mueven para convivir con otra aplicación,
+# la prueba los sigue en vez de fallar contra el valor viejo.
+puerto() { sed -n "s/^$1=//p" .env | tail -1; }
+P_CATALOGO=$(puerto PUERTO_CATALOGO); P_USUARIOS=$(puerto PUERTO_USUARIOS)
+P_COCINADAS=$(puerto PUERTO_COCINADAS); P_FRONTEND=$(puerto PUERTO_FRONTEND)
+
+comprobar catalogo  "http://localhost:${P_CATALOGO}/health" catalogo
+comprobar usuarios  "http://localhost:${P_USUARIOS}/health" usuarios
+comprobar cocinadas "http://localhost:${P_COCINADAS}/health" cocinadas
+if esperar_200 "http://localhost:${P_FRONTEND}/health"; then ok "frontend → http://localhost:${P_FRONTEND}/health"; else mal "frontend no contestó"; fallos=$((fallos+1)); fi
 
 titulo "A través del reverse proxy ($SITE_ADDRESS)"
 comprobar catalogo  "$SITE_ADDRESS/api/catalogo/health" catalogo
@@ -58,7 +64,7 @@ else
 fi
 
 titulo "El catálogo empaquetado en la imagen (ADR-006)"
-inventario=$(curl -sf "http://localhost:3001/health" | sed -n 's/.*"catalogo":\({[^}]*}\).*/\1/p')
+inventario=$(curl -sf "http://localhost:${P_CATALOGO}/health" | sed -n 's/.*"catalogo":\({[^}]*}\).*/\1/p')
 if printf '%s' "$inventario" | grep -qE '"recetas":[1-9]'; then
     ok "la imagen trae el catálogo: $inventario"
 else

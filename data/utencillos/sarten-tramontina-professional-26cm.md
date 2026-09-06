@@ -1,5 +1,7 @@
 # Sartén Tramontina Professional 26 cm
 
+![Sartén Tramontina Professional 26 cm](fotos/sarten-tramontina-professional-26cm.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Marca/línea | Tramontina Professional |
@@ -21,4 +23,3 @@
 
 - 1 sartén Professional de 26 cm.
 - Mango tubular fijo de acero inoxidable.
-

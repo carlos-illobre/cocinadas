@@ -24,7 +24,7 @@ C4Context
 
 | Componente | Carpeta | Responsabilidad | Estado / tecnología |
 |---|---|---|---|
-| **frontend** | `microservices/frontend` | La SPA completa para cocinar: inicio, selección de receta, portada con versiones, pantalla de cocina (cronómetro por paso con exceso, procesos que corren solos con cuenta regresiva, riel con carriles, alarma sonora y vibración, pausa entre etapas) y resumen final con desvíos. Falta guardar la cocinada en el perfil (necesita usuarios y cocinadas). | React 19 + TypeScript, compilada con Vite y servida por Caddy como archivos estáticos (ADR-013). Sin estado propio ni enrutador: la navegación es un objeto de estado en `App`. |
+| **frontend** | `microservices/frontend` | La SPA completa para cocinar, con el diseño del prototipo de Figma Make de Carlos (naranja de marca, Nunito y Space Mono, y los dos temas del prototipo: claro sobre marfil y oscuro, que se cambian en Ajustes y se guardan en el teléfono): pantalla de bienvenida con la mesada armada en capas y las dos formas de entrar (con Google, que espera al servicio `usuarios`, o sin cuenta), inicio con saludo y barra de experiencia, tarjetas grandes de recetas, portada con foto a sangre, valores, modos de preparación con ícono e ingredientes y utensilios, mise en place con checklist y porcentaje, pantalla de cocina (cronómetro por paso con exceso y reinicio, procesos que corren solos, gantt vertical que se pinta a medida que avanza la cocinada, alarma sonora y vibración, pausa entre etapas con los pasos hechos), resumen final que festeja con confeti y sonido, muestra los puntos ganados y los logros desbloqueados y guarda la cocinada, progreso por receta con gráfico, y perfil con nivel, experiencia, números de la cocina, logros e interruptor de tema. Los logros (`src/logros.ts`) se calculan a partir de las cocinadas guardadas, no se almacenan. La experiencia (`src/xp.ts`) se recalcula a partir de las cocinadas guardadas y premia la precisión contra los tiempos de la receta, no la velocidad; el criterio exacto de puntos es provisional. Barra inferior con Recetas, Progreso y Perfil. Las cocinadas se guardan en el teléfono (localStorage) hasta que existan usuarios y cocinadas. | React 19 + TypeScript, compilada con Vite y servida por Caddy como archivos estáticos (ADR-013). Sin estado propio ni enrutador: la navegación es un objeto de estado en `App`. |
 | **catalogo** | `microservices/catalogo` | Recetas, ingredientes y utensilios. Solo lectura: `GET /recetas`, `GET /recetas/:plato/:version` y las fotos (ver README). | Fastify (ADR-007). Al arrancar carga en memoria los JSON de `data/recetas/` e indexa la foto de cada ficha; todo va dentro de la imagen (ADR-006). Sin base de datos. |
 | **usuarios** | `microservices/usuarios` | Registro, inicio de sesión, perfil. Emite los JWT. | Fastify + Drizzle sobre PostgreSQL (ADR-005, ADR-008). Autorización por JWT firmado con `JWT_SECRET` (ADR-012). |
 | **cocinadas** | `microservices/cocinadas` | Tiempos reales por paso de cada cocinada de un usuario; progreso por receta. | Fastify + Drizzle sobre PostgreSQL. Verifica los JWT localmente. |
@@ -99,7 +99,7 @@ sequenceDiagram
 Un solo `docker-compose.yml` para todos los ambientes; lo que cambia entre ambientes vive
 en el `.env` y en ningún otro lado (ADR-001). Una variable ausente corta el arranque. Las
 imágenes se construyen en el CI para `amd64` y `arm64`, se publican en GHCR etiquetadas
-por SHA, y `deployment/oracle-single/deploy.sh` trae exactamente ese SHA a la VM
+por SHA, y `deployment/oracle-single/deploy.py` trae exactamente ese SHA a la VM
 (ADR-011). Detalle en [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ```mermaid
@@ -108,7 +108,7 @@ flowchart LR
   gh -- CI: utest + paridad --> ci{pasa?}
   ci -- sí, en main --> ghcr[(GHCR<br/>imágenes por SHA<br/>amd64 + arm64)]
   ci -- sí, en main --> pages[GitHub Pages<br/>docs/]
-  dev -- deploy.sh <sha> --> vm[VM Oracle<br/>docker compose]
+  dev -- deploy.py &lt;sha&gt; --> vm[VM Oracle<br/>docker compose]
   ghcr -- compose pull --> vm
   vm -- ACME HTTP-01 --> le[Let's Encrypt]
 ```
@@ -135,7 +135,7 @@ flowchart LR
 
 Nada de lógica de negocio: ni endpoints de recetas, ni registro de usuarios, ni cocinadas.
 Cada servicio arranca, valida su configuración, se conecta a lo que depende (base, broker)
-y contesta `/health`. El catálogo ya sirve las recetas. La SPA tiene la pantalla de inicio (logo, lema «Tu receta, al punto justo» y «Empezar», sobre la foto de la mesada), la lista de recetas con la foto del plato, y la portada con la pestaña de versiones, los ingredientes con foto y las etapas; y la pantalla de cocina completa según el mockup: el modelo de la cocinada es puro (`src/cocina/modelo.ts`) y la pantalla solo lo dibuja con un tic de medio segundo. Los procesos arrancan cuando se da por hecho el paso que los dispara; un proceso crítico que vence tapa todo con la alarma (sonido repetido cada 2 s y vibración) y, si el paso actual era una espera, al atenderla sigue con el paso que corresponde; los no críticos avisan suave y desaparecen. Los huecos que la receta deja entre pasos se muestran como cuenta regresiva para empezar. Lo que sigue: `usuarios` con registro y sesión, y `cocinadas` para guardar el resumen y mostrar el progreso por receta. Lo
+y contesta `/health`. El catálogo ya sirve las recetas. La SPA tiene la pantalla de inicio (logo, lema «Tu receta, al punto justo» y «Empezar», sobre la foto de la mesada), la lista de recetas con la foto del plato, y la portada con la pestaña de versiones, los ingredientes con foto y las etapas; y la pantalla de cocina completa según el mockup: el modelo de la cocinada es puro (`src/cocina/modelo.ts`) y la pantalla solo lo dibuja con un tic de medio segundo. Los procesos arrancan cuando se da por hecho el paso que los dispara; un proceso crítico que vence tapa todo con la alarma (sonido repetido cada 2 s y vibración) y, si el paso actual era una espera, al atenderla sigue con el paso que corresponde; los no críticos avisan suave y desaparecen. Los huecos que la receta deja entre pasos se muestran como cuenta regresiva para empezar. Antes de cocinar, la mise en place obliga a tildar cada utensilio e ingrediente. Al terminar, «Guardar esta cocinada» la deja en el teléfono y la pestaña Progreso dibuja el tiempo de cada intento contra el objetivo. Lo que sigue: `usuarios` con registro y sesión, y `cocinadas` para sincronizar ese mismo registro con el perfil. Lo
 que sigue, en orden previsto: endpoints de lectura de `catalogo` sobre los JSON de
 `data/recetas/`, la pantalla de cocina del mockup contra ellos, `usuarios` con registro y
 sesión, y `cocinadas` con el registro de tiempos y el gráfico de progreso.
