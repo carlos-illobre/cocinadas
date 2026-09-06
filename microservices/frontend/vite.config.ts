@@ -9,17 +9,6 @@ export default defineConfig({
   // los enlaces de node_modules guardan la que se usó), los hooks fallan con «Cannot read
   // properties of null (reading 'useState')». Ver docs/TESTING.md, «Windows».
   resolve: { dedupe: ['react', 'react-dom'] },
-  server: {
-    // En desarrollo con `pnpm dev`, la SPA corre en 5173 y las llamadas a /api/<servicio>/
-    // se reenvían a los servicios publicados por el compose, con el mismo prefijo que
-    // quita el reverse proxy en producción. Así el código del frontend es idéntico en
-    // los dos casos.
-    proxy: {
-      '/api/catalogo': { target: 'http://localhost:3001', rewrite: (p) => p.replace(/^\/api\/catalogo/, '') },
-      '/api/usuarios': { target: 'http://localhost:3002', rewrite: (p) => p.replace(/^\/api\/usuarios/, '') },
-      '/api/cocinadas': { target: 'http://localhost:3003', rewrite: (p) => p.replace(/^\/api\/cocinadas/, '') },
-    },
-  },
   test: {
     globals: true,
     environment: 'jsdom',
@@ -31,9 +20,11 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}'],
       // Exclusiones justificadas una por una (docs/TESTING.md):
       //   - main.tsx: raíz de composición; monta <App/> en el DOM y nada más.
+      //   - catalogo/generar.ts: escribe a disco lo que planificar() decidió; sin
+      //     decisiones propias, y corre en el build y no en el navegador.
       //   - pruebas/**: utilidades de las propias pruebas.
       //   - *.test.*: las pruebas no se miden a sí mismas.
-      exclude: ['src/main.tsx', 'src/pruebas/**', 'src/**/*.test.{ts,tsx}'],
+      exclude: ['src/main.tsx', 'src/catalogo/generar.ts', 'src/pruebas/**', 'src/**/*.test.{ts,tsx}'],
       reporter: ['text', 'json-summary', 'html'],
       thresholds: {
         lines: 100,

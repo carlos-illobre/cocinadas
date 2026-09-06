@@ -3,15 +3,17 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
-  cargarCatalogo,
-  contarFichas,
-  contarRecetas,
+  type ArchivoJson,
+  type RecetaResumen,
+  type RecetaServida,
   esFicha,
+  esImagen,
   fotoDeFicha,
   indexarFotos,
-  inventariar,
   leerRecetas,
-} from '../src/catalogo.js';
+  planificar,
+  urlDeFoto,
+} from './catalogo';
 
 function recetaJson(plato: string, numero: number, clave: string, extra: Record<string, unknown> = {}): string {
   return JSON.stringify({
@@ -50,7 +52,7 @@ function armarDatos(raiz: string): void {
   writeFileSync(join(plato, 'pasta-brocoli-v1-linea-de-tiempo.html'), '');
   writeFileSync(join(plato, 'pasta-brocoli.jpg'), 'jpg');
 
-  // Un plato sin foto en disco aunque el JSON la declare, y un JSON de otro esquema.
+  // Un plato sin foto en sus fuentes, y un JSON de otro esquema.
   const otro = join(raiz, 'recetas', 'otro-plato');
   mkdirSync(otro);
   writeFileSync(join(otro, 'otro-plato-v1-linea-de-tiempo.json'), recetaJson('otro-plato', 1, 'linea-de-tiempo', { fuentes: { html: 'x.html', pdf: 'x.pdf' } }));
@@ -73,16 +75,19 @@ function armarDatos(raiz: string): void {
   writeFileSync(join(frescos, 'limon-entero.md'), '# Limón\n\nSin foto todavía.\n');
   writeFileSync(join(frescos, 'sin-foto.md'), '# Algo\n\n![rota](../fotos-envases/no-existe.jpg)\n');
   writeFileSync(join(frescos, 'fuera.md'), '# Fuera\n\n![afuera](../../../../etc/passwd)\n');
+  // Enlaza algo que existe pero no es una imagen: no se copia al bundle.
+  writeFileSync(join(frescos, 'no-imagen.md'), '# Ficha\n\n![pdf](../fotos-envases/manual.pdf)\n');
   writeFileSync(join(fotos, 'README.md'), '');
   writeFileSync(join(fotos, 'brocoli.jpg'), 'jpg');
+  writeFileSync(join(fotos, 'manual.pdf'), 'pdf');
 
   const utensilios = join(raiz, 'utencillos');
   mkdirSync(join(utensilios, 'fotos'), { recursive: true });
   writeFileSync(join(utensilios, 'README.md'), '');
-  writeFileSync(join(utensilios, 'wok-30cm.md'), '# Wok\n\n![Wok](fotos/wok-30cm-frente.jpg)\n');
-  writeFileSync(join(utensilios, 'fotos', 'wok-30cm-frente.jpg'), 'jpg');
+  writeFileSync(join(utensilios, 'wok-30cm.md'), '# Wok\n\n![Wok](fotos/wok-30cm-frente.PNG)\n');
+  writeFileSync(join(utensilios, 'fotos', 'wok-30cm-frente.PNG'), 'png');
   // Una ficha dentro de fotos/ no cuenta: los utensilios no se recorren en recursivo.
-  writeFileSync(join(utensilios, 'fotos', 'perdida.md'), '![p](wok-30cm-frente.jpg)');
+  writeFileSync(join(utensilios, 'fotos', 'perdida.md'), '![p](wok-30cm-frente.PNG)');
 }
 
 describe('esFicha', () => {
@@ -98,6 +103,22 @@ describe('esFicha', () => {
   );
 });
 
+describe('esImagen', () => {
+  it.each(['a.jpg', 'a.jpeg', 'a.png', 'a.webp', 'a.PNG'])('%s es una imagen', (nombre) => {
+    expect(esImagen(nombre)).toBe(true);
+  });
+
+  it.each(['a.pdf', 'a.md', 'a'])('%s no es una imagen', (nombre) => {
+    expect(esImagen(nombre)).toBe(false);
+  });
+});
+
+describe('urlDeFoto', () => {
+  it('lleva la extensión del archivo de origen, en minúscula', () => {
+    expect(urlDeFoto('ingredientes', 'brocoli-entero', '/x/y/brocoli.JPG')).toBe('/fotos/ingredientes/brocoli-entero.jpg');
+  });
+});
+
 describe('sobre un directorio de datos', () => {
   let raiz: string;
   let avisos: string[];
@@ -110,24 +131,6 @@ describe('sobre un directorio de datos', () => {
 
   afterEach(() => {
     rmSync(raiz, { recursive: true, force: true });
-  });
-
-  describe('inventario', () => {
-    it('cuenta solo los .json dentro de las carpetas de plato', () => {
-      expect(contarRecetas(join(raiz, 'recetas'))).toBe(6);
-    });
-
-    it('cuenta las fichas de ingredientes en todas las categorías, sin README, índice ni plantilla', () => {
-      expect(contarFichas(join(raiz, 'ingredientes'), true)).toBe(4);
-    });
-
-    it('cuenta las fichas de utensilios solo en la raíz de su carpeta', () => {
-      expect(contarFichas(join(raiz, 'utencillos'), false)).toBe(1);
-    });
-
-    it('arma el inventario completo', () => {
-      expect(inventariar(raiz)).toEqual({ recetas: 6, ingredientes: 4, utensilios: 1 });
-    });
   });
 
   describe('fotoDeFicha', () => {
@@ -147,6 +150,10 @@ describe('sobre un directorio de datos', () => {
 
     it('devuelve null si el enlace sale del directorio de datos', () => {
       expect(fotoDeFicha(join(raiz, 'ingredientes', 'frescos', 'fuera.md'), raiz)).toBeNull();
+    });
+
+    it('devuelve null si lo enlazado existe pero no es una imagen', () => {
+      expect(fotoDeFicha(join(raiz, 'ingredientes', 'frescos', 'no-imagen.md'), raiz)).toBeNull();
     });
   });
 
@@ -179,18 +186,22 @@ describe('sobre un directorio de datos', () => {
     });
   });
 
-  describe('cargarCatalogo', () => {
-    it('lista un resumen por plato con sus versiones ordenadas por número', () => {
-      const catalogo = cargarCatalogo(raiz, (m) => avisos.push(m));
-      const lista = catalogo.recetas();
+  describe('planificar', () => {
+    const json = (plan: { json: readonly ArchivoJson[] }, ruta: string): unknown =>
+      plan.json.find((a) => a.ruta === ruta)?.contenido;
+
+    it('escribe recetas.json con un resumen por plato y las versiones ordenadas por número', () => {
+      const plan = planificar(raiz, (m) => avisos.push(m));
+      const lista = json(plan, 'recetas.json') as readonly RecetaResumen[];
+      // El orden es el del disco: readdirSync devuelve las carpetas alfabéticamente.
       expect(lista.map((r) => r.plato)).toEqual(['otro-plato', 'pasta-brocoli', 'zeta-sin-archivo']);
-      const pasta = lista[1];
+      const pasta = lista.find((r) => r.plato === 'pasta-brocoli');
       expect(pasta).toMatchObject({
         nombre: 'Plato pasta-brocoli',
         momento: 'cena',
         porciones: 1,
         nutricion: { kcal: 700 },
-        foto: '/recetas/pasta-brocoli/foto',
+        foto: '/fotos/recetas/pasta-brocoli.jpg',
       });
       expect(pasta?.versiones.map((v) => [v.numero, v.clave, v.icono, v.tiempo_total_s, v.tiempo_total_texto])).toEqual([
         [1, 'linea-de-tiempo', '⚡', 600, '10 min'],
@@ -198,63 +209,42 @@ describe('sobre un directorio de datos', () => {
       ]);
     });
 
-    it('marca sin foto al plato que no declara foto en sus fuentes', () => {
-      const catalogo = cargarCatalogo(raiz, () => undefined);
-      expect(catalogo.recetas()[0]?.foto).toBeNull();
-      expect(catalogo.fotoReceta('otro-plato')).toBeNull();
-      expect(catalogo.fotoReceta('inexistente')).toBeNull();
+    it('deja sin foto al plato que no la declara y al que la declara pero no está en disco', () => {
+      const plan = planificar(raiz, () => undefined);
+      const lista = json(plan, 'recetas.json') as readonly RecetaResumen[];
+      expect(lista.find((r) => r.plato === 'otro-plato')?.foto).toBeNull();
+      expect(lista.find((r) => r.plato === 'zeta-sin-archivo')?.foto).toBeNull();
+      expect((json(plan, 'recetas/zeta-sin-archivo/linea-de-tiempo.json') as RecetaServida).foto).toBeNull();
     });
 
-    it('marca sin foto al plato que la declara pero no la tiene en disco', () => {
-      const catalogo = cargarCatalogo(raiz, () => undefined);
-      expect(catalogo.recetas()[2]?.foto).toBeNull();
-      expect(catalogo.fotoReceta('zeta-sin-archivo')).toBeNull();
-      expect(catalogo.receta('zeta-sin-archivo', '1')?.foto).toBeNull();
+    it('escribe cada versión por clave y por número, con las fotos resueltas', () => {
+      const plan = planificar(raiz, () => undefined);
+      for (const ruta of ['recetas/pasta-brocoli/dos-etapas.json', 'recetas/pasta-brocoli/2.json']) {
+        const receta = json(plan, ruta) as RecetaServida;
+        expect(receta.version.numero).toBe(2);
+        expect(receta.foto).toBe('/fotos/recetas/pasta-brocoli.jpg');
+        expect(receta.ingredientes.map((i) => [i.id, i.foto])).toEqual([
+          ['brocoli-entero', '/fotos/ingredientes/brocoli-entero.jpg'],
+          ['sin-foto', null],
+          [null, null],
+        ]);
+        expect(receta.utensilios.map((u) => [u.id, u.foto])).toEqual([
+          ['wok-30cm', '/fotos/utensilios/wok-30cm.png'],
+          [null, null],
+        ]);
+      }
     });
 
-    it('devuelve la ruta absoluta de la foto de un plato que la tiene', () => {
-      const catalogo = cargarCatalogo(raiz, () => undefined);
-      expect(catalogo.fotoReceta('pasta-brocoli')).toBe(join(raiz, 'recetas', 'pasta-brocoli', 'pasta-brocoli.jpg'));
-    });
-
-    it.each(['dos-etapas', '2'])('sirve la receta por clave o número (%s) con las fotos resueltas', (version) => {
-      const catalogo = cargarCatalogo(raiz, () => undefined);
-      const receta = catalogo.receta('pasta-brocoli', version);
-      expect(receta).not.toBeNull();
-      expect(receta?.version.numero).toBe(2);
-      expect(receta?.foto).toBe('/recetas/pasta-brocoli/foto');
-      expect(receta?.ingredientes.map((i) => [i.id, i.foto])).toEqual([
-        ['brocoli-entero', '/ingredientes/brocoli-entero/foto'],
-        ['sin-foto', null],
-        [null, null],
+    it('copia solo las fotos que alguna receta referencia, una sola vez cada una', () => {
+      const plan = planificar(raiz, () => undefined);
+      expect(plan.fotos.map((f) => f.ruta).sort()).toEqual([
+        'fotos/ingredientes/brocoli-entero.jpg',
+        'fotos/recetas/pasta-brocoli.jpg',
+        'fotos/utensilios/wok-30cm.png',
       ]);
-      expect(receta?.utensilios.map((u) => [u.id, u.foto])).toEqual([
-        ['wok-30cm', '/utensilios/wok-30cm/foto'],
-        [null, null],
-      ]);
-    });
-
-    it('la receta de un plato sin foto en disco viene con foto null', () => {
-      const catalogo = cargarCatalogo(raiz, () => undefined);
-      expect(catalogo.receta('otro-plato', '1')?.foto).toBeNull();
-    });
-
-    it('devuelve null si el plato o la versión no existen', () => {
-      const catalogo = cargarCatalogo(raiz, () => undefined);
-      expect(catalogo.receta('pasta-brocoli', '3')).toBeNull();
-      expect(catalogo.receta('nada', 'dos-etapas')).toBeNull();
-    });
-
-    it('resuelve las fotos de ingredientes y utensilios por id', () => {
-      const catalogo = cargarCatalogo(raiz, () => undefined);
-      expect(catalogo.fotoIngrediente('brocoli-entero')).toBe(resolve(raiz, 'ingredientes', 'fotos-envases', 'brocoli.jpg'));
-      expect(catalogo.fotoIngrediente('limon-entero')).toBeNull();
-      // Cada índice recorre solo su carpeta: un utensilio no es un ingrediente ni al revés.
-      expect(catalogo.fotoIngrediente('wok-30cm')).toBeNull();
-      expect(catalogo.fotoUtensilio('brocoli-entero')).toBeNull();
-      expect(catalogo.fotoUtensilio('perdida')).toBeNull();
-      expect(catalogo.fotoUtensilio('wok-30cm')).toBe(resolve(raiz, 'utencillos', 'fotos', 'wok-30cm-frente.jpg'));
-      expect(catalogo.fotoUtensilio('cuchara')).toBeNull();
+      expect(plan.fotos.find((f) => f.ruta === 'fotos/utensilios/wok-30cm.png')?.origen).toBe(
+        resolve(raiz, 'utencillos', 'fotos', 'wok-30cm-frente.PNG'),
+      );
     });
   });
 });

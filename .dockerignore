@@ -1,19 +1,27 @@
-# Contexto de build del servicio catalogo, que es el único que se construye desde la
-# raíz (ADR-006): entra su código y las tres carpetas de datos, y nada más. Todo lo demás
-# del repositorio (mockups, manuales, PDF, otros servicios) queda afuera para que el
-# contexto sea chico y un cambio en otro servicio no invalide esta imagen.
+# Contexto de build de la única imagen, que se construye desde la raíz porque el build
+# genera el catálogo leyendo data/ (ADR-006, ADR-015): entra el código de la app y las
+# tres carpetas de datos, y nada más. Todo lo demás del repositorio (mockups, manuales,
+# PDF, documentación) queda afuera para que el contexto sea chico.
 *
-!microservices/catalogo/**
+!microservices/frontend/**
+# Las carpetas se nombran también sin `/**`: ese patrón sólo desexcluye el contenido, y
+# sin esta línea `COPY data/recetas` avisa que está copiando algo excluido.
+!data/recetas
 !data/recetas/**
+!data/ingredientes
 !data/ingredientes/**
+!data/utencillos
 !data/utencillos/**
 
 # Dentro de lo permitido, lo que no va a la imagen
-microservices/catalogo/node_modules
-microservices/catalogo/dist
-microservices/catalogo/coverage
-microservices/catalogo/reports
-microservices/catalogo/.stryker-tmp
+microservices/frontend/node_modules
+microservices/frontend/dist
+microservices/frontend/coverage
+microservices/frontend/reports
+microservices/frontend/.stryker-tmp
+# El catálogo se genera adentro del build a partir de data/; lo que haya quedado en la
+# máquina de quien construye no entra.
+microservices/frontend/public/api
 data/recetas/**/*.pdf
 data/recetas/validar-receta.py
 **/.env*

@@ -23,10 +23,10 @@ describe('MiseEnPlace', () => {
     expect(items).toHaveLength(6);
     expect(items[0]).toHaveTextContent('Wok Eternity 30 cm con su tapa');
     expect(items[0]?.querySelector('small')).toBeNull();
-    expect(items[0]?.querySelector('img')).toHaveAttribute('src', '/api/catalogo/utensilios/wok-eternity-copper-30cm/foto');
+    expect(items[0]?.querySelector('img')).toHaveAttribute('src', '/api/catalogo/fotos/utensilios/wok-eternity-copper-30cm.jpg');
     expect(items[1]?.querySelector('.mise-sin-foto')).toHaveTextContent('🔧');
     expect(items[3]?.querySelector('small')).toHaveTextContent('½ pieza');
-    expect(items[3]?.querySelector('img')).toHaveAttribute('src', '/api/catalogo/ingredientes/brocoli-entero/foto');
+    expect(items[3]?.querySelector('img')).toHaveAttribute('src', '/api/catalogo/fotos/ingredientes/brocoli-entero.jpg');
     expect(items[4]?.querySelector('.mise-sin-foto')).toHaveTextContent('🥄');
 
     expect(screen.getByText('Marcá todos los items para continuar')).toBeInTheDocument();

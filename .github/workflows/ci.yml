@@ -114,11 +114,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - servicio: catalogo
-            contexto: .
-            dockerfile: microservices/catalogo/Dockerfile
           - servicio: frontend
-            contexto: microservices/frontend
+            contexto: .
             dockerfile: microservices/frontend/Dockerfile
     steps:
       - uses: actions/checkout@v4

@@ -31,7 +31,7 @@ describe('Recetas', () => {
     expect(tarjetas[0]).toHaveTextContent('21 min');
     expect(tarjetas[0]).toHaveTextContent('1 porc');
     expect(tarjetas[0]).toHaveTextContent('720 kcal');
-    expect(tarjetas[0]?.querySelector('img.tarjeta-foto')).toHaveAttribute('src', '/api/catalogo/recetas/spaghetti-integral-brocoli-camarones/foto');
+    expect(tarjetas[0]?.querySelector('img.tarjeta-foto')).toHaveAttribute('src', '/api/catalogo/fotos/recetas/spaghetti-integral-brocoli-camarones.jpg');
 
     expect(tarjetas[1]).toHaveTextContent('25 min');
     expect(tarjetas[1]).toHaveTextContent('2 porc');

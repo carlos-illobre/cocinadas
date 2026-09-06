@@ -12,10 +12,10 @@ function fetchQueDevuelve(cuerpo: unknown, ok = true, status = 200): { fetchImpl
 }
 
 describe('listarRecetas', () => {
-  it('pide /recetas al catálogo a través del proxy y devuelve el cuerpo', async () => {
+  it('pide el JSON del catálogo y devuelve el cuerpo', async () => {
     const { fetchImpl, urls } = fetchQueDevuelve([{ plato: 'a' }]);
     await expect(listarRecetas(fetchImpl)).resolves.toEqual([{ plato: 'a' }]);
-    expect(urls).toEqual([`${BASE_CATALOGO}/recetas`]);
+    expect(urls).toEqual([`${BASE_CATALOGO}/recetas.json`]);
   });
 
   it('falla con el código HTTP y la ruta si el catálogo no responde ok', async () => {
@@ -28,7 +28,7 @@ describe('obtenerReceta', () => {
   it('pide la receta por plato y versión', async () => {
     const { fetchImpl, urls } = fetchQueDevuelve({ plato: 'pasta' });
     await expect(obtenerReceta(fetchImpl, 'pasta', 'dos-etapas')).resolves.toEqual({ plato: 'pasta' });
-    expect(urls).toEqual([`${BASE_CATALOGO}/recetas/pasta/dos-etapas`]);
+    expect(urls).toEqual([`${BASE_CATALOGO}/recetas/pasta/dos-etapas.json`]);
   });
 
   it('falla con el código HTTP si no existe', async () => {
@@ -39,7 +39,7 @@ describe('obtenerReceta', () => {
 
 describe('urlFoto', () => {
   it('antepone el prefijo del proxy a la ruta relativa', () => {
-    expect(urlFoto('/recetas/pasta/foto')).toBe('/api/catalogo/recetas/pasta/foto');
+    expect(urlFoto('/fotos/recetas/pasta.jpg')).toBe('/api/catalogo/fotos/recetas/pasta.jpg');
   });
 
   it('deja null en null', () => {

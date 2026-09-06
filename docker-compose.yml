@@ -30,24 +30,6 @@ x-endurecido: &endurecido
   cap_drop:
     - ALL
 
-x-node: &node
-  # Techos, política de reinicio y endurecimiento de los servicios Node; lo que los
-  # distingue va en cada uno.
-  <<: *endurecido
-  restart: unless-stopped
-  logging: *logging
-  mem_limit: ${MEM_LIMIT_NODE:?falta MEM_LIMIT_NODE en el .env}
-  # Techo de CPU, no reserva: la suma puede pasar los núcleos de la máquina. Sin esto, un
-  # servicio en un bucle se queda con toda la CPU y los demás dejan de contestar.
-  cpus: ${CPU_LIMIT_NODE:?falta CPU_LIMIT_NODE en el .env}
-  # Ninguno escribe en su sistema de archivos: solo lee la imagen y responde.
-  read_only: true
-  tmpfs:
-    - /tmp
-  environment: &node-env
-    LOG_LEVEL: ${LOG_LEVEL:?falta LOG_LEVEL en el .env}
-    RATE_LIMIT_POR_MINUTO: ${RATE_LIMIT_POR_MINUTO:?falta RATE_LIMIT_POR_MINUTO en el .env}
-
 services:
   reverse-proxy:
     # Caddy sirve el frontend, enruta /api/<servicio>/ y emite y renueva el TLS (ADR-009).
@@ -87,8 +69,6 @@ services:
     depends_on:
       frontend:
         condition: service_healthy
-      catalogo:
-        condition: service_healthy
     healthcheck:
       # Contra el sitio interno de salud del Caddyfile, no contra la API de
       # administración: esa quedó apagada.
@@ -123,29 +103,6 @@ services:
       - "${PUBLISH_ADDR:?falta PUBLISH_ADDR en el .env}:${PUERTO_FRONTEND:?falta PUERTO_FRONTEND en el .env}:8080"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-
-  catalogo:
-    # Recetas, ingredientes y utensilios. Solo lectura: los datos van dentro de la imagen,
-    # tomados de las carpetas data/recetas/, data/ingredientes/ y data/utencillos/ del repositorio, así
-    # que la versión del catálogo es la del commit desplegado (ADR-006).
-    <<: *node
-    image: ${REGISTRO:?falta REGISTRO en el .env}/templa-catalogo:${TAG:?falta TAG en el .env}
-    build:
-      # Contexto en la raíz porque la imagen empaqueta las carpetas de datos. Lo que entra
-      # lo limita el .dockerignore de la raíz.
-      context: .
-      dockerfile: microservices/catalogo/Dockerfile
-    environment:
-      <<: *node-env
-      PUERTO: "3001"
-      DIRECTORIO_DATOS: /datos
-    ports:
-      - "${PUBLISH_ADDR:?falta PUBLISH_ADDR en el .env}:${PUERTO_CATALOGO:?falta PUERTO_CATALOGO en el .env}:3001"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
       interval: 15s
       timeout: 5s
       retries: 5

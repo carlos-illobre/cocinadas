@@ -44,13 +44,11 @@ titulo "Puertos publicados"
 # Los puertos del host salen del .env: si se mueven para convivir con otra aplicación,
 # la prueba los sigue en vez de fallar contra el valor viejo.
 puerto() { sed -n "s/^$1=//p" .env | tail -1; }
-P_CATALOGO=$(puerto PUERTO_CATALOGO); P_FRONTEND=$(puerto PUERTO_FRONTEND)
+P_FRONTEND=$(puerto PUERTO_FRONTEND)
 
-comprobar catalogo  "http://localhost:${P_CATALOGO}/health" catalogo
 if esperar_200 "http://localhost:${P_FRONTEND}/health"; then ok "frontend → http://localhost:${P_FRONTEND}/health"; else mal "frontend no contestó"; fallos=$((fallos+1)); fi
 
 titulo "A través del reverse proxy ($SITE_ADDRESS)"
-comprobar catalogo  "$SITE_ADDRESS/api/catalogo/health" catalogo
 if esperar_200 "$SITE_ADDRESS/" && curl -sf "$SITE_ADDRESS/" | grep -q '<div id="raiz">'; then
     ok "la SPA se sirve en $SITE_ADDRESS/"
 else
@@ -58,12 +56,25 @@ else
     fallos=$((fallos+1))
 fi
 
-titulo "El catálogo empaquetado en la imagen (ADR-006)"
-inventario=$(curl -sf "http://localhost:${P_CATALOGO}/health" | sed -n 's/.*"catalogo":\({[^}]*}\).*/\1/p')
-if printf '%s' "$inventario" | grep -qE '"recetas":[1-9]'; then
-    ok "la imagen trae el catálogo: $inventario"
+titulo "El catálogo generado en el build (ADR-006, ADR-015)"
+# El catálogo dejó de ser un servicio: son archivos del bundle. Que estén y que digan
+# algo es lo que antes garantizaba el inventario de /health.
+recetas=$(curl -sf "$SITE_ADDRESS/api/catalogo/recetas.json")
+plato=$(printf '%s' "$recetas" | sed -n 's/.*"plato":"\([a-z0-9-]*\)".*/\1/p' | head -1)
+if [ -n "$plato" ]; then
+    ok "recetas.json trae al menos un plato: $plato"
 else
-    mal "la imagen no trae recetas: ${inventario:-sin inventario}"
+    mal "recetas.json no trae ninguna receta: ${recetas:-sin respuesta}"
+    fallos=$((fallos+1))
+fi
+
+foto=$(printf '%s' "$recetas" | sed -n 's|.*"foto":"\(/fotos/[^"]*\)".*|\1|p' | head -1)
+if [ -z "$foto" ]; then
+    aviso "ninguna receta declara foto: no hay nada que comprobar"
+elif curl -sfI "$SITE_ADDRESS/api/catalogo$foto" | grep -qi '^content-type: image/'; then
+    ok "las fotos se sirven con su tipo: $foto"
+else
+    mal "la foto $foto no se sirve como imagen"
     fallos=$((fallos+1))
 fi
 

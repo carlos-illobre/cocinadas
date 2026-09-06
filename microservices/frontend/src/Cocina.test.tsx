@@ -106,7 +106,7 @@ describe('Cocina · etapa tranquila', () => {
     listo();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Paso 2 de 3');
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Lavar y cortar el brócoli');
-    expect(document.querySelector('.ttl img')).toHaveAttribute('src', '/api/catalogo/ingredientes/brocoli-entero/foto');
+    expect(document.querySelector('.ttl img')).toHaveAttribute('src', '/api/catalogo/fotos/ingredientes/brocoli-entero.jpg');
     // El paso nuevo arranca en cero.
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
 
@@ -300,7 +300,7 @@ describe('Cocina · fin de etapa y etapa crítica', () => {
     c.listo(); // arranca brócoli tapado (180 s, crítico)
     const brocoli = screen.getByRole('timer', { name: 'Brócoli tapado' });
     expect(brocoli).toHaveClass('hot');
-    expect(brocoli.querySelector('img')).toHaveAttribute('src', '/api/catalogo/ingredientes/brocoli-entero/foto');
+    expect(brocoli.querySelector('img')).toHaveAttribute('src', '/api/catalogo/fotos/ingredientes/brocoli-entero.jpg');
     expect(screen.getByText('En el fuego')).toBeInTheDocument();
     c.pasar(151);
     expect(screen.getByRole('timer', { name: 'Brócoli tapado' })).toHaveClass('warn');
@@ -392,7 +392,7 @@ describe('Cocina · fin de etapa y etapa crítica', () => {
     c.listo();
     c.pasar(180);
     const alarma = screen.getByRole('alertdialog');
-    expect(alarma.querySelector('img')).toHaveAttribute('src', '/api/catalogo/ingredientes/brocoli-entero/foto');
+    expect(alarma.querySelector('img')).toHaveAttribute('src', '/api/catalogo/fotos/ingredientes/brocoli-entero.jpg');
   });
 });
 

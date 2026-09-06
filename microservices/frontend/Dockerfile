@@ -1,21 +1,33 @@
-# Autocontenido (invariante 7): el contexto es esta carpeta y nada más.
-#   docker build microservices/frontend
+# Se construye con contexto en la RAÍZ del repositorio: el build genera el catálogo
+# leyendo data/recetas/, data/ingredientes/ y data/utencillos/ (ADR-006, ADR-015), así que
+# la versión del catálogo es la del commit desplegado y una reversión también revierte las
+# recetas. Es la excepción a que cada imagen se construya desde su propia carpeta.
+#
+#   docker build -f microservices/frontend/Dockerfile .
 #
 # La SPA se compila con Node y se sirve con Caddy en modo file server (ADR-013): la
 # imagen final no lleva Node ni node_modules, solo los archivos estáticos.
 
 # ── 1. Dependencias ──────────────────────────────────────────────────────────
 FROM node:22-alpine AS deps
-WORKDIR /app
+# La imagen reproduce la ruta del repositorio (/repo/microservices/frontend con
+# /repo/data al lado) en vez de aplanar todo en /app: generar.ts encuentra data/ por una
+# ruta relativa a su propio archivo, y así esa ruta es la misma acá que en desarrollo.
+WORKDIR /repo/microservices/frontend
 RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
-COPY package.json pnpm-lock.yaml ./
+COPY microservices/frontend/package.json microservices/frontend/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # ── 2. Compilación ───────────────────────────────────────────────────────────
 FROM deps AS build
-COPY tsconfig.json tsconfig.build.json vite.config.ts index.html ./
-COPY public ./public
-COPY src ./src
+COPY microservices/frontend/tsconfig.json microservices/frontend/tsconfig.build.json ./
+COPY microservices/frontend/vite.config.ts microservices/frontend/index.html ./
+COPY microservices/frontend/public ./public
+COPY microservices/frontend/src ./src
+# Los datos al final: son lo que más cambia entre commits.
+COPY data/recetas /repo/data/recetas
+COPY data/ingredientes /repo/data/ingredientes
+COPY data/utencillos /repo/data/utencillos
 RUN pnpm build
 
 # ── 3. Imagen final ──────────────────────────────────────────────────────────
@@ -24,8 +36,8 @@ FROM caddy:2-alpine AS runtime
 # número. Caddy necesita escribir su configuración derivada en /config y /data.
 RUN addgroup -g 10001 -S app && adduser -u 10001 -G app -S -D -H app \
   && mkdir -p /config /data && chown -R app:app /config /data
-COPY --chown=app:app Caddyfile /etc/caddy/Caddyfile
-COPY --from=build --chown=app:app /app/dist /srv
+COPY --chown=app:app microservices/frontend/Caddyfile /etc/caddy/Caddyfile
+COPY --from=build --chown=app:app /repo/microservices/frontend/dist /srv
 USER app
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=5s --retries=5 \

@@ -5,6 +5,8 @@ deployment/*/.env
 # Dependencias y artefactos de build de cada servicio
 node_modules/
 dist/
+# El catálogo se genera de data/ en cada build (ADR-015): la fuente es data/, no esto.
+microservices/frontend/public/api/
 coverage/
 reports/
 .stryker-tmp/

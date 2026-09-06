@@ -9,7 +9,7 @@ export const resumenSpaghetti: RecetaResumen = {
   momento: 'cena',
   porciones: 1,
   nutricion: { kcal: 720, proteina_g: 38, fibra_g: 17, sodio_mg: 250 },
-  foto: '/recetas/spaghetti-integral-brocoli-camarones/foto',
+  foto: '/fotos/recetas/spaghetti-integral-brocoli-camarones.jpg',
   versiones: [
     { numero: 1, clave: 'linea-de-tiempo', titulo: 'Flujo continuo', resumen: 'Todo en una sola pasada.', icono: '⚡', tiempo_total_s: 960, tiempo_total_texto: '16 min' },
     { numero: 2, clave: 'dos-etapas', titulo: 'Mise en place primero', resumen: 'Primero se prepara todo sin apuro.', icono: '🎯', tiempo_total_s: 1260, tiempo_total_texto: '11 + 10 min' },
@@ -33,12 +33,12 @@ export const recetaDosEtapas: Receta = {
   tiempo_total_s: 1260,
   tiempo_total_texto: '11 + 10 min',
   utensilios: [
-    { id: 'wok-eternity-copper-30cm', nombre: 'Wok Eternity 30 cm con su tapa', uso: 'Todo lo del wok', foto: '/utensilios/wok-eternity-copper-30cm/foto' },
+    { id: 'wok-eternity-copper-30cm', nombre: 'Wok Eternity 30 cm con su tapa', uso: 'Todo lo del wok', foto: '/fotos/utensilios/wok-eternity-copper-30cm.jpg' },
     { id: 'jarro-slow-fire-2l', nombre: 'Jarro hervidor Slow Fire 2 L', uso: 'Hervir la pasta', foto: null },
     { id: null, nombre: '1 bol mediano', uso: 'Descongelar', foto: null },
   ],
   ingredientes: [
-    { id: 'brocoli-entero', nombre: 'Brócoli fresco entero', cantidad: '½ pieza', preparacion: 'Flores, tallo y hojas', foto: '/ingredientes/brocoli-entero/foto' },
+    { id: 'brocoli-entero', nombre: 'Brócoli fresco entero', cantidad: '½ pieza', preparacion: 'Flores, tallo y hojas', foto: '/fotos/ingredientes/brocoli-entero.jpg' },
     { id: 'ajo-picado-congelado', nombre: 'Ajo picado congelado', cantidad: '1 cdta', preparacion: 'Directo al wok', foto: null },
     { id: null, nombre: 'Agua', cantidad: '0,8 L', preparacion: 'Para la pasta', foto: null },
   ],
@@ -101,7 +101,9 @@ export const recetaUnaEtapa: Receta = {
 /** Un fetch que responde por ruta; lo que no está preparado rechaza con un Error. */
 export function fetchDeCatalogo(respuestas: Record<string, unknown>, fallos: Record<string, number> = {}): Fetch {
   return (url) => {
-    const ruta = url.replace('/api/catalogo', '');
+    // Las respuestas se preparan por recurso (`/recetas`), no por archivo: que el
+    // catálogo sea un JSON en el bundle y no un endpoint es asunto de api.ts.
+    const ruta = url.replace('/api/catalogo', '').replace(/\.json$/, '');
     if (ruta in fallos) {
       return Promise.resolve({ ok: false, status: fallos[ruta] as number, json: () => Promise.resolve({}) });
     }

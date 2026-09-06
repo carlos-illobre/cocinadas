@@ -1,6 +1,10 @@
 import type { Fetch } from './salud';
 
-/** El proxy publica el servicio de catálogo bajo este prefijo (infrastructure/reverse-proxy/Caddyfile). */
+/**
+ * Dónde queda el catálogo dentro del bundle. Ya no hay un servicio detrás: son archivos
+ * generados en el build (ADR-015). Se conserva el prefijo `/api/` a propósito: es por
+ * donde vuelve un backend el día que las cocinadas salgan del celular, sin tocar esto.
+ */
 export const BASE_CATALOGO = '/api/catalogo';
 
 export interface VersionResumen {
@@ -94,7 +98,7 @@ export function versionesOrdenadas(resumen: RecetaResumen): readonly VersionResu
 }
 
 async function pedir<T>(fetchImpl: Fetch, ruta: string): Promise<T> {
-  const respuesta = await fetchImpl(`${BASE_CATALOGO}${ruta}`);
+  const respuesta = await fetchImpl(`${BASE_CATALOGO}${ruta}.json`);
   if (!respuesta.ok) {
     throw new Error(`el catálogo respondió HTTP ${respuesta.status} a ${ruta}`);
   }
@@ -109,7 +113,7 @@ export function obtenerReceta(fetchImpl: Fetch, plato: string, version: string):
   return pedir(fetchImpl, `/recetas/${plato}/${version}`);
 }
 
-/** Las fotos vienen como rutas relativas a la API; acá se vuelven URL que el navegador pueda pedir. */
+/** Las fotos vienen como rutas relativas al catálogo; acá se vuelven URL que el navegador pueda pedir. */
 export function urlFoto(ruta: string | null): string | null {
   return ruta === null ? null : `${BASE_CATALOGO}${ruta}`;
 }
