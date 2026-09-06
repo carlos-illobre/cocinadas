@@ -74,21 +74,13 @@ describe('Portada', () => {
     expect(alCambiarVersion).toHaveBeenCalledWith('linea-de-tiempo');
   });
 
-  it('con la receta muestra los criterios de diseño, la seguridad, ingredientes y utensilios, y el botón de comenzar', async () => {
+  it('con la receta muestra ingredientes y utensilios, y el botón de comenzar', async () => {
     const alEmpezar = vi.fn();
     const fetchImpl = fetchDeCatalogo({ [`${ruta}/dos-etapas`]: recetaDosEtapas });
     render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={alEmpezar} />);
 
     const boton = await screen.findByRole('button', { name: 'Comenzar · 21 min →' });
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
-
-    const criterios = document.querySelectorAll('.criterio');
-    expect(criterios).toHaveLength(2);
-    expect(criterios[0]).toHaveTextContent('Criterio principal: dos etapas. La etapa 1 reúne todo lo que no exige vigilancia.');
-    expect(screen.getByRole('heading', { level: 3, name: 'Seguridad y conservación' })).toBeInTheDocument();
-    const seguridad = document.querySelectorAll('.seguridad li');
-    expect(seguridad).toHaveLength(2);
-    expect(seguridad[1]).toHaveTextContent('Descongelar solo en agua fría.');
 
     const solapaIngredientes = screen.getByRole('tab', { name: 'Ingredientes' });
     expect(solapaIngredientes).toHaveAttribute('aria-selected', 'true');
@@ -111,13 +103,6 @@ describe('Portada', () => {
 
     fireEvent.click(boton);
     expect(alEmpezar).toHaveBeenCalledWith(recetaDosEtapas);
-  });
-
-  it('sin reglas de seguridad no muestra esa sección', async () => {
-    const fetchImpl = fetchDeCatalogo({ [`${ruta}/dos-etapas`]: { ...recetaDosEtapas, seguridad: [] } });
-    render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
-    await screen.findByRole('button', { name: /Comenzar/ });
-    expect(screen.queryByRole('heading', { level: 3, name: 'Seguridad y conservación' })).not.toBeInTheDocument();
   });
 
   it('con el modo rápido el botón dice su tiempo', async () => {
@@ -154,7 +139,6 @@ describe('Portada', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(document.querySelectorAll('.criterio')).toHaveLength(2);
     expect(screen.getByRole('button', { name: 'Comenzar · 16 min →' })).toBeInTheDocument();
   });
 
@@ -208,6 +192,6 @@ describe('Portada', () => {
     resolver({ ok: true, status: 200, json: () => Promise.resolve(recetaDosEtapas) });
 
     await Promise.resolve();
-    expect(document.querySelector('.criterio')).toBeNull();
+    expect(document.querySelector('.fila')).toBeNull();
   });
 });

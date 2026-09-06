@@ -731,36 +731,8 @@ h1 {
   font-weight: 600;
 }
 
-.criterios {
+.estado-carga:not(:empty) {
   padding: 16px 0 0;
-}
-
-.criterio {
-  margin: 0 0 10px;
-  font-size: 14px;
-  color: var(--muted-2);
-  line-height: 1.6;
-}
-
-.criterio b {
-  color: var(--ink);
-  font-weight: 800;
-}
-
-.criterios .titulo-seccion {
-  margin-top: 16px;
-}
-
-.seguridad {
-  margin: 0;
-  padding: 0 0 0 18px;
-  font-size: 14px;
-  color: var(--muted-2);
-  line-height: 1.6;
-}
-
-.seguridad li + li {
-  margin-top: 4px;
 }
 
 .modos-bloque {

@@ -17,9 +17,9 @@ type Solapa = 'ingredientes' | 'utensilios';
 
 /**
  * El detalle de la receta del prototipo de Figma: la foto a sangre con el título encima,
- * la fila de valores, los criterios de diseño del documento (la prosa de la receta),
- * el modo de preparación como tarjetas, ingredientes o utensilios, y el botón de
- * comenzar fijo al pie.
+ * la fila de valores, el modo de preparación como tarjetas, ingredientes o utensilios, y
+ * el botón de comenzar fijo al pie. Los criterios de diseño y las reglas de seguridad
+ * están en los datos de la receta, pero no acá: hacían la pantalla larguísima.
  */
 export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolver, alEmpezar }: PropiedadesPortada): React.JSX.Element {
   const [carga, setCarga] = useState<Carga>({ estado: 'cargando' });
@@ -64,15 +64,14 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
         <Valor icono="💪" valor={`${resumen.nutricion['proteina_g']} g`} nombre="Proteína" />
       </div>
 
-      <section className="criterios" aria-label="Criterios de diseño">
+      <div className="estado-carga">
         {carga.estado === 'cargando' && <p role="status">Abriendo la receta…</p>}
         {carga.estado === 'error' && (
           <p role="alert" className="aviso-error">
             No se pudo abrir la receta: {carga.detalle}
           </p>
         )}
-        {carga.estado === 'lista' && <Criterios receta={carga.receta} />}
-      </section>
+      </div>
 
       {versiones.length > 1 && (
         <section className="modos-bloque" aria-labelledby="titulo-modo">
@@ -123,29 +122,6 @@ function Valor({ icono, valor, nombre }: { readonly icono: string; readonly valo
       <b>{valor}</b>
       <small>{nombre}</small>
     </div>
-  );
-}
-
-/** La sección «Criterios de diseño» del documento, y a continuación la de seguridad y conservación. */
-function Criterios({ receta }: { readonly receta: Receta }): React.JSX.Element {
-  return (
-    <>
-      {receta.criterios.map((c) => (
-        <p key={c.titulo} className="criterio">
-          <b>{c.titulo}.</b> {c.texto}
-        </p>
-      ))}
-      {receta.seguridad.length > 0 && (
-        <>
-          <h3 className="titulo-seccion">Seguridad y conservación</h3>
-          <ul className="seguridad">
-            {receta.seguridad.map((s) => (
-              <li key={s}>{s}</li>
-            ))}
-          </ul>
-        </>
-      )}
-    </>
   );
 }
 

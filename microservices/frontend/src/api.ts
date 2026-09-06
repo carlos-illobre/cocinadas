@@ -65,12 +65,6 @@ export interface Proceso {
   readonly al_terminar: string | null;
 }
 
-/** Un criterio de la seccion «Criterios de diseno» del documento. */
-export interface Criterio {
-  readonly titulo: string;
-  readonly texto: string;
-}
-
 export interface Etapa {
   readonly id: string;
   readonly numero: number;
@@ -92,8 +86,6 @@ export interface Receta extends RecetaResumen {
   readonly ingredientes: readonly Ingrediente[];
   readonly utensilios: readonly Utensilio[];
   readonly etapas: readonly Etapa[];
-  readonly criterios: readonly Criterio[];
-  readonly seguridad: readonly string[];
 }
 
 /** De la más lenta a la más rápida: la lenta es la que se propone, porque es la de cocinar con calma. */

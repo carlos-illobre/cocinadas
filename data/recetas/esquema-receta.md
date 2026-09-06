@@ -29,8 +29,8 @@ Todos los tiempos van en **segundos enteros** con sufijo `_s`. Los identificador
 | `utensilios` | lista | Ver abajo. |
 | `sobrantes` | texto | Qué se guarda y cómo, para repetir el plato. |
 | `etapas` | lista | Una por reloj. La versión 1 tiene una sola etapa. |
-| `criterios` | lista de objetos | La sección «Criterios de diseño» del documento, un objeto `{ "titulo", "texto" }` por criterio, en el mismo orden y con el mismo texto. La app los muestra en la portada de la receta, debajo de los valores. |
-| `seguridad` | lista de textos | Las reglas de seguridad y conservación del documento. La app las muestra en la portada, a continuación de los criterios. |
+| `criterios` | lista de objetos | La sección «Criterios de diseño» del documento, un objeto `{ "titulo", "texto" }` por criterio, en el mismo orden y con el mismo texto. La app no los muestra hoy: se probaron en la portada y la volvían larguísima. Quedan en el JSON porque son parte de la receta y para tenerlos si algún día hay una pantalla que los merezca. |
+| `seguridad` | lista de textos | Las reglas de seguridad y conservación del documento. Como `criterios`, hoy la app no las muestra. |
 
 ## Ingrediente
 

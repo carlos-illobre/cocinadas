@@ -32,11 +32,6 @@ export const recetaDosEtapas: Receta = {
   sal_agregada_g: 0,
   tiempo_total_s: 1260,
   tiempo_total_texto: '11 + 10 min',
-  criterios: [
-    { titulo: 'Criterio principal: dos etapas', texto: 'La etapa 1 reúne todo lo que no exige vigilancia.' },
-    { titulo: 'Costo de la separación', texto: 'Cocinar en dos etapas tarda 21 min en vez de 16.' },
-  ],
-  seguridad: ['Tabla y cuchillo solo tocan vegetales.', 'Descongelar solo en agua fría.'],
   utensilios: [
     { id: 'wok-eternity-copper-30cm', nombre: 'Wok Eternity 30 cm con su tapa', uso: 'Todo lo del wok', foto: '/utensilios/wok-eternity-copper-30cm/foto' },
     { id: 'jarro-slow-fire-2l', nombre: 'Jarro hervidor Slow Fire 2 L', uso: 'Hervir la pasta', foto: null },
