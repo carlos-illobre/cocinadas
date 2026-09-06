@@ -1,25 +1,58 @@
 /*
- * Tokens del prototipo de Figma (https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Templa):
- * cabeceras negras sobre un fondo marfil, naranja de marca, dorado para la experiencia,
- * verde para lo completado; Nunito para todo y Space Mono para los números.
+ * Tokens del prototipo de Figma (https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Templa).
+ * Los valores son los mismos que el prototipo define como `--th-*` para cada tema; acá
+ * conservan los nombres que usa el resto de la hoja. El tema se elige en Ajustes y se
+ * aplica como `data-tema` en el elemento raíz (src/tema.ts); claro es el de arranque, y
+ * también el que vale si el atributo todavía no está puesto.
  */
-:root {
+:root,
+[data-tema='claro'] {
   --ground: #fafaf7;
   --paper: #ffffff;
-  --ink: #0d0d0d;
-  --ink-2: #1c1c1e;
+  --line: #ebebea;
+  --ink: #1c1c1e;
+  --muted: #6c6c70;
+  --soft: #f2f2f0;
+  --header-bg: #fafaf7;
+  --header-text: #1c1c1e;
+  --tag-bg: rgba(0, 0, 0, 0.06);
+  --tag-text: #5c5c5e;
+  --bar-bg: rgba(0, 0, 0, 0.08);
+  --xp-card: #f0f0ee;
+  --gold: #a07000;
+  --gold-border: #c89400;
+  --apagado: #e5e5e5;
+  --apagado-texto: #b0b0b0;
+  --barra-inferior: rgba(250, 250, 247, 0.97);
+  --barra-inferior-linea: rgba(0, 0, 0, 0.08);
+}
+
+[data-tema='oscuro'] {
+  --ground: #0d0d0d;
+  --paper: #1c1c1e;
+  --line: rgba(255, 255, 255, 0.07);
+  --ink: #fafaf7;
   --muted: #8e8e93;
-  --muted-2: #5c5c5e;
-  --line: #f0f0f0;
-  --line-2: #e8e8e8;
-  --soft: #f0f0f0;
-  --dark: #0d0d0d;
-  --surface: #1c1c1e;
+  --soft: #2c2c2e;
+  --header-bg: #1c1c1e;
+  --header-text: #fafaf7;
+  --tag-bg: rgba(255, 255, 255, 0.07);
+  --tag-text: #aeaeb2;
+  --bar-bg: rgba(255, 255, 255, 0.08);
+  --xp-card: #1c1c1e;
+  --gold: #ffd166;
+  --gold-border: #ffd166;
+  --apagado: #2c2c2e;
+  --apagado-texto: #6c6c70;
+  --barra-inferior: rgba(18, 18, 20, 0.97);
+  --barra-inferior-linea: rgba(255, 255, 255, 0.07);
+}
+
+/* Colores de marca: los mismos en los dos temas. */
+:root {
   --brand: #ff6b35;
   --brand-2: #ff8c61;
   --brand-soft: rgba(255, 107, 53, 0.1);
-  --gold: #ffd166;
-  --gold-soft: rgba(255, 209, 102, 0.15);
   --green: #06d6a0;
   --green-2: #00b88a;
   --green-soft: rgba(6, 214, 160, 0.1);
@@ -27,9 +60,9 @@
   --coral-soft: rgba(255, 107, 53, 0.12);
   --coral-deep: #e2521d;
   --cold: #4f8fe8;
-  --cold-soft: #e3eefc;
+  --cold-soft: rgba(79, 143, 232, 0.14);
   --amber: #f5b731;
-  --amber-soft: #fff3d1;
+  --amber-soft: rgba(245, 183, 49, 0.16);
   --display: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'Space Mono', ui-monospace, Menlo, monospace;
@@ -37,6 +70,7 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -72,22 +106,23 @@ h1 {
 }
 
 .lead {
-  color: var(--muted-2);
+  color: var(--muted);
   font-size: 14px;
   line-height: 1.6;
   margin: 0 0 24px;
 }
 
-/* ---------- cabecera negra y cuerpo marfil: la estructura de todas las pantallas de Figma ---------- */
-.cabecera-oscura {
-  background: var(--dark);
-  color: #fafaf7;
+/* ---------- cabecera y cuerpo: la estructura de todas las pantallas de Figma ---------- */
+.cabecera {
+  background: var(--header-bg);
+  color: var(--header-text);
+  border-bottom: 1px solid var(--line);
   margin: 0 -20px;
   padding: 52px 24px 28px;
 }
 
-.cabecera-oscura h1 {
-  color: #fafaf7;
+.cabecera h1 {
+  color: var(--header-text);
   margin: 0;
 }
 
@@ -98,7 +133,7 @@ h1 {
   font-weight: 600;
 }
 
-.cabecera-oscura h1 + .saludo {
+.cabecera h1 + .saludo {
   margin: 4px 0 16px;
 }
 
@@ -126,6 +161,7 @@ h1 {
   margin: 0;
   font-size: 20px;
   font-weight: 800;
+  color: var(--ink);
 }
 
 .fila-titulo span {
@@ -134,9 +170,10 @@ h1 {
   font-weight: 600;
 }
 
-/* ---------- experiencia y progreso (la barra dorada de Figma) ---------- */
+/* ---------- experiencia y progreso (la tarjeta de nivel de Figma) ---------- */
 .xp {
-  background: var(--surface);
+  background: var(--xp-card);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 14px 16px;
   margin-top: 16px;
@@ -166,7 +203,7 @@ h1 {
   width: 100%;
   height: 6px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--bar-bg);
   overflow: hidden;
 }
 
@@ -178,12 +215,8 @@ h1 {
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.barra.dorada {
-  background: var(--gold-soft);
-}
-
 .barra.dorada i {
-  background: var(--gold);
+  background: #ffd166;
 }
 
 .xp-limites {
@@ -191,7 +224,7 @@ h1 {
   justify-content: space-between;
   margin-top: 6px;
   font-size: 11px;
-  color: #3c3c3e;
+  color: var(--muted);
 }
 
 /* ---------- servicios ---------- */
@@ -209,8 +242,8 @@ h1 {
   justify-content: space-between;
   align-items: center;
   background: var(--paper);
+  border: 1px solid var(--line);
   border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   padding: 12px 16px;
   font-size: 14px;
 }
@@ -370,8 +403,8 @@ h1 {
 }
 
 .btn:disabled {
-  background: #e5e5e5;
-  color: #b0b0b0;
+  background: var(--apagado);
+  color: var(--apagado-texto);
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -440,7 +473,7 @@ h1 {
   border-radius: 20px;
   overflow: hidden;
   padding: 0;
-  background: var(--surface);
+  background: #1c1c1e;
   text-align: left;
   color: #fff;
   font: inherit;
@@ -665,19 +698,18 @@ h1 {
   gap: 14px;
   padding: 16px 18px;
   border-radius: 16px;
-  border: 2px solid var(--line-2);
+  border: 2px solid var(--line);
   background: var(--paper);
   cursor: pointer;
   text-align: left;
   font: inherit;
   color: inherit;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .modo.on {
   border-color: var(--brand);
-  background: rgba(255, 107, 53, 0.05);
+  background: rgba(255, 107, 53, 0.06);
   box-shadow: 0 4px 16px rgba(255, 107, 53, 0.15);
 }
 
@@ -685,7 +717,7 @@ h1 {
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: #f5f5f5;
+  background: var(--soft);
   display: grid;
   place-items: center;
   font-size: 24px;
@@ -796,8 +828,8 @@ h1 {
   gap: 12px;
   padding: 12px 16px;
   background: var(--paper);
+  border: 1px solid var(--line);
   border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   font-size: 14px;
 }
 
@@ -825,7 +857,13 @@ h1 {
   padding-bottom: 0;
 }
 
-.mise-en-place .cabecera-oscura {
+.mise-en-place .cta-fija {
+  background: var(--ground);
+  border-top: 1px solid var(--line);
+  padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
+}
+
+.mise-en-place .cabecera {
   padding: 52px 20px 24px;
 }
 
@@ -834,14 +872,14 @@ h1 {
 }
 
 .mise-progreso {
-  background: var(--surface);
+  background: var(--xp-card);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 14px 16px;
 }
 
 .mise-progreso .barra {
   height: 8px;
-  background: rgba(255, 255, 255, 0.1);
 }
 
 .mise-porcentaje {
@@ -915,7 +953,7 @@ h1 {
   display: grid;
   place-items: center;
   font-size: 22px;
-  background: #f5f5f5;
+  background: var(--soft);
 }
 
 .mise.ok .mise-sin-foto {
@@ -973,10 +1011,10 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   padding: 0 0 env(safe-area-inset-bottom);
-  background: rgba(250, 250, 247, 0.95);
+  background: var(--barra-inferior);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid var(--barra-inferior-linea);
 }
 
 .tabbar button {
@@ -1172,3 +1210,30 @@ h1 {
 .intentos .d.plus { color: var(--coral); }
 .intentos .d.minus { color: var(--green); }
 
+
+/* ---------- interruptor de tema (Ajustes) ---------- */
+.boton-tema {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  border-radius: 14px;
+  border: 2px solid var(--line);
+  background: var(--soft);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.boton-tema-icono {
+  font-size: 20px;
+}
+
+.boton-tema:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}

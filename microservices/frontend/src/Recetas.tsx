@@ -37,7 +37,7 @@ export function Recetas({ fetchImpl, xp, alElegir }: PropiedadesRecetas): React.
 
   return (
     <main className="pantalla inicio-recetas">
-      <header className="cabecera-oscura">
+      <header className="cabecera">
         <p className="saludo">¡Hola!</p>
         <h1>¿Qué cocinamos hoy?</h1>
         <BarraXp xp={xp} />

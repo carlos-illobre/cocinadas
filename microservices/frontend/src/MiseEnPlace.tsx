@@ -32,7 +32,7 @@ export function MiseEnPlace({ receta, alVolver, alCocinar }: PropiedadesMiseEnPl
 
   return (
     <main className="pantalla mise-en-place">
-      <header className="cabecera-oscura">
+      <header className="cabecera">
         <button type="button" className="enlace volver" onClick={alVolver}>
           ‹ Volver
         </button>

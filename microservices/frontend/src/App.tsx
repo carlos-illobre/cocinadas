@@ -11,6 +11,7 @@ import { MiseEnPlace } from './MiseEnPlace';
 import { Portada } from './Portada';
 import { Recetas } from './Recetas';
 import { consultarTodos, type EstadoServicio, type Fetch } from './salud';
+import { aplicarTema, elOtro, guardarTema, leerTema, type Tema } from './tema';
 import { experienciaDe } from './xp';
 import './estilos.css';
 
@@ -21,7 +22,7 @@ export interface PropiedadesApp {
   readonly crearAvisador?: () => Avisador;
   /** Reloj inyectable para la cocina. */
   readonly ahora?: () => number;
-  /** Dónde se guardan las cocinadas; por omisión, el localStorage del navegador. */
+  /** Dónde se guardan el tema y las cocinadas; por omisión, el localStorage del navegador. */
   readonly almacen?: Almacen;
   /** Genera el id de una cocinada; por omisión, un UUID del navegador. */
   readonly nuevoId?: () => string;
@@ -60,6 +61,17 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
   // «Empezar» en la pantalla de inicio, y de ahí en más se reutiliza.
   const [avisador, setAvisador] = useState<Avisador>(SIN_AVISADOR);
   const [cocinadas, setCocinadas] = useState<readonly Cocinada[]>(() => listarCocinadas(almacen));
+  const [tema, setTema] = useState<Tema>(() => leerTema(almacen));
+
+  useEffect(() => {
+    aplicarTema(document.documentElement, tema);
+  }, [tema]);
+
+  const cambiarTema = () => {
+    const otro = elOtro(tema);
+    guardarTema(almacen, otro);
+    setTema(otro);
+  };
 
   const irA = (pestana: Pestana) => setPantalla({ nombre: pestana });
 
@@ -109,7 +121,7 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
     case 'historial':
       return conBarra('historial', <Historial cocinadas={cocinadas} />);
     case 'ajustes':
-      return conBarra('ajustes', <Ajustes alVerEstado={() => setPantalla({ nombre: 'servicios' })} cocinadasGuardadas={cocinadas.length} version={VERSION_APP} />);
+      return conBarra('ajustes', <Ajustes tema={tema} alCambiarTema={cambiarTema} alVerEstado={() => setPantalla({ nombre: 'servicios' })} cocinadasGuardadas={cocinadas.length} version={VERSION_APP} />);
     case 'servicios':
       return <Servicios fetchImpl={fetchImpl} alVolver={() => setPantalla({ nombre: 'ajustes' })} />;
   }
@@ -142,7 +154,7 @@ export function Servicios({ fetchImpl = fetchNavegador, alVolver }: { readonly f
 
   return (
     <main className="pantalla servicios-pantalla">
-      <header className="cabecera-oscura">
+      <header className="cabecera">
         {alVolver !== undefined && (
           <button type="button" className="enlace volver" onClick={alVolver}>
             ‹ Ajustes

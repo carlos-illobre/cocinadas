@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { App, Servicios, versionPorOmision } from './App';
 import type { Avisador } from './cocina/sonido';
 import { CLAVE_COCINADAS, type Almacen } from './historial/almacen';
+import { CLAVE_TEMA } from './tema';
 import { fetchDeCatalogo, nunca, recetaDosEtapas, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
 import type { Fetch } from './salud';
 
@@ -127,6 +128,29 @@ describe('el recorrido de la app', () => {
     // Con el reloj quieto la cocinada dura 0 s contra 21 min previstos: suma 0 puntos.
     fireEvent.click(screen.getByRole('button', { name: 'Recetas' }));
     expect(document.querySelector('.xp-puntos')).toHaveTextContent('0 XP');
+  });
+
+  it('el tema se aplica al documento, se guarda y se puede volver', () => {
+    const almacen = montar();
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    expect(document.documentElement.getAttribute('data-tema')).toBe('claro');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cambiar a modo oscuro' }));
+    expect(document.documentElement.getAttribute('data-tema')).toBe('oscuro');
+    expect(almacen.datos.get(CLAVE_TEMA)).toBe('oscuro');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cambiar a modo claro' }));
+    expect(document.documentElement.getAttribute('data-tema')).toBe('claro');
+    expect(almacen.datos.get(CLAVE_TEMA)).toBe('claro');
+  });
+
+  it('arranca con el tema ya guardado en el teléfono', () => {
+    montar({ almacen: memoria({ [CLAVE_TEMA]: 'oscuro' }) });
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    expect(document.documentElement.getAttribute('data-tema')).toBe('oscuro');
+    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
+    expect(screen.getByRole('button', { name: 'Cambiar a modo claro' })).toBeInTheDocument();
   });
 
   it('las pestañas de la barra cambian de sección', async () => {

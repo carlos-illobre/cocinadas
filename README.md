@@ -11,7 +11,21 @@ El repositorio tiene dos mitades que se alimentan entre sí:
 |---|---|
 | `data/recetas/`, `data/ingredientes/`, `data/utencillos/` | **El catálogo**: recetas como POE (HTML + PDF imprimible + JSON de datos), fichas de ingredientes con foto y fichas de utensilios. Es contenido, no código; la app lo lee tal cual. |
 | `microservices/`, `infrastructure/`, `tests/`, `deployment/`, `docs/` | **La aplicación**: tres microservicios Node + TypeScript, una SPA React, un reverse proxy, y todo lo necesario para probarla, desplegarla y entenderla. |
-| `docs/mockups/` | El diseño visual aprobado de la app (`app-cocina-mockup.html`), del que sale el sistema de diseño del frontend. |
+| `docs/mockups/` | El diseño visual de la app: el mockup HTML de la pantalla de cocina (`app-cocina-mockup.html`) y el concepto de la pantalla de bienvenida. |
+
+## El mockup navegable
+
+El diseño de las pantallas de catálogo (lista de recetas, detalle, mise en place, progreso
+y ajustes) sale de un prototipo hecho en Figma Make, que se puede recorrer como si fuera la
+app:
+
+**https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Templa**
+
+Se abre el archivo y con el botón **Preview** se navega el prototipo a pantalla completa.
+Hace falta que Figma te haya dado acceso al archivo. De ahí salen los colores, las
+tipografías (Nunito y Space Mono) y los dos temas, claro y oscuro, que la app implementa
+en `microservices/frontend/src/estilos.css`. El prototipo tiene además pantallas que la app
+no implementa a propósito: login por nombre, logros, rachas y dificultad.
 
 ## Cómo levantarlo
 
