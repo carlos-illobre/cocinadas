@@ -110,7 +110,7 @@ jobs:
           node-version: ${{ env.VERSION_NODE }}
           cache: pnpm
           cache-dependency-path: web/pnpm-lock.yaml
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - name: Instalar y compilar
         # `pnpm build` genera antes el catálogo desde data/ (ADR-006): el sitio publicado
         # trae las recetas del mismo commit.
