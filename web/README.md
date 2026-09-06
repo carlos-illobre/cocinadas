@@ -51,8 +51,8 @@ Lo que queda son las imágenes **sin texto adentro**, que no envejecen:
 
 | Archivo | Qué es | Tamaño | Dónde se usa |
 |---|---|---|---|
-| `icono-512.png` | Solo la olla, lienzo cuadrado | 512 × 512 | La olla de la marca (`src/Logotipo.tsx`), y el ícono de instalación (PWA) cuando exista el manifest |
-| `icono-192.png` | Ídem | 192 × 192 | `apple-touch-icon` en `index.html` |
+| `icono-512.png` | Solo la olla, lienzo cuadrado | 512 × 512 | Ícono de instalación (PWA) cuando exista el manifest |
+| `icono-192.png` | Ídem | 192 × 192 | La olla de la marca (`src/Logotipo.tsx`) y el `apple-touch-icon` de `index.html`. Se muestra a unos 88 px: 192 cubre pantallas del doble de densidad, y la de 512 pesaría 238 KB en vez de 42 |
 | `favicon.png` | Ídem | 64 × 64 | Favicon en `index.html` |
 | `inicio.jpg` | La foto de la mesada (brócoli, albahaca, limón, ajo, spaghetti sobre pizarra) que entregó Carlos como capa de fondo de la pantalla de inicio, sin la etiqueta "Made with AI" (se recortó la franja superior donde estaba) y comprimida a JPEG | 1024 × 1436 | Fondo de `src/Inicio.tsx`, con `object-fit: cover` y un velo radial oscuro en el centro para que el logo y el lema se lean |
 

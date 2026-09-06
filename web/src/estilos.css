@@ -306,9 +306,14 @@ h1 {
 }
 
 .logotipo-olla {
-  width: 1.15em;
+  /* Proporción del logo original: la olla ocupa cerca de un tercio del conjunto y sus
+     hojas asoman por encima de las mayúsculas. Con menos, parece un adorno al costado. */
+  width: 1.7em;
   height: auto;
   flex: none;
+  /* Lobster apoya sobre una base alta; centrar la olla en la caja completa la deja
+     flotando, así que se la baja un poco para alinearla con el cuerpo de las letras. */
+  margin-top: 0.12em;
 }
 
 .logotipo-palabra {

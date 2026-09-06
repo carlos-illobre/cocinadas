@@ -9,7 +9,7 @@ describe('Logotipo', () => {
     expect(screen.getByText('Cocinadas')).toBeInTheDocument();
     // La olla sigue siendo imagen, pero decorativa: el nombre ya lo da el texto.
     const olla = container.querySelector('img.logotipo-olla');
-    expect(olla).toHaveAttribute('src', 'icono-512.png');
+    expect(olla).toHaveAttribute('src', 'icono-192.png');
     expect(olla).toHaveAttribute('alt', '');
     expect(container.querySelector('.logotipo')).not.toHaveAttribute('aria-hidden');
   });
