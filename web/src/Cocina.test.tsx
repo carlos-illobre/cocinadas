@@ -60,7 +60,7 @@ describe('Cocina · etapa tranquila', () => {
     const { pasar } = armar();
     pasar(12);
     expect(screen.getByText('0:12', { selector: '.clock' })).toBeInTheDocument();
-    expect(screen.getByText('de 0:30 previstos')).toBeInTheDocument();
+    expect(document.querySelector('.big')).toHaveTextContent('de 0:30 previstos');
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '40');
   });
 
@@ -208,7 +208,7 @@ it('el gantt dibuja una barra por paso y un carril por proceso, y se va llenando
     expect(screen.getByRole('button', { name: 'Ya lo hice ✓' })).toBeInTheDocument();
     pasar(31);
     expect(screen.getByText('Ahora · con las manos')).toBeInTheDocument();
-    expect(screen.getByText('de 2:30 previstos')).toBeInTheDocument();
+    expect(document.querySelector('.big')).toHaveTextContent('de 2:30 previstos');
   });
 
   it('«Reiniciar el paso» vuelve el cronómetro a cero y destilda los sub-pasos, sin tocar los procesos', () => {
