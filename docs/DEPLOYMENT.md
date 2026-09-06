@@ -113,18 +113,39 @@ sudo ss -lntp
 Los dos están en el `.gitignore`. `tests/integration/paridad-env.sh` comprueba que cada
 uno declare exactamente lo que su plantilla.
 
-## Primer despliegue
+## Primer despliegue, desde una instancia limpia
 
-1. `python deployment/oracle-single/deploy.py --preflight` desde tu máquina: verifica
-   memoria, disco, Docker, puertos y firewall en la instancia, sin tocar nada.
-2. En la VM: `mkdir -p ~/cocinadas && cd ~/cocinadas`, copiar `.env.oracle` como `.env` y
-   completar los marcadores (`REGISTRO` y `TAG`). Si en la máquina ya hay otra aplicación
-   con el 80 y el 443, decidir acá si se los queda ella (`COMPOSE_PROFILES=`) o si pasan a
-   este proxy (ver «Varias aplicaciones en la misma VM»).
-3. En tu máquina: copiar `.env.deploy.example` a `deployment/oracle-single/.env` y
-   completar `SSH` y `RUTA_REMOTA`.
-4. Mergear a `main`: el CI publica la imagen y despliega solo. Si hace falta a mano:
-   `python deployment/oracle-single/deploy.py`.
+En la instancia solo hacen falta **Docker con el plugin Compose** y una clave SSH. Nada
+más: ni clonar el repositorio, ni crear el `.env`, ni instalar Node ni Python. `deploy.py`
+crea el directorio y genera el `.env` de la aplicación a partir de `.env.oracle` la
+primera vez —desde ADR-015 ese archivo no tiene ningún secreto, así que se puede generar
+sin filtrar nada— y nunca lo vuelve a pisar.
+
+Fuera de la máquina hay tres cosas que sí hay que dejar listas antes, porque ninguna se
+puede hacer desde el despliegue:
+
+1. **El dominio**: `cocinadas.duckdns.org` apuntando a la IP pública. Comprobalo con
+   `dig +short cocinadas.duckdns.org`. Si no resuelve cuando arranque Caddy, no consigue
+   el certificado y quema uno de los pocos intentos por hora de Let's Encrypt.
+2. **La Security List de la VCN**: ingress TCP 80 y 443 desde `0.0.0.0/0` (y UDP 443 si
+   querés HTTP/3), más el 22 para que entre el CI. Es el firewall efectivo: `ufw` no
+   filtra los puertos que publica Docker.
+3. **La imagen en GHCR pública**, o un `docker login ghcr.io` hecho en la instancia. Si es
+   privada y no hay login, el `docker compose pull` falla con `denied` y es lo primero que
+   se rompe.
+
+Después, o mergeás a `main` y el CI hace todo, o desde tu máquina:
+
+```bash
+cp deployment/oracle-single/.env.deploy.example deployment/oracle-single/.env
+# completar SSH, RUTA_REMOTA y REGISTRO
+python deployment/oracle-single/deploy.py --preflight   # verifica la instancia sin tocarla
+python deployment/oracle-single/deploy.py
+```
+
+Si en la máquina hubiera otra aplicación con el 80 y el 443, editá el `.env` que quedó en
+la instancia (`COMPOSE_PROFILES=`) antes de volver a desplegar: ver «Varias aplicaciones en
+la misma VM».
 
 ## Despliegue automático al mergear a main
 
@@ -137,7 +158,8 @@ si la compuerta del 100 % o la paridad de `.env` fallan, no se publica la imagen
 despliega.
 
 Hace falta cargar cuatro secretos en **Settings → Secrets and variables → Actions** del
-repositorio:
+repositorio. `REGISTRO` no está en la lista a propósito: el workflow lo deriva del owner
+del repositorio, que es el mismo al que acaba de publicar la imagen.
 
 | Secreto | Qué es | Cómo se obtiene |
 |---|---|---|

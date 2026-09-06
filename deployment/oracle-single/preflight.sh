@@ -25,9 +25,9 @@ set -uo pipefail
 # justamente lo que hay que ver: Cocinadas se mueve con PUERTO_HTTP y PUERTO_HTTPS en su
 # .env, y esa otra aplicación le pasa el tráfico (docs/DEPLOYMENT.md).
 PUERTOS=(80 443)
-# Suma de los mem_limit de .env.oracle: 128 (el único contenedor, MEM_LIMIT_PROXY).
-# Si cambia el techo, cambia esto.
-MEMORIA_NECESARIA_MB=1792
+# Suma de los mem_limit de .env.oracle: 128 (la aplicación) + 128 (el proxy) = 256.
+# Si cambian los techos, cambia esto.
+MEMORIA_NECESARIA_MB=256
 
 VERDE='\033[0;32m'; ROJO='\033[0;31m'; AMARILLO='\033[0;33m'; NC='\033[0m'
 fallos=0
@@ -87,9 +87,11 @@ else
     mal "Docker no está instalado" "seguí la guía oficial para esta distribución"
 fi
 
+# deploy.py ya no lo necesita —comprueba la salud con `docker compose exec` y wget de
+# adentro del contenedor—, pero sin curl no se puede mirar nada a mano desde la VM.
 command -v curl >/dev/null 2>&1 \
-    && ok "curl está (deploy.py lo usa para comprobar los /health)" \
-    || mal "falta curl" "sudo apt-get install -y curl"
+    && ok "curl está (para mirar el sitio a mano desde la VM)" \
+    || aviso "no está curl: sudo apt-get install -y curl"
 
 # ── Los puertos ──────────────────────────────────────────────────────────────
 

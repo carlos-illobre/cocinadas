@@ -35,7 +35,7 @@ services:
     # La aplicación: Caddy sirviendo el bundle (la SPA con el catálogo adentro). Es un
     # inquilino (ADR-016): habla HTTP, no termina TLS y no sabe por qué dominio lo
     # llamaron. Sin volúmenes, porque no guarda nada.
-    image: ${REGISTRO:?falta REGISTRO en el .env}/cocinadas-web:${TAG:?falta TAG en el .env}
+    image: ${REGISTRO:?falta REGISTRO en el .env}/cocinadas:${TAG:?falta TAG en el .env}
     build:
       # Contexto en la raíz porque el build genera el catálogo leyendo data/ (ADR-006).
       # Lo que entra lo limita el .dockerignore de la raíz.

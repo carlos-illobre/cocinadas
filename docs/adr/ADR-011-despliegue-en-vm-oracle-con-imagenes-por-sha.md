@@ -101,7 +101,7 @@ El compose es el mismo en desarrollo y en la VM (ADR-001).
 
 El mecanismo no cambia: imágenes multi-arquitectura etiquetadas por SHA en GHCR y
 `deploy.py` trayendo exactamente ese SHA. Lo que cambia es la cantidad: una sola imagen,
-`cocinadas-web`, en vez de cuatro. La comprobación de que quedó arriba dejó de mirar
+`cocinadas`, en vez de cuatro. La comprobación de que quedó arriba dejó de mirar
 puertos publicados —en producción `SITE_ADDRESS` es el dominio, así que una petición a
 `localhost` no coincide con ningún sitio de Caddy— y pregunta por el sitio interno de
 salud desde adentro del contenedor.

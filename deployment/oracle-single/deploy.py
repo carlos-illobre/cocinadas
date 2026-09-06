@@ -208,7 +208,36 @@ def preflight(vm: Instancia, raiz: Path) -> int:
         return subprocess.run(["ssh", vm.destino, "bash -s"], stdin=f).returncode
 
 
-def desplegar(vm: Instancia, raiz: Path, ruta_remota: str, sha: str) -> None:
+def asegurar_env_remoto(vm: Instancia, raiz: Path, ruta_remota: str, registro: str) -> None:
+    """Crea el .env de la aplicación en la instancia si no existe. Si existe, NO lo toca.
+
+    Antes esto era un paso manual por SSH: había que copiar .env.oracle y completar la
+    contraseña de la base y el secreto de los JWT. Desde ADR-015 no hay ni base ni tokens,
+    así que en ese archivo no queda ningún secreto y se puede generar sin filtrar nada.
+    Con eso, una instancia limpia pasa a estar online con un merge y sin entrar por SSH.
+
+    Lo único que no puede salir de la plantilla es REGISTRO, que depende de quién publicó
+    las imágenes: sale del .env del despliegue (en el CI, del owner del repositorio).
+    """
+    codigo, _ = vm.correr(f"test -f '{ruta_remota}/.env'", silencioso=True)
+    if codigo == 0 and not vm.dry_run:
+        return
+    if vm.dry_run:
+        info("$ si no existe RUTA_REMOTA/.env: copia .env.oracle, le fija REGISTRO y lo deja en 600")
+        return
+    plantilla = raiz / "deployment" / "oracle-single" / ".env.oracle"
+    if vm.copiar(plantilla, f"{ruta_remota}/.env") != 0:
+        morir("no pude crear el .env de la instancia a partir de .env.oracle")
+    # El .env no lleva secretos, pero tampoco tiene por qué leerlo cualquier usuario.
+    codigo, _ = vm.correr(
+        f"cd '{ruta_remota}' && sed -i 's|^REGISTRO=.*|REGISTRO={registro}|' .env && chmod 600 .env"
+    )
+    if codigo != 0:
+        morir("no pude completar el REGISTRO en el .env de la instancia")
+    ok(f".env creado desde .env.oracle con REGISTRO={registro}")
+
+
+def desplegar(vm: Instancia, raiz: Path, ruta_remota: str, sha: str, registro: str) -> None:
     paso("Estado actual de la instancia")
     anterior = ""
     if not vm.dry_run:
@@ -222,6 +251,10 @@ def desplegar(vm: Instancia, raiz: Path, ruta_remota: str, sha: str) -> None:
         info("no hay despliegue previo, no se pudo leer, o es --dry-run")
 
     paso("Copiando la configuración")
+    # Antes que nada, el árbol de directorios: en una instancia limpia no existe ninguno y
+    # el scp de abajo fallaría con «No such file or directory».
+    vm.correr(f"mkdir -p '{ruta_remota}/infrastructure/proxy/vecinos'")
+    asegurar_env_remoto(vm, raiz, ruta_remota, registro)
     # El .env de la APLICACIÓN en la instancia NO se pisa: tiene los valores de producción
     # y no está en el repositorio. Solo se actualiza la etiqueta de versión.
     if vm.copiar(raiz / "docker-compose.yml", f"{ruta_remota}/docker-compose.yml") != 0:
@@ -231,7 +264,6 @@ def desplegar(vm: Instancia, raiz: Path, ruta_remota: str, sha: str) -> None:
     # del proxy sí, porque el proxy usa la imagen oficial de Caddy sin construir nada
     # (ADR-016). Se copia aunque el perfil `proxy` esté apagado: es un archivo, no un
     # contenedor, y así prenderlo después es cambiar el .env y nada más.
-    vm.correr(f"mkdir -p '{ruta_remota}/infrastructure/proxy/vecinos'")
     if vm.copiar(raiz / "infrastructure" / "proxy" / "Caddyfile", f"{ruta_remota}/infrastructure/proxy/Caddyfile") != 0:
         morir("no pude copiar el Caddyfile del proxy")
     ok("infrastructure/proxy/Caddyfile")
@@ -331,15 +363,16 @@ def main(argumentos: list[str]) -> int:
         valores = leer_env(config)
         destino = valores.get("SSH", "")
         ruta_remota = valores.get("RUTA_REMOTA", "")
+        registro = valores.get("REGISTRO", "")
     elif dry_run:
         # Sin configuración, --dry-run igual sirve para leer los comandos; es lo que corre
         # el CI para comprobar que este script no se rompió.
         info(f"(sin {config.relative_to(raiz).as_posix()}: --dry-run usa valores de ejemplo)")
-        destino, ruta_remota = "usuario@instancia", "/home/usuario/cocinadas"
+        destino, ruta_remota, registro = "usuario@instancia", "/home/usuario/cocinadas", "ghcr.io/usuario"
     else:
         morir(f"falta {config} — copiar .env.deploy.example y completarlo")
-    if not destino or not ruta_remota:
-        morir(f"falta SSH o RUTA_REMOTA en {config}")
+    if not destino or not ruta_remota or not registro:
+        morir(f"falta SSH, RUTA_REMOTA o REGISTRO en {config}")
 
     vm = Instancia(destino, dry_run)
     if dry_run:
@@ -349,7 +382,7 @@ def main(argumentos: list[str]) -> int:
         return preflight(vm, raiz)
 
     sha = resolver_sha(raiz, sueltos[0] if sueltos else None, dry_run)
-    desplegar(vm, raiz, ruta_remota, sha)
+    desplegar(vm, raiz, ruta_remota, sha, registro)
     return 0
 
 

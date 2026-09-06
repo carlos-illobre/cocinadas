@@ -134,7 +134,7 @@ también las recetas, y agregar una receta obliga a reconstruir y redesplegar.
 flowchart LR
   dev[Máquina de desarrollo] -- git push --> gh[GitHub]
   gh -- CI: utest + paridad --> ci{pasa?}
-  ci -- sí, en main --> ghcr[(GHCR<br/>cocinadas-web:&lt;sha&gt;<br/>amd64 + arm64)]
+  ci -- sí, en main --> ghcr[(GHCR<br/>cocinadas:&lt;sha&gt;<br/>amd64 + arm64)]
   ci -- sí, en main --> pages[GitHub Pages<br/>docs/]
   ci -- sí, en main --> vm[VM Oracle<br/>docker compose]
   ghcr -- compose pull --> vm
