@@ -16,7 +16,7 @@ del navegador. Las cocinadas se guardan en el `localStorage` del navegador. El p
 |---|---|
 | `data/recetas/`, `data/ingredientes/`, `data/utencillos/` | **El catálogo**: recetas como POE (HTML + PDF imprimible + JSON de datos), fichas de ingredientes con foto y fichas de utensilios. Es contenido, no código; la app lo lee tal cual. |
 | `web/` | **La aplicación**: la SPA React + TypeScript, el generador que convierte el catálogo en los archivos que ella consume, y en `web/assets/` las versiones livianas de todas las imágenes. |
-| `tests/`, `docs/` | La compuerta de cobertura y la documentación. |
+| `docs/` | La documentación y los ADR. |
 
 ## Cómo se instala y se levanta
 
@@ -42,7 +42,7 @@ cd web && pnpm build && pnpm preview
 ## Cómo se prueba
 
 ```bash
-bash tests/utest.sh
+cd web && pnpm test:cov
 ```
 
 Unitarias con **compuerta del 100 %** en instrucciones, ramas, funciones y líneas.

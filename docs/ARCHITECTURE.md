@@ -119,7 +119,7 @@ agregar una receta obliga a volver a publicar.
 ```mermaid
 flowchart LR
   dev[Máquina de desarrollo] -- git push --> gh[GitHub]
-  gh -- "CI: utest.sh 100 %<br/>validar-receta.py" --> ci{pasa?}
+  gh -- "CI: pnpm test:cov 100 %<br/>pnpm e2e<br/>validar-receta.py" --> ci{pasa?}
   ci -- "sí, en main" --> build["pnpm build<br/>(genera el catálogo de data/)"]
   build --> guarda{"¿rutas absolutas<br/>en el index.html?"}
   guarda -- "no" --> pages["GitHub Pages<br/>carlos-illobre.github.io/cocinadas/"]
