@@ -55,8 +55,10 @@ describe('crearAvisador', () => {
     a.toque();
     a.suave();
     a.fuerte();
+    a.festejo();
     expect(vibrar).toHaveBeenNthCalledWith(1, 120);
     expect(vibrar).toHaveBeenNthCalledWith(2, [300, 120, 300, 120, 300]);
+    expect(vibrar).toHaveBeenNthCalledWith(3, [80, 60, 80, 60, 200]);
   });
 
   it('sin AudioContext ni vibración, no rompe', () => {
@@ -65,6 +67,7 @@ describe('crearAvisador', () => {
       a.toque();
       a.suave();
       a.fuerte();
+      a.festejo();
     }).not.toThrow();
   });
 
@@ -102,13 +105,28 @@ describe('crearAvisador', () => {
     expect(vibrar).toHaveBeenCalledWith([300, 120, 300, 120, 300]);
   });
 
+  it('el festejo es un arpegio que sube y cierra con una nota larga', () => {
+    const { Contexto, notas } = contextoFalso();
+    const vibrar = vi.fn();
+    crearAvisador(Contexto, vibrar).festejo();
+    expect(notas.map((n) => [n.frecuencia, Number(n.desde.toFixed(2))])).toEqual([
+      [523, 10],
+      [659, 10.11],
+      [784, 10.22],
+      [1047, 10.33],
+    ]);
+    expect(Number((notas[3] as { hasta: number }).hasta.toFixed(2))).toBe(10.83);
+    expect(vibrar).toHaveBeenCalledWith([80, 60, 80, 60, 200]);
+  });
+
   it('con audio pero sin vibración, suena igual', () => {
     const { Contexto, notas } = contextoFalso();
     const a = crearAvisador(Contexto, undefined);
     a.toque();
     a.suave();
     a.fuerte();
-    expect(notas).toHaveLength(7);
+    a.festejo();
+    expect(notas).toHaveLength(11);
   });
 
   it('despierta el contexto si el navegador lo dejó suspendido', () => {
@@ -128,6 +146,7 @@ describe('crearAvisador', () => {
       SIN_AVISADOR.toque();
       SIN_AVISADOR.suave();
       SIN_AVISADOR.fuerte();
+      SIN_AVISADOR.festejo();
     }).not.toThrow();
   });
 });
@@ -143,6 +162,7 @@ describe('avisadorDelNavegador', () => {
       a.toque();
       a.suave();
       a.fuerte();
+      a.festejo();
     }).not.toThrow();
   });
 

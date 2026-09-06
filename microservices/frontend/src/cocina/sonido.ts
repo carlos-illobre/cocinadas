@@ -37,9 +37,11 @@ export interface Avisador {
   suave(): void;
   /** Notas insistentes, para repetir mientras la alarma esté en pantalla. */
   fuerte(): void;
+  /** Un arpegio corto: el plato está listo. */
+  festejo(): void;
 }
 
-export const SIN_AVISADOR: Avisador = { toque: () => undefined, suave: () => undefined, fuerte: () => undefined };
+export const SIN_AVISADOR: Avisador = { toque: () => undefined, suave: () => undefined, fuerte: () => undefined, festejo: () => undefined };
 
 /**
  * Una nota con entrada y salida suaves. Sin esa rampa el oscilador arranca y corta de
@@ -73,6 +75,7 @@ export function crearAvisador(
       toque: () => undefined,
       suave: () => vibrar?.(120),
       fuerte: () => vibrar?.([300, 120, 300, 120, 300]),
+      festejo: () => vibrar?.([80, 60, 80, 60, 200]),
     };
   }
   const ctx = new Contexto();
@@ -99,6 +102,12 @@ export function crearAvisador(
         nota(ctx, i % 2 === 0 ? 988 : 1319, i * 0.2, 0.16, 0.55, 'triangle');
       }
       vibrar?.([300, 120, 300, 120, 300]);
+    },
+    festejo() {
+      // Do, mi, sol, do: sube y cierra arriba, que es como suena un festejo.
+      despertar();
+      [523, 659, 784, 1047].forEach((f, i) => nota(ctx, f, i * 0.11, i === 3 ? 0.5 : 0.14, 0.35, 'sine'));
+      vibrar?.([80, 60, 80, 60, 200]);
     },
   };
 }

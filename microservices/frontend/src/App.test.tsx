@@ -22,7 +22,7 @@ function memoria(inicial: Record<string, string> = {}): Almacen & { datos: Map<s
   return { datos, getItem: (k) => datos.get(k) ?? null, setItem: (k, v) => void datos.set(k, v) };
 }
 
-const avisadorFalso: Avisador = { toque: vi.fn(), suave: vi.fn(), fuerte: vi.fn() };
+const avisadorFalso: Avisador = { toque: vi.fn(), suave: vi.fn(), fuerte: vi.fn(), festejo: vi.fn() };
 const crearAvisador = vi.fn(() => avisadorFalso);
 
 function montar(extra: { almacen?: ReturnType<typeof memoria>; ahora?: () => number } = {}) {
@@ -135,7 +135,7 @@ describe('el recorrido de la app', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     expect(document.documentElement.getAttribute('data-tema')).toBe('claro');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Perfil' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cambiar a modo oscuro' }));
     expect(document.documentElement.getAttribute('data-tema')).toBe('oscuro');
     expect(almacen.datos.get(CLAVE_TEMA)).toBe('oscuro');
@@ -149,7 +149,7 @@ describe('el recorrido de la app', () => {
     montar({ almacen: memoria({ [CLAVE_TEMA]: 'oscuro' }) });
     fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     expect(document.documentElement.getAttribute('data-tema')).toBe('oscuro');
-    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Perfil' }));
     expect(screen.getByRole('button', { name: 'Cambiar a modo claro' })).toBeInTheDocument();
   });
 
@@ -161,8 +161,8 @@ describe('el recorrido de la app', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Progreso' })).toBeInTheDocument();
     expect(screen.getByText(/Todavía no hay cocinadas guardadas/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Ajustes' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Perfil' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Aprendiz' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Recetas' }));
     expect(screen.getByRole('heading', { level: 1, name: '¿Qué cocinamos hoy?' })).toBeInTheDocument();
@@ -175,8 +175,8 @@ describe('el recorrido de la app', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
     // 90 s contra 100 s previstos: 90 puntos.
     expect(document.querySelector('.xp-puntos')).toHaveTextContent('90 XP');
-    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
-    expect(screen.getByText('Hay 1 cocinada guardada', { exact: false })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Perfil' }));
+    expect(screen.getByText('Suman 1:30 de cocina', { exact: false })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Progreso' }));
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Plato p');
   });
@@ -184,11 +184,11 @@ describe('el recorrido de la app', () => {
   it('desde ajustes se llega al estado de los servicios y se vuelve', async () => {
     montar();
     fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Perfil' }));
     fireEvent.click(screen.getByRole('button', { name: 'Estado de los servicios ›' }));
     expect(screen.getByRole('heading', { level: 1, name: 'Templa' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: '‹ Ajustes' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Ajustes' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '‹ Perfil' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Aprendiz' })).toBeInTheDocument();
   });
 
   it('cambiar el modo de preparación pide la otra receta', async () => {
@@ -280,7 +280,7 @@ describe('Servicios', () => {
     expect(filas[0]).toHaveTextContent('v0.1.0');
     expect(filas[1]).toHaveClass('caido');
     expect(filas[1]).toHaveTextContent('HTTP 503');
-    expect(screen.queryByRole('button', { name: '‹ Ajustes' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '‹ Perfil' })).not.toBeInTheDocument();
   });
 
   it('usa el fetch del navegador cuando no se inyecta ninguno', async () => {

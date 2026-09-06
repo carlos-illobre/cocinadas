@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Ajustes } from './Ajustes';
 import { versionesOrdenadas, type Receta, type RecetaResumen } from './api';
 import { BarraInferior, type Pestana } from './BarraInferior';
 import { avisadorDelNavegador, SIN_AVISADOR, type Avisador } from './cocina/sonido';
@@ -8,6 +7,7 @@ import { almacenSeguro, guardarCocinada, listarCocinadas, type Almacen, type Coc
 import { Historial } from './Historial';
 import { Inicio } from './Inicio';
 import { MiseEnPlace } from './MiseEnPlace';
+import { Perfil } from './Perfil';
 import { Portada } from './Portada';
 import { Recetas } from './Recetas';
 import { consultarTodos, type EstadoServicio, type Fetch } from './salud';
@@ -35,7 +35,7 @@ export type Pantalla =
   | { readonly nombre: 'mise'; readonly receta: Receta }
   | { readonly nombre: 'cocina'; readonly receta: Receta }
   | { readonly nombre: 'historial' }
-  | { readonly nombre: 'ajustes' }
+  | { readonly nombre: 'perfil' }
   | { readonly nombre: 'servicios' };
 
 const fetchNavegador: Fetch = (url) => fetch(url);
@@ -73,6 +73,8 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
     setTema(otro);
   };
 
+  const experiencia = experienciaDe(cocinadas);
+
   const irA = (pestana: Pestana) => setPantalla({ nombre: pestana });
 
   const conBarra = (activa: Pestana, contenido: React.JSX.Element) => (
@@ -93,7 +95,7 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
         />
       );
     case 'recetas':
-      return conBarra('recetas', <Recetas fetchImpl={fetchImpl} xp={experienciaDe(cocinadas)} alElegir={(resumen) => setPantalla({ nombre: 'portada', resumen, version: versionPorOmision(resumen) })} />);
+      return conBarra('recetas', <Recetas fetchImpl={fetchImpl} xp={experiencia} alElegir={(resumen) => setPantalla({ nombre: 'portada', resumen, version: versionPorOmision(resumen) })} />);
     case 'portada':
       return (
         <Portada
@@ -115,15 +117,16 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
           {...(ahora === undefined ? {} : { ahora })}
           alVolver={() => setPantalla(portadaDe(pantalla.receta))}
           alTerminar={() => setPantalla({ nombre: 'historial' })}
+          cocinadas={cocinadas}
           alGuardar={(cocinada) => setCocinadas(guardarCocinada(almacen, { ...cocinada, id: nuevoId() }))}
         />
       );
     case 'historial':
       return conBarra('historial', <Historial cocinadas={cocinadas} />);
-    case 'ajustes':
-      return conBarra('ajustes', <Ajustes tema={tema} alCambiarTema={cambiarTema} alVerEstado={() => setPantalla({ nombre: 'servicios' })} cocinadasGuardadas={cocinadas.length} version={VERSION_APP} />);
+    case 'perfil':
+      return conBarra('perfil', <Perfil cocinadas={cocinadas} xp={experiencia} tema={tema} alCambiarTema={cambiarTema} alVerEstado={() => setPantalla({ nombre: 'servicios' })} version={VERSION_APP} />);
     case 'servicios':
-      return <Servicios fetchImpl={fetchImpl} alVolver={() => setPantalla({ nombre: 'ajustes' })} />;
+      return <Servicios fetchImpl={fetchImpl} alVolver={() => setPantalla({ nombre: 'perfil' })} />;
   }
 }
 
@@ -157,7 +160,7 @@ export function Servicios({ fetchImpl = fetchNavegador, alVolver }: { readonly f
       <header className="cabecera">
         {alVolver !== undefined && (
           <button type="button" className="enlace volver" onClick={alVolver}>
-            ‹ Ajustes
+            ‹ Perfil
           </button>
         )}
         <img className="logo" src="/logo.png" alt="" width="240" height="90" />

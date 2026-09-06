@@ -20,8 +20,8 @@ describe('Inicio', () => {
     const arriba = [...container.querySelectorAll('.inicio-capas.arriba img')];
     const abajo = [...container.querySelectorAll('.inicio-capas.abajo img')];
     expect(arriba.map((c) => c.getAttribute('src'))).toEqual(['/inicio/2.webp', '/inicio/3.webp', '/inicio/4.webp', '/inicio/5.webp', '/inicio/6.webp']);
-    // El ajo (11) y la hoja (10) van antes que los tallarines (9), así quedan debajo.
-    expect(abajo.map((c) => c.getAttribute('src'))).toEqual(['/inicio/7.webp', '/inicio/8.webp', '/inicio/11.webp', '/inicio/10.webp', '/inicio/9.webp']);
+    // La hoja (10) queda debajo del ajo (11), y los dos debajo de los tallarines (9).
+    expect(abajo.map((c) => c.getAttribute('src'))).toEqual(['/inicio/7.webp', '/inicio/8.webp', '/inicio/10.webp', '/inicio/11.webp', '/inicio/9.webp']);
     // Decorativas: el nombre del producto lo da el logo.
     expect([...arriba, ...abajo].every((c) => c.getAttribute('alt') === '')).toBe(true);
     expect(container.querySelector('.inicio-escena')).toHaveAttribute('aria-hidden', 'true');

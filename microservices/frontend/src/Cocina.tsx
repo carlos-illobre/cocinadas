@@ -26,6 +26,8 @@ import {
   type ProcesoVisible,
 } from './cocina/modelo';
 import type { Avisador } from './cocina/sonido';
+import { logrosNuevos } from './logros';
+import { puntosDe } from './xp';
 
 export interface PropiedadesCocina {
   readonly receta: Receta;
@@ -34,6 +36,8 @@ export interface PropiedadesCocina {
   readonly alTerminar: () => void;
   /** Guarda la cocinada terminada (el id lo pone quien guarda). */
   readonly alGuardar: (cocinada: Omit<Cocinada, 'id'>) => void;
+  /** Las cocinadas que ya estaban guardadas, para saber qué logro desbloquea esta. */
+  readonly cocinadas: readonly Cocinada[];
   /** Reloj inyectable; por omisión, el del navegador. */
   readonly ahora?: () => number;
   /** Cada cuánto se redibuja, en ms. */
@@ -48,7 +52,7 @@ const ICONO_PROCESO: Readonly<Record<string, string>> = { frio: '❄', calor: '�
  * vence un proceso crítico, la alarma tapa todo; entre etapas, la pausa; al final, el
  * resumen.
  */
-export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, ahora = () => Date.now(), tic_ms = 500 }: PropiedadesCocina): React.JSX.Element {
+export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, cocinadas, ahora = () => Date.now(), tic_ms = 500 }: PropiedadesCocina): React.JSX.Element {
   const [estado, setEstado] = useState<EstadoCocina>(() => empezar(receta, ahora()));
   const [reloj_ms, setReloj] = useState(() => ahora());
   const [mostrarPorQue, setMostrarPorQue] = useState(false);
@@ -99,7 +103,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, ahor
     return <FinDeEtapa estado={estado} alSeguir={accion(empezarEtapa)} />;
   }
   if (estado.fase === 'fin') {
-    return <Final estado={estado} alVolver={alTerminar} alGuardar={alGuardar} fecha={() => new Date(ahora()).toISOString()} />;
+    return <Final estado={estado} alVolver={alTerminar} alGuardar={alGuardar} cocinadas={cocinadas} avisador={avisador} fecha={() => new Date(ahora()).toISOString()} />;
   }
 
   const etapa = etapaActual(estado);
@@ -221,6 +225,31 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, ahor
       <Riel estado={estado} ahora={reloj_ms} />
     </main>
   );
+}
+
+interface Papelito {
+  readonly id: number;
+  readonly color: string;
+  readonly izquierda: number;
+  readonly demora: number;
+  readonly duracion: number;
+  readonly tamano: number;
+  readonly redondo: boolean;
+}
+
+const COLORES_CONFETI = ['#FF6B35', '#FFD166', '#06D6A0', '#4ECDC4', '#FF6B9D', '#C77DFF'];
+
+/** Los papelitos del festejo, sorteados una sola vez al llegar a la pantalla. */
+function confeti(cuantos: number): readonly Papelito[] {
+  return Array.from({ length: cuantos }, (_, id) => ({
+    id,
+    color: COLORES_CONFETI[id % COLORES_CONFETI.length] as string,
+    izquierda: Math.random() * 100,
+    demora: Math.random() * 1.5,
+    duracion: 2.5 + Math.random() * 2,
+    tamano: 6 + Math.random() * 8,
+    redondo: id % 2 === 0,
+  }));
 }
 
 function fotoDe(receta: Receta, id: string | null): string | null {
@@ -402,17 +431,28 @@ function Final({
   estado,
   alVolver,
   alGuardar,
+  cocinadas,
+  avisador,
   fecha,
 }: {
   readonly estado: EstadoCocina;
   readonly alVolver: () => void;
   readonly alGuardar: (cocinada: Omit<Cocinada, 'id'>) => void;
+  readonly cocinadas: readonly Cocinada[];
+  readonly avisador: Avisador;
   readonly fecha: () => string;
 }): React.JSX.Element {
   const r = resumen(estado);
-  const [guardada, setGuardada] = useState(false);
+  const [guardada, setGuardada] = useState<Cocinada | null>(null);
+  const [papelitos] = useState(() => confeti(40));
+
+  // El festejo suena una sola vez, al llegar.
+  useEffect(() => {
+    avisador.festejo();
+  }, [avisador]);
+
   const guardar = () => {
-    alGuardar({
+    const cocinada: Omit<Cocinada, 'id'> = {
       plato: estado.receta.plato,
       nombre: estado.receta.nombre,
       version: { clave: estado.receta.version.clave, titulo: estado.receta.version.titulo },
@@ -423,17 +463,28 @@ function Final({
       pasos: r.etapas.flatMap((e) => e.pasos),
       criticos: r.criticos,
       criticosATiempo: r.criticosATiempo,
-    });
-    setGuardada(true);
+    };
+    alGuardar(cocinada);
+    setGuardada({ ...cocinada, id: 'recien-guardada' });
   };
   const d = desvio(r.total_previsto_s, r.total_real_s, reloj);
+  const nuevos = guardada === null ? [] : logrosNuevos(cocinadas, guardada);
+  const puntos = puntosDe({ total_previsto_s: r.total_previsto_s, total_real_s: r.total_real_s });
   return (
     <main className="pantalla sum">
+      <div className="confeti" aria-hidden="true">
+        {papelitos.map((p) => (
+          <i key={p.id} className={p.redondo ? 'redondo' : ''} style={{ left: `${p.izquierda}%`, width: p.tamano, height: p.tamano, background: p.color, animationDelay: `${p.demora}s`, animationDuration: `${p.duracion}s` }} />
+        ))}
+      </div>
       <p className="eyebrow">Plato listo · {estado.receta.version.titulo}</p>
       <div className="big">
         {reloj(r.total_real_s)}
         <small>totales</small>
       </div>
+      <p className="puntos-ganados">
+        <b>+{puntos} XP</b> por lo cerca que estuviste de los tiempos
+      </p>
       <p className="vs">
         Previsto {reloj(r.total_previsto_s)} · <b className={d.signo}>{d.texto}</b>
       </p>
@@ -480,16 +531,30 @@ function Final({
           ))}
         </div>
       </section>
+      {nuevos.length > 0 && (
+        <section className="logros-nuevos" aria-label="Logros conseguidos">
+          <p className="eyebrow">{nuevos.length === 1 ? 'Logro conseguido' : 'Logros conseguidos'}</p>
+          <ul>
+            {nuevos.map((l) => (
+              <li key={l.id}>
+                <span aria-hidden="true">{l.icono}</span>
+                <b>{l.nombre}</b>
+                <small>{l.descripcion}</small>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <div className="cta">
-        {guardada ? (
+        {guardada !== null ? (
           <p className="over-note ok">✓ Guardada en este teléfono. Se ve en Progreso.</p>
         ) : (
           <button type="button" className="btn primary" onClick={guardar}>
             Guardar esta cocinada
           </button>
         )}
-        <button type="button" className={guardada ? 'btn primary' : 'btn ghost ancho'} onClick={alVolver}>
-          {guardada ? 'Ver el progreso' : 'Salir sin guardar'}
+        <button type="button" className={guardada !== null ? 'btn primary' : 'btn ghost ancho'} onClick={alVolver}>
+          {guardada !== null ? 'Ver el progreso' : 'Salir sin guardar'}
         </button>
       </div>
     </main>

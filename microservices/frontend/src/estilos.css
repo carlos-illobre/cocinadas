@@ -1371,3 +1371,241 @@ h1 {
   outline: 3px solid var(--brand);
   outline-offset: 2px;
 }
+
+/* ---------- perfil ---------- */
+.perfil {
+  padding-top: 0;
+}
+
+.perfil-cabecera {
+  text-align: center;
+}
+
+.perfil-avatar {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 0 30px rgba(255, 107, 53, 0.4);
+}
+
+.perfil-cabecera h1 {
+  font-size: 24px;
+}
+
+.perfil-nivel {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.perfil .xp {
+  text-align: left;
+}
+
+.xp-falta {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.numeros {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.numero {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.numero-icono {
+  font-size: 24px;
+}
+
+.numero b {
+  display: block;
+  margin: 8px 0 2px;
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.numero b.dorado {
+  color: var(--gold);
+}
+
+.numero b.marca {
+  color: var(--brand);
+}
+
+.numero small {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.logros {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.logro {
+  background: var(--paper);
+  border: 2px solid var(--gold-border);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 0 16px rgba(255, 209, 102, 0.2);
+}
+
+.logro.pendiente {
+  border-color: var(--line);
+  box-shadow: none;
+  filter: grayscale(100%);
+  opacity: 0.55;
+}
+
+.logro-icono {
+  font-size: 32px;
+}
+
+.logro b {
+  display: block;
+  margin: 8px 0 4px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.logro small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.logro-hecho {
+  display: block;
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.perfil-version {
+  margin: 16px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ---------- festejo del plato terminado ---------- */
+.confeti {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.confeti i {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation-name: caer;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.confeti i.redondo {
+  border-radius: 50%;
+}
+
+@keyframes caer {
+  from {
+    opacity: 1;
+    transform: translateY(-20px) rotate(0deg);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100dvh) rotate(720deg);
+  }
+}
+
+.puntos-ganados {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.puntos-ganados b {
+  font-family: var(--display);
+  font-size: 17px;
+  color: var(--gold);
+}
+
+.logros-nuevos {
+  margin-top: 20px;
+}
+
+.logros-nuevos ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.logros-nuevos li {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  grid-template-areas: 'icono nombre' 'icono texto';
+  align-items: center;
+  gap: 2px 12px;
+  background: var(--paper);
+  border: 2px solid var(--gold-border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 0 16px rgba(255, 209, 102, 0.2);
+}
+
+.logros-nuevos li span {
+  grid-area: icono;
+  font-size: 30px;
+}
+
+.logros-nuevos li b {
+  grid-area: nombre;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.logros-nuevos li small {
+  grid-area: texto;
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confeti {
+    display: none;
+  }
+}

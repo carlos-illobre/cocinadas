@@ -9,11 +9,11 @@ const T0 = 1_000_000;
 
 function armar(receta: Receta = recetaDosEtapas) {
   let ahoraMs = T0;
-  const avisador: Avisador = { toque: vi.fn(), suave: vi.fn(), fuerte: vi.fn() };
+  const avisador: Avisador = { toque: vi.fn(), suave: vi.fn(), fuerte: vi.fn(), festejo: vi.fn() };
   const alVolver = vi.fn();
   const alTerminar = vi.fn();
   const alGuardar = vi.fn();
-  const vista = render(<Cocina receta={receta} avisador={avisador} alVolver={alVolver} alTerminar={alTerminar} alGuardar={alGuardar} ahora={() => ahoraMs} tic_ms={500} />);
+  const vista = render(<Cocina receta={receta} avisador={avisador} alVolver={alVolver} alTerminar={alTerminar} alGuardar={alGuardar} cocinadas={[]} ahora={() => ahoraMs} tic_ms={500} />);
   /** Adelanta el reloj y deja correr los tics. */
   const pasar = (segundos: number) => {
     ahoraMs += segundos * 1000;
@@ -441,6 +441,49 @@ describe('Cocina · final', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Ver el progreso' }));
     expect(c.alTerminar).toHaveBeenCalledTimes(1);
+  });
+
+  it('el plato terminado se festeja: confeti, sonido y los puntos de la cocinada', () => {
+    const c = armar(recetaUnaEtapa);
+    c.listo();
+    c.listo();
+    c.listo();
+
+    expect(c.avisador.festejo).toHaveBeenCalledTimes(1);
+    expect(document.querySelectorAll('.confeti i')).toHaveLength(40);
+    // Cocinada en 0 s contra 960 previstos: el desvío se come todos los puntos.
+    expect(screen.getByText('+0 XP', { exact: false })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Logros conseguidos')).not.toBeInTheDocument();
+  });
+
+  it('al guardar muestra los logros que desbloqueó esa cocinada', () => {
+    const c = armar(recetaUnaEtapa);
+    c.listo();
+    c.listo();
+    c.listo();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
+
+    const logros = screen.getByLabelText('Logros conseguidos');
+    expect(logros).toHaveTextContent('Primera receta');
+    // Sin críticos a tiempo ni racha, es el único.
+    expect(logros.querySelectorAll('li')).toHaveLength(1);
+  });
+
+  it('con más de un logro nuevo lo dice en plural', () => {
+    const etapa = recetaUnaEtapa.etapas[0] as (typeof recetaUnaEtapa.etapas)[number];
+    const conCritico = { ...recetaUnaEtapa, etapas: [{ ...etapa, pasos: etapa.pasos.map((p, i) => (i === 0 ? { ...p, critico: true } : p)) }] };
+    const c = armar(conCritico);
+    c.listo();
+    c.listo();
+    c.listo();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
+
+    const logros = screen.getByLabelText('Logros conseguidos');
+    expect(logros.querySelectorAll('li')).toHaveLength(2);
+    expect(logros).toHaveTextContent('Logros conseguidos');
+    expect(logros).toHaveTextContent('Sin pasarse');
   });
 
   it('se puede salir sin guardar', () => {
