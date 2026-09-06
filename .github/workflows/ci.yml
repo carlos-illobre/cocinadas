@@ -36,8 +36,12 @@ jobs:
           node-version: ${{ env.VERSION_NODE }}
           cache: pnpm
           cache-dependency-path: web/pnpm-lock.yaml
+      - name: Instalar dependencias
+        working-directory: web
+        run: pnpm install --frozen-lockfile
       - name: Unitarias con compuerta de cobertura
-        run: bash tests/utest.sh
+        working-directory: web
+        run: pnpm test:cov
       - name: El catálogo del repositorio es válido
         run: python3 data/recetas/validar-receta.py
       - name: Informe de cobertura

@@ -3,7 +3,7 @@ flowchart LR
     push["git push (rama → PR → merge a main)"]
   end
   subgraph gh["GitHub Actions"]
-    pruebas{"utest.sh 100 %<br/>validar-receta.py"}
+    pruebas{"pnpm test:cov 100 %<br/>pnpm e2e<br/>validar-receta.py"}
     build["pnpm build<br/>genera el catálogo de data/"]
     guarda{"¿el index.html tiene<br/>rutas absolutas?"}
     falla["falla el job"]
