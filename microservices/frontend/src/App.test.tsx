@@ -22,7 +22,7 @@ function memoria(inicial: Record<string, string> = {}): Almacen & { datos: Map<s
   return { datos, getItem: (k) => datos.get(k) ?? null, setItem: (k, v) => void datos.set(k, v) };
 }
 
-const avisadorFalso: Avisador = { suave: vi.fn(), fuerte: vi.fn() };
+const avisadorFalso: Avisador = { toque: vi.fn(), suave: vi.fn(), fuerte: vi.fn() };
 const crearAvisador = vi.fn(() => avisadorFalso);
 
 function montar(extra: { almacen?: ReturnType<typeof memoria>; ahora?: () => number } = {}) {

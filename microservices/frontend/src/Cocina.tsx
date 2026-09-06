@@ -4,12 +4,13 @@ import type { Cocinada } from './historial/almacen';
 import {
   atenderAlarma,
   avanzarReloj,
-  carriles,
   desvio,
   empezar,
   empezarEtapa,
   esperaPrevia_s,
   etapaActual,
+  frenteGantt,
+  gantt,
   listo,
   pasoActual,
   procesosVisibles,
@@ -20,6 +21,7 @@ import {
   tildar,
   transcurridoEtapa_s,
   type EstadoCocina,
+  type FilaGantt,
   type PasoHecho,
   type ProcesoVisible,
 } from './cocina/modelo';
@@ -80,8 +82,11 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, ahor
     }
   }, [estado.avisosSuaves, avisador]);
 
-  const accion = (f: (e: EstadoCocina, t: number) => EstadoCocina) => () => {
+  const accion = (f: (e: EstadoCocina, t: number) => EstadoCocina, sonar = false) => () => {
     const t = ahora();
+    if (sonar) {
+      avisador.toque();
+    }
     setReloj(t);
     setEstado((e) => f(e, t));
     setMostrarPorQue(false);
@@ -201,7 +206,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, ahor
         )}
 
         <div className="actions">
-          <button type="button" className={critica ? 'btn hot' : 'btn primary'} onClick={accion(listo)}>
+          <button type="button" className={critica ? 'btn hot' : 'btn primary'} onClick={accion(listo, true)}>
             {esperaPrevia > 0 ? 'Ya lo hice ✓' : paso.espera ? 'Seguir ✓' : 'Listo, siguiente ✓'}
           </button>
           <button type="button" className="btn ghost" aria-label="Reiniciar el paso" title="Reiniciar el paso" onClick={accion(reiniciarPaso)}>
@@ -213,7 +218,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, ahor
         </div>
       </section>
 
-      <Riel estado={estado} />
+      <Riel estado={estado} ahora={reloj_ms} />
     </main>
   );
 }
@@ -248,34 +253,49 @@ function Proceso({ visible, receta }: { readonly visible: ProcesoVisible; readon
   );
 }
 
-function Riel({ estado }: { readonly estado: EstadoCocina }): React.JSX.Element {
+function Riel({ estado, ahora }: { readonly estado: EstadoCocina; readonly ahora: number }): React.JSX.Element {
   const etapa = etapaActual(estado);
   const hechos = estado.hechos[estado.etapa] as readonly PasoHecho[];
-  const lanes = carriles(etapa);
-  const ALTO = 50;
+  const g = gantt(etapa);
+  const frente = frenteGantt(estado, ahora, g);
+  /** Qué parte de una barra quedó atrás del frente, de 0 a 1. */
+  const relleno = (top: number, alto: number): number => Math.max(0, Math.min(1, (frente - top) / Math.max(1, alto)));
+
   return (
     <section className="rail" aria-label="Línea de tiempo">
       <p className="eyebrow">
         Línea de tiempo <span>{hechos.length} de {etapa.pasos.length} hechos</span>
       </p>
-      <div className="rows withlanes">
-        {lanes.map((c, i) => (
-          <div
-            key={c.proceso.id}
-            className={`lane ${c.proceso.critico ? 'hot' : 'cold'}${i > 0 ? ' l2' : ''}`}
-            style={{ top: c.desde * ALTO + 6, height: Math.max(0, (c.hasta - c.desde) * ALTO - 12) }}
-            aria-hidden="true"
-          >
-            {i === 0 && <span className="tag">{c.proceso.nombre}</span>}
-          </div>
-        ))}
+      <div className="rows withlanes" style={{ '--carriles': g.carriles.length } as React.CSSProperties}>
+        {/* El gantt: el tiempo baja, las manos en la primera barra y cada proceso en la suya. */}
+        <div className="gantt" aria-hidden="true">
+          {g.filas.map((f) => {
+            const top = f.top + 4;
+            const alto = Math.max(8, f.altoBarra - 8);
+            return (
+              <div key={f.paso.id} className={f.paso.espera ? 'barra espera' : 'barra'} style={{ top, height: alto }}>
+                <i style={{ height: `${relleno(top, alto) * 100}%` }} />
+              </div>
+            );
+          })}
+          {g.carriles.map((c, i) => {
+            const top = c.top + 4;
+            const alto = Math.max(8, c.alto - 8);
+            return (
+              <div key={c.proceso.id} className={c.proceso.critico ? 'carril hot' : 'carril cold'} style={{ top, height: alto, '--i': i } as React.CSSProperties}>
+                <i style={{ height: `${relleno(top, alto) * 100}%` }} />
+                {i === 0 && <span className="tag">{c.proceso.nombre}</span>}
+              </div>
+            );
+          })}
+        </div>
         {etapa.pasos.map((p, i) => {
           const hecho = hechos[i];
           const actual = i === estado.paso;
           const d = hecho === undefined ? null : desvio(hecho.previsto_s, hecho.real_s, reloj);
           const claseFila = hecho !== undefined ? 'row done' : actual ? 'row cur' : p.espera ? 'row wait' : 'row';
           return (
-            <div key={p.id} className={claseFila} aria-current={actual ? 'step' : undefined}>
+            <div key={p.id} className={claseFila} style={{ height: (g.filas[i] as FilaGantt).alto }} aria-current={actual ? 'step' : undefined}>
               <span className="t">{reloj(p.inicio_s)}</span>
               <span className="dot">
                 <i />

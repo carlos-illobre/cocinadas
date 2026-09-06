@@ -9,7 +9,7 @@ const T0 = 1_000_000;
 
 function armar(receta: Receta = recetaDosEtapas) {
   let ahoraMs = T0;
-  const avisador: Avisador = { suave: vi.fn(), fuerte: vi.fn() };
+  const avisador: Avisador = { toque: vi.fn(), suave: vi.fn(), fuerte: vi.fn() };
   const alVolver = vi.fn();
   const alTerminar = vi.fn();
   const alGuardar = vi.fn();
@@ -118,12 +118,25 @@ describe('Cocina · etapa tranquila', () => {
     expect(screen.getByText('Corre solo')).toBeInTheDocument();
   });
 
-  it('el carril del proceso abarca las filas que corresponden y lleva su nombre', () => {
-    armar();
-    const carril = document.querySelector('.lane');
+it('el gantt dibuja una barra por paso y un carril por proceso, y se va llenando', () => {
+    const { pasar } = armar();
+    const barras = [...document.querySelectorAll('.gantt .barra')];
+    expect(barras).toHaveLength(3);
+    // El primer paso dura 30 s y queda en el alto mínimo; el segundo dura 150 s y crece.
+    expect(barras[0]).toHaveStyle({ top: '4px', height: '38px' });
+    expect(barras[1]).toHaveStyle({ top: '50px' });
+    // La espera lleva su propio rayado.
+    expect(barras[2]).toHaveClass('espera');
+    // Nada hecho todavía: ninguna barra pintada.
+    expect(barras[0]?.querySelector('i')).toHaveStyle({ height: '0%' });
+
+    const carril = document.querySelector('.gantt .carril');
     expect(carril).toHaveClass('cold');
-    expect(carril).toHaveStyle({ top: '56px', height: '38px' });
     expect(carril).toHaveTextContent('Camarones en agua fría');
+
+    // A la mitad del primer paso, su barra va por la mitad.
+    pasar(15);
+    expect(document.querySelector('.gantt .barra i')).toHaveStyle({ height: '50%' });
   });
 
   it('un proceso no crítico que vence da un aviso suave y desaparece', () => {

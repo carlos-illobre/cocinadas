@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { minutos, obtenerReceta, urlFoto, versionesOrdenadas, type Receta, type RecetaResumen } from './api';
+import { BASE_CATALOGO, minutos, obtenerReceta, urlFoto, versionesOrdenadas, type Receta, type RecetaResumen } from './api';
 import type { Fetch } from './salud';
 
 export interface PropiedadesPortada {
@@ -136,6 +136,17 @@ function Valor({ icono, valor, nombre }: { readonly icono: string; readonly valo
   );
 }
 
+/** La foto de la ficha; si no tiene, el ícono de su tipo. */
+function Foto({ foto, icono }: { readonly foto: string | null; readonly icono: string }): React.JSX.Element {
+  return foto === null ? (
+    <span className="fila-foto sin-foto" aria-hidden="true">
+      {icono}
+    </span>
+  ) : (
+    <img className="fila-foto" src={`${BASE_CATALOGO}${foto}`} alt="" loading="lazy" />
+  );
+}
+
 function Necesario({ receta, solapa, alCambiarSolapa }: { readonly receta: Receta; readonly solapa: Solapa; readonly alCambiarSolapa: (s: Solapa) => void }): React.JSX.Element {
   return (
     <section className="necesario" aria-label="Qué necesitás">
@@ -151,6 +162,7 @@ function Necesario({ receta, solapa, alCambiarSolapa }: { readonly receta: Recet
         <ul className="filas">
           {receta.ingredientes.map((i) => (
             <li key={`${i.id ?? 'sin-id'}-${i.nombre}`} className="fila">
+              <Foto foto={i.foto} icono="🥄" />
               <span className="fila-nombre">{i.nombre}</span>
               <span className="fila-cantidad">{i.cantidad}</span>
             </li>
@@ -160,9 +172,7 @@ function Necesario({ receta, solapa, alCambiarSolapa }: { readonly receta: Recet
         <ul className="filas">
           {receta.utensilios.map((u) => (
             <li key={`${u.id ?? 'sin-id'}-${u.nombre}`} className="fila">
-              <span className="fila-icono" aria-hidden="true">
-                🔧
-              </span>
+              <Foto foto={u.foto} icono="🔧" />
               <span className="fila-nombre">{u.nombre}</span>
             </li>
           ))}

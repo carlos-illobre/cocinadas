@@ -109,6 +109,9 @@ describe('Portada', () => {
     expect(ingredientes).toHaveLength(3);
     expect(ingredientes[0]?.querySelector('.fila-nombre')).toHaveTextContent('Brócoli fresco entero');
     expect(ingredientes[0]?.querySelector('.fila-cantidad')).toHaveTextContent('½ pieza');
+    expect(ingredientes[0]?.querySelector('img.fila-foto')).toHaveAttribute('src', '/api/catalogo/ingredientes/brocoli-entero/foto');
+    // Sin ficha con foto, el ícono de su tipo.
+    expect(ingredientes[1]?.querySelector('.fila-foto.sin-foto')).toHaveTextContent('🥄');
 
     const solapaUtensilios = screen.getByRole('tab', { name: 'Utensilios' });
     fireEvent.click(solapaUtensilios);
@@ -116,8 +119,9 @@ describe('Portada', () => {
     expect(solapaIngredientes.className).toBe('');
     const utensilios = document.querySelectorAll('.fila');
     expect(utensilios).toHaveLength(3);
-    expect(utensilios[0]).toHaveTextContent('🔧');
     expect(utensilios[0]).toHaveTextContent('Wok Eternity 30 cm con su tapa');
+    expect(utensilios[0]?.querySelector('img.fila-foto')).toHaveAttribute('src', '/api/catalogo/utensilios/wok-eternity-copper-30cm/foto');
+    expect(utensilios[1]?.querySelector('.fila-foto.sin-foto')).toHaveTextContent('🔧');
     expect(utensilios[0]?.querySelector('.fila-cantidad')).toBeNull();
     fireEvent.click(solapaIngredientes);
     expect(solapaIngredientes).toHaveAttribute('aria-selected', 'true');
