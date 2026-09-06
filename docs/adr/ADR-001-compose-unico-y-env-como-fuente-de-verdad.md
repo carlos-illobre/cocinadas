@@ -1,6 +1,6 @@
 # ADR-001: Un solo `docker-compose.yml` y el `.env` como fuente de la verdad
 
-**Estado:** Aceptado
+**Estado:** Aceptado, enmendado por [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -79,3 +79,11 @@ archivos extra que recordar.
 
 - `.claude/skills/microservicios-base/referencias/invariantes.md`, invariantes 1 a 4.
 - `docs/TESTING.md`, «Integración».
+
+---
+
+## Enmienda (2026-09-06): [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
+
+Ya no hay compose ni `.env`: no queda nada que se configure por ambiente, porque hay un
+solo ambiente y es el sitio publicado. Lo que sobrevive del ADR es su principio, aplicado
+ahora al build: nada de valores por omisión escondidos, y una sola fuente para cada cosa.

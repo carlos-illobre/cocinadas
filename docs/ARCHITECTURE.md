@@ -5,14 +5,14 @@ cronómetros por paso y alarmas para los procesos que corren solos, y guarda los
 de cada cocinada para mostrar el progreso por receta.
 
 **Cómo está hecho:** una SPA que se baja entera al teléfono, con el catálogo de recetas
-adentro, servida como archivos estáticos por Caddy. No hay backend: las cocinadas viven en
-el `localStorage` de cada teléfono. El porqué, y el camino de vuelta el día que eso no
-alcance, están en [ADR-015](adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md).
+adentro, publicada como sitio estático en **GitHub Pages**. No hay servidor, ni base de
+datos, ni contenedores: las cocinadas viven en el `localStorage` de cada teléfono.
 
-**Delante hay un reverse proxy que no es de esta aplicación**: en la VM corre más de una
-app y el 80 y el 443 son de una sola, así que los ata una pieza aparte que reparte por
-dominio. Es optativa —se prende desde el `.env`— porque en otro ambiente ese trabajo lo
-puede hacer un balanceador de la nube ([ADR-016](adr/ADR-016-proxy-de-la-maquina-como-pieza-aparte.md)).
+El porqué está en [ADR-015](adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md) (por qué
+no hay backend) y [ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md) (por qué no hay
+servidor), que también dicen qué haría falta el día que eso no alcance.
+
+**La app está en <https://carlos-illobre.github.io/cocinadas/>.**
 
 Los diagramas de esta página están en [diagrams/](diagrams/) como Mermaid.
 
@@ -23,25 +23,21 @@ C4Context
   title Cocinadas · contexto
   Person(cocinero, "Cocinero", "Usa la app desde el celular apoyado en la mesada")
   System(cocinadas, "Cocinadas", "Línea de tiempo viva de la receta, cronómetros, alarmas y progreso")
-  System_Ext(letsencrypt, "Let's Encrypt", "Certificados TLS")
-  System_Ext(ghcr, "GitHub · GHCR · Pages", "Código, CI, imagen por SHA y sitio de docs")
-  Rel(cocinero, cocinadas, "HTTPS", "cocinadas.duckdns.org")
-  Rel(cocinadas, letsencrypt, "ACME HTTP-01")
-  Rel(ghcr, cocinadas, "docker compose pull por SHA")
+  System_Ext(github, "GitHub · Actions · Pages", "Código, CI y el hosting del sitio, con su TLS")
+  Rel(cocinero, cocinadas, "HTTPS", "carlos-illobre.github.io/cocinadas/")
+  Rel(github, cocinadas, "publica en cada merge a main")
 ```
 
 ## Componentes
 
-La aplicación es una sola. El proxy no es parte de ella: es infraestructura de la máquina,
-y por eso vive en `infrastructure/`, la carpeta de lo que sirve para levantar la aplicación
-y que en producción puede estar reemplazado por un servicio de la nube.
+No hay componentes que corran: lo que se publica son archivos. Lo que sigue es cómo se
+arman.
 
-| Componente | Carpeta | Responsabilidad | Estado / tecnología |
+| Componente | Carpeta | Responsabilidad | Tecnología |
 |---|---|---|---|
-| **web** | `microservices/frontend` | La aplicación: sirve el bundle (la SPA más el catálogo). Habla HTTP en `:80` y contesta a cualquier `Host`: no termina TLS ni sabe por qué dominio la llamaron. | Caddy en modo file server (ADR-013). Sin Node en producción: la imagen final no lleva `node_modules`. |
-| **proxy** *(optativo)* | `infrastructure/proxy` | El reverse proxy **de la máquina**: ata el 80 y el 443, emite y renueva el TLS, y reparte por dominio entre esta app y las demás de la VM. Se prende con `COMPOSE_PROFILES=proxy`. | Caddy, imagen oficial sin construir (ADR-009, ADR-016). |
-| **la SPA** | `microservices/frontend/src` | Toda la aplicación (ver abajo). | React 19 + TypeScript, compilada con Vite. |
-| **el catálogo** | `microservices/frontend/src/catalogo` | Lee `data/recetas/`, `data/ingredientes/` y `data/utencillos/` **en el build** y escribe el JSON y las fotos que la SPA consume. | Node, corre una vez por despliegue con `tsx`. `catalogo.ts` es puro y decide qué archivos van; `generar.ts` solo los escribe (ADR-006, ADR-015). |
+| **la SPA** | `web/src` | Toda la aplicación (ver abajo). | React 19 + TypeScript, compilada con Vite (ADR-013). |
+| **el catálogo** | `web/src/catalogo` | Lee `data/recetas/`, `data/ingredientes/` y `data/utencillos/` **en el build** y escribe el JSON y las fotos que la SPA consume. | Node, corre una vez por publicación con `tsx`. `catalogo.ts` es puro y decide qué archivos van; `generar.ts` solo los escribe (ADR-006, ADR-015). |
+| **el hosting** | — | Sirve `web/dist/` por HTTPS, con CDN. | GitHub Pages (ADR-017). |
 
 ### Qué hace la SPA
 
@@ -69,35 +65,28 @@ velocidad; el criterio exacto de puntos es provisional.
 
 ```mermaid
 C4Container
-  title Cocinadas · contenedores
+  title Cocinadas · qué hay corriendo
   Person(cocinero, "Cocinero")
-  System_Boundary(vm, "VM Oracle") {
-    Container(proxy, "proxy", "Caddy · optativo", "80/443 · TLS · reparte por dominio entre todas las apps de la máquina")
-    Container(web, "web", "Caddy", "file server del bundle")
-    Container_Ext(otras, "otras aplicaciones", "lo que haya en la VM", "cada una en su puerto alto")
+  System_Boundary(pages, "GitHub Pages") {
+    Container(sitio, "el sitio", "archivos estáticos", "index.html, el bundle, y el catálogo bajo api/catalogo/")
   }
-  ContainerDb(tel, "localStorage del teléfono", "Navegador", "cocinadas, cocinada en curso, tema")
-  Rel(cocinero, proxy, "HTTPS 443")
-  Rel(proxy, web, "HTTP 80", "red interna del compose")
-  Rel(proxy, otras, "HTTP", "host.docker.internal:<puerto>")
-  Rel(cocinero, tel, "lee y escribe", "sin salir del teléfono")
+  ContainerDb(tel, "localStorage", "Navegador del teléfono", "cocinadas.historial · cocinadas.cocinando · cocinadas.tema")
+  Rel(cocinero, sitio, "HTTPS", "carlos-illobre.github.io/cocinadas/")
+  Rel(cocinero, tel, "lee y escribe", "no sale del teléfono")
 ```
 
 ## Cómo se comunican
 
-- **El navegador habla con el proxy**, por HTTPS. El proxy mira el dominio, decide de qué
-  aplicación es y le pasa la petición. Para Cocinadas todo lo que sigue son archivos: el
-  `index.html`, los assets con hash, y el catálogo bajo `/api/catalogo/`.
-- **La aplicación no sabe nada del proxy.** Escucha en `:80` y contesta a cualquier `Host`,
-  así que la misma imagen sirve igual en `localhost`, detrás del proxy propio o detrás del
-  de otra aplicación. Lo que sí se queda en su imagen son las cabeceras de seguridad, la
-  política de contenido, el ruteo de la SPA y el caché: es de la aplicación y se despliega
-  con el código que lo necesita.
-- **El catálogo son archivos, no una API.** `GET /api/catalogo/recetas.json` es la lista y
-  `GET /api/catalogo/recetas/<plato>/<version>.json` es una receta entera, con las rutas
-  de las fotos ya resueltas. `api.ts` es el único que sabe que llevan `.json`.
-- Se conserva el prefijo `/api/` a propósito, aunque no haya ninguna API detrás: es la
+- **Todo lo que pide el navegador son archivos**: el `index.html`, los assets con hash, y
+  el catálogo bajo `api/catalogo/`. No hay nadie del otro lado interpretando nada.
+- **El catálogo son archivos, no una API.** `api/catalogo/recetas.json` es la lista y
+  `api/catalogo/recetas/<plato>/<version>.json` es una receta entera, con las rutas de las
+  fotos ya resueltas. `api.ts` es el único que sabe que llevan `.json`.
+- Se conserva el prefijo `api/` a propósito, aunque no haya ninguna API detrás: es la
   puerta por la que vuelve un backend sin tocar el frontend (ADR-015).
+- **Todas las rutas son relativas.** Pages sirve el sitio en `/<repo>/`, así que una ruta
+  absoluta apuntaría al dominio. Con `base: './'` el mismo bundle sirve en cualquier lado
+  (ADR-017).
 - **Las cocinadas no salen del teléfono.** `historial/almacen.ts` las guarda en un
   `Almacen` inyectado, que hoy es `localStorage`. Que sea inyectado es lo que deja
   cambiarlo por un cliente HTTP el día que haya cuentas.
@@ -107,7 +96,7 @@ sequenceDiagram
   title Cocinar y guardar la cocinada
   actor C as Cocinero
   participant F as la SPA
-  participant W as proxy → web
+  participant W as el sitio
   participant L as localStorage
   C->>F: elige una receta
   F->>W: GET /api/catalogo/recetas/<plato>/<version>.json
@@ -121,44 +110,40 @@ sequenceDiagram
 
 ## Configuración y despliegue
 
-Un solo `docker-compose.yml` para todos los ambientes; lo que cambia entre ambientes vive
-en el `.env` y en ningún otro lado (ADR-001). Una variable ausente corta el arranque. La
-imagen se construye en el CI para `amd64` y `arm64`, se publica en GHCR etiquetada por
-SHA, y `deployment/oracle-single/deploy.py` trae exactamente ese SHA a la VM (ADR-011).
-Cada merge a `main` dispara ese despliegue solo. Detalle en [DEPLOYMENT.md](DEPLOYMENT.md).
+No hay configuración por ambiente porque hay un solo ambiente: el sitio publicado. Cada
+merge a `main` corre las pruebas, compila y publica en Pages, sin apretar nada. Detalle en
+[DEPLOYMENT.md](DEPLOYMENT.md).
 
-El catálogo viaja dentro de la imagen (ADR-006), así que revertir un despliegue revierte
-también las recetas, y agregar una receta obliga a reconstruir y redesplegar.
+El catálogo se genera en el build leyendo `data/` (ADR-006), así que el sitio publicado
+siempre corresponde a un commit entero: revertir el código revierte también las recetas, y
+agregar una receta obliga a volver a publicar.
 
 ```mermaid
 flowchart LR
   dev[Máquina de desarrollo] -- git push --> gh[GitHub]
-  gh -- CI: utest + paridad --> ci{pasa?}
-  ci -- sí, en main --> ghcr[(GHCR<br/>cocinadas-web:&lt;sha&gt;<br/>amd64 + arm64)]
-  ci -- sí, en main --> pages[GitHub Pages<br/>docs/]
-  ci -- sí, en main --> vm[VM Oracle<br/>docker compose]
-  ghcr -- compose pull --> vm
-  vm -- ACME HTTP-01 --> le[Let's Encrypt]
+  gh -- "CI: utest.sh 100 %<br/>validar-receta.py" --> ci{pasa?}
+  ci -- "sí, en main" --> build["pnpm build<br/>(genera el catálogo de data/)"]
+  build --> guarda{"¿rutas absolutas<br/>en el index.html?"}
+  guarda -- "no" --> pages["GitHub Pages<br/>carlos-illobre.github.io/cocinadas/"]
+  guarda -- "sí" --> falla["falla el job"]
+  ci -- "no" --> falla
 ```
 
 ## Decisiones y sus ADR
 
 | Decisión | ADR |
 |---|---|
-| Un solo compose, el `.env` como fuente de la verdad, sin fallbacks | [ADR-001](adr/ADR-001-compose-unico-y-env-como-fuente-de-verdad.md) |
-| El catálogo se lee de los JSON del repo y va dentro de la imagen | [ADR-006](adr/ADR-006-catalogo-desde-el-repositorio-en-la-imagen.md) |
-| Caddy como servidor y TLS automático | [ADR-009](adr/ADR-009-caddy-reverse-proxy-y-tls.md) |
-| El reverse proxy es de la máquina, no de la aplicación | [ADR-016](adr/ADR-016-proxy-de-la-maquina-como-pieza-aparte.md) |
-| pnpm, Vitest y Stryker | [ADR-010](adr/ADR-010-pnpm-vitest-y-stryker.md) |
-| Despliegue en una VM de Oracle con imagen multi-arquitectura en GHCR | [ADR-011](adr/ADR-011-despliegue-en-vm-oracle-con-imagenes-por-sha.md) |
+| El catálogo se lee de los JSON del repo y viaja con lo que se publica | [ADR-006](adr/ADR-006-catalogo-desde-el-repositorio-en-la-imagen.md) |
+| pnpm y Vitest, con compuerta del 100 % | [ADR-010](adr/ADR-010-pnpm-vitest-y-stryker.md) |
 | La aplicación como SPA React + Vite | [ADR-013](adr/ADR-013-frontend-spa-react-vite.md) |
-| Endurecimiento antes de publicar a internet | [ADR-014](adr/ADR-014-endurecimiento-antes-de-publicar.md) |
 | **De cuatro servicios a una sola SPA estática** | [**ADR-015**](adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md) |
+| **Sitio estático en GitHub Pages, sin servidor propio** | [**ADR-017**](adr/ADR-017-sitio-estatico-en-github-pages.md) |
 
-Los ADR 002, 003, 004, 005, 007, 008 y 012 están **superados por el 015**: describen los
-microservicios, NATS, PostgreSQL, Fastify, Drizzle y los JWT que el proyecto tuvo
-declarados y nunca llegó a usar. No se borran: el día que el historial salga del celular,
-son el punto de partida para volver a decidir.
+El resto está **superado o enmendado**, y eso es información: el proyecto empezó como
+cuatro microservicios con PostgreSQL, NATS y JWT (ADR 002 a 012), pasó por un solo
+contenedor con Caddy y un proxy propio (ADR 009, 011, 016) y terminó acá. Ninguno se borró:
+son el punto de partida para volver a decidir el día que las cocinadas salgan del celular.
+El índice completo está en [adr/README.md](adr/README.md).
 
 ## Lo que todavía no está
 

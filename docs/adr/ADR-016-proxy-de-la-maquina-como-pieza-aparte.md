@@ -1,6 +1,6 @@
 # ADR-016: El reverse proxy es una pieza de la máquina, no de la aplicación
 
-**Estado:** Aceptado
+**Estado:** Superado por [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
 **Fecha:** 2026-09-06
 
 ---
@@ -156,3 +156,12 @@ la diferencia con `docker compose rm -sf`. A mano es lo mismo.
   [ADR-009](ADR-009-caddy-reverse-proxy-y-tls.md),
   [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md).
 - «Convivir con otra aplicación en la misma VM» en [DEPLOYMENT.md](../DEPLOYMENT.md).
+
+---
+
+## Enmienda (2026-09-06): superado por [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
+
+Sin servidor propio no hay 80 ni 443 que repartir: Pages termina el TLS y sirve el sitio.
+El razonamiento de fondo —que el reverse proxy es una pieza de la máquina y no de la
+aplicación— sigue siendo correcto, y es el que hay que releer el día que vuelvan a convivir
+varias aplicaciones en un servidor.

@@ -1,310 +1,107 @@
 # Despliegue
 
-Una VM de Oracle Cloud (Always Free) con Docker, el mismo `docker-compose.yml` que en
-desarrollo, y **una** imagen construida por el CI y publicada en GHCR etiquetada por SHA
-de commit (ADR-011). Todo lo específico vive en `deployment/oracle-single/`.
+**Cada merge a `main` publica el sitio solo.** No hay servidor, ni claves, ni nada que
+apretar: el CI corre las pruebas, compila y sube el resultado a GitHub Pages.
 
-Lo que corre en la instancia son **dos contenedores, y uno es optativo**:
+**La app: <https://carlos-illobre.github.io/cocinadas/>**
 
-| Servicio | Qué es | ¿Siempre? |
+El porqué de que no haya servidor está en
+[ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md).
+
+## El pipeline
+
+`.github/workflows/ci.yml`, tres jobs:
+
+| Job | Cuándo | Qué hace |
 |---|---|---|
-| `web` | La aplicación: Caddy sirviendo el bundle con el catálogo adentro (ADR-015). Habla HTTP y no sabe por qué dominio la llamaron. | Sí |
-| `proxy` | El reverse proxy **de la máquina**, no de esta aplicación (ADR-016): ata el 80 y el 443, emite el TLS y reparte por dominio entre esta app y las demás que haya en la VM. | Solo con `COMPOSE_PROFILES=proxy` |
+| `pruebas` | cada push y cada PR | `tests/utest.sh` con la compuerta del 100 %, y `validar-receta.py` sobre el catálogo. |
+| `vulnerabilidades` | cada push y cada PR | Trivy busca CVE y secretos filtrados. **Informa, no reprueba.** |
+| `publicar` | solo en `main`, después de `pruebas` | Compila `web/` y publica en Pages. |
 
-No hay base de datos ni broker, así que **en el servidor no hay nada que respaldar**: las
-cocinadas viven en el teléfono de cada persona.
+Todo merge a `main` —con commit de merge o con squash— es un push a `main`, así que
+`publicar` corre en cada merge. Si las pruebas fallan, no se publica nada.
 
-> La guía paso a paso de la instancia (crearla, conectarse, Security List, DNS,
-> certificado) se genera con la skill `desplegar-en-oracle-cloud` como `ORACLE.md` en
-> esa carpeta. Esta página describe la arquitectura del despliegue y la operación.
+## Qué hay que tener configurado en GitHub
 
-## Dominio y TLS
+Una sola cosa, y una sola vez: **Settings → Pages → Build and deployment → Source:
+GitHub Actions**.
 
-- Dominio: `cocinadas.duckdns.org`, apuntado a la IP pública de la instancia.
-- TLS: Caddy pide el certificado a Let's Encrypt por HTTP-01 la primera vez que arranca
-  con `SITE_ADDRESS=cocinadas.duckdns.org`, y lo renueva solo (ADR-009). Para que la
-  emisión funcione: **abrir 80 y 443 en la Security List → apuntar el DNS → esperar a que
-  `dig +short cocinadas.duckdns.org` devuelva la IP → recién entonces levantar el proxy.**
-  Emitir antes quema uno de los pocos intentos por hora que Let's Encrypt permite.
-- Los certificados viven en el volumen `caddy-datos`.
+Nada más. Sin secretos, sin variables, sin entornos con revisores. El job se autentica con
+el token OIDC del propio workflow, que es para lo que están los permisos `pages: write` e
+`id-token: write`.
 
-## Puertos
+El repositorio tiene que ser **público** para que Pages sea gratis. Lo es.
 
-Adentro del contenedor los puertos no cambian nunca. Del lado del host los decide el
-`.env`, para poder convivir con otra aplicación en la misma máquina.
+## Las dos trampas de Pages
 
-| Variable | Valor por omisión | Quién | Desde dónde |
-|---|---|---|---|
-| `PUERTO_HTTP`, `PUERTO_HTTPS` | 80, 443 (TCP y UDP) | `proxy` | La interfaz que diga `PROXY_ADDR`. **Los únicos que se abren en la Security List.** |
-| `PUERTO_APP` | 8180 | `web` | La interfaz que diga `APP_ADDR`, que es `0.0.0.0` para que el proxy lo alcance desde su contenedor. **No se abre en la Security List**, que es lo que lo mantiene fuera de internet. |
-| — | 8081 | los dos | Solo desde adentro de cada contenedor: es el sitio de salud contra el que pegan el healthcheck del compose y `deploy.py`. No se publica. |
+**1. El sitio se sirve en `/<repo>/`, no en la raíz.** O sea
+`carlos-illobre.github.io/cocinadas/`. Cualquier ruta que empiece con `/` apunta al dominio
+y da 404 **solo en producción**, que es el peor momento para enterarse.
 
-Los puertos que publica Docker no pasan por la cadena `INPUT` de iptables: `ufw` no
-los protege. Lo que decide qué está abierto es la Security List de la VCN.
+Por eso `vite.config.ts` tiene `base: './'` y el código usa rutas relativas
+(`logo.png`, `api/catalogo`, `inicio/1.jpg`). Con eso el mismo bundle sirve igual en una
+subcarpeta, en la raíz de un dominio propio o abierto desde el disco, y el nombre del
+repositorio no aparece en ninguna parte.
 
-## Varias aplicaciones en la misma VM
+El job `publicar` lo comprueba: si el `index.html` sale con una ruta absoluta, falla.
 
-**El 80 y el 443 son de una sola aplicación**: el navegador no elige puerto. Por eso quien
-los ata no es ninguna de las aplicaciones sino el `proxy`, que es una pieza de la máquina
-(ADR-016). Cada aplicación es un inquilino que escucha en un puerto alto y se olvida del
-TLS.
+Esto funciona porque **la app nunca cambia la URL**: `avanzar` en `App.tsx` hace
+`pushState(null, '')` sin tercer argumento, así que la barra de direcciones se queda en la
+base. El día que haya enlaces profundos de verdad (`/receta/...`) hay que revisarlo, y
+además Pages devuelve `404.html` con estado 404 para rutas que no existen como archivo.
 
-```
-cocinadas.duckdns.org  ─┐
-citypass.duckdns.org   ─┼─→  proxy (80/443)  ─→  web (red interna)      cocinadas
-loquevenga.duckdns.org ─┘                     ─→  host:8181             citypass
-                                              ─→  host:8182             la próxima
-```
+**2. Pages no deja poner cabeceras HTTP.** Se perdieron la CSP, `Permissions-Policy`,
+`Referrer-Policy`, `X-Content-Type-Options` y HSTS, que vivían en el Caddyfile. Está
+anotado como pendiente en [SECURITY.md](SECURITY.md): la CSP se puede recuperar con
+`<meta http-equiv>` en el `index.html`.
 
-### Agregar una aplicación
+## Revertir
 
-Su bloque va en `infrastructure/proxy/vecinos/<nombre>.caddy` **en la VM**:
-
-```caddy
-citypass.duckdns.org {
-	reverse_proxy host.docker.internal:8181
-}
-```
-
-y `docker compose restart proxy`. Eso es todo: no se toca el compose ni el Caddyfile.
-
-**`host.docker.internal` y no `127.0.0.1`**: el proxy corre adentro de un contenedor, así
-que `127.0.0.1` sería su propio loopback. El compose le da ese nombre con
-`extra_hosts: host-gateway`. Por eso el vecino tiene que publicar su puerto en `0.0.0.0` y
-no en `127.0.0.1`, y por eso ese puerto **no** se abre en la Security List.
-
-Del lado del vecino: mover sus `80:80` y `443:443` a un puerto alto, y apagar su certbot
-—el TLS lo hace Caddy para todos los dominios—. Si publica algo que no es HTTP (por
-ejemplo Kafka en el 9092), eso sigue publicándolo él directo: el proxy no lo toca.
-
-Ese archivo **no se versiona acá**: la configuración de una aplicación es de esa
-aplicación. Ver `infrastructure/proxy/vecinos/README.md`. `deploy.py` crea el directorio y
-nunca pisa su contenido.
-
-### Si el 80 y el 443 los tiene otra cosa
-
-Un balanceador de la nube, o el proxy de otra aplicación que no se puede mover. Entonces
-Cocinadas no levanta proxy: en su `.env`,
-
-```
-COMPOSE_PROFILES=
-```
-
-y la aplicación sigue atendiendo en `APP_ADDR:PUERTO_APP`, que es a donde esa otra cosa le
-manda el tráfico. No hay que tocar nada más.
-
-**Ojo**: apagar el perfil no baja un proxy que ya estaba corriendo —`--remove-orphans` no
-alcanza, ver más abajo—. `deploy.py` lo resuelve; a mano es
-`docker compose rm -sf proxy`.
-
-Para ver qué puertos están tomados en la máquina:
+No hay comando de reversión: se revierte el commit y se mergea.
 
 ```bash
-sudo ss -lntp
+git revert <sha>
 ```
 
-## Los dos `.env` de un despliegue
+El siguiente merge republica. Como el catálogo se genera en el build leyendo `data/`
+(ADR-006), **revertir el código revierte también las recetas**: el sitio publicado siempre
+corresponde a un commit entero.
 
-| Archivo | Dónde | Qué tiene | Plantilla |
-|---|---|---|---|
-| `.env` de la **aplicación** | `RUTA_REMOTA/.env` en la VM | Las 15 variables del compose con valores de producción, más `COMPOSE_PROFILES`; `deploy.py` solo le cambia `TAG`. Ninguna es un secreto: no hay base ni tokens que firmar. | `deployment/oracle-single/.env.oracle` |
-| `.env` del **despliegue** | `deployment/oracle-single/.env` en tu máquina | `SSH` y `RUTA_REMOTA`: cómo llegar a la VM. | `deployment/oracle-single/.env.deploy.example` |
+Si hace falta ver qué se publicó y cuándo: **Actions → el run de `publicar`**, o
+**Settings → Pages**, que muestra el último despliegue.
 
-Los dos están en el `.gitignore`. `tests/integration/paridad-env.sh` comprueba que cada
-uno declare exactamente lo que su plantilla.
+## Publicar a mano, sin esperar un merge
 
-## Primer despliegue, desde una instancia limpia
-
-En la instancia solo hacen falta **Docker con el plugin Compose** y una clave SSH. Nada
-más: ni clonar el repositorio, ni crear el `.env`, ni instalar Node ni Python. `deploy.py`
-crea el directorio y genera el `.env` de la aplicación a partir de `.env.oracle` la
-primera vez —desde ADR-015 ese archivo no tiene ningún secreto, así que se puede generar
-sin filtrar nada— y nunca lo vuelve a pisar.
-
-Fuera de la máquina hay tres cosas que sí hay que dejar listas antes, porque ninguna se
-puede hacer desde el despliegue:
-
-1. **El dominio**: `cocinadas.duckdns.org` apuntando a la IP pública. Comprobalo con
-   `dig +short cocinadas.duckdns.org`. Si no resuelve cuando arranque Caddy, no consigue
-   el certificado y quema uno de los pocos intentos por hora de Let's Encrypt.
-2. **La Security List de la VCN**: ingress TCP 80 y 443 desde `0.0.0.0/0` (y UDP 443 si
-   querés HTTP/3), más el 22 para que entre el CI. Es el firewall efectivo: `ufw` no
-   filtra los puertos que publica Docker.
-3. **La imagen en GHCR pública**, o un `docker login ghcr.io` hecho en la instancia. Si es
-   privada y no hay login, el `docker compose pull` falla con `denied` y es lo primero que
-   se rompe.
-
-Después, o mergeás a `main` y el CI hace todo, o desde tu máquina:
+Para ver exactamente lo que se publicaría, sin publicarlo:
 
 ```bash
-cp deployment/oracle-single/.env.deploy.example deployment/oracle-single/.env
-# completar SSH, RUTA_REMOTA y REGISTRO
-python deployment/oracle-single/deploy.py --preflight   # verifica la instancia sin tocarla
-python deployment/oracle-single/deploy.py
+cd web && pnpm build && pnpm preview
 ```
 
-Si en la máquina hubiera otra aplicación con el 80 y el 443, editá el `.env` que quedó en
-la instancia (`COMPOSE_PROFILES=`) antes de volver a desplegar: ver «Varias aplicaciones en
-la misma VM».
-
-## Despliegue automático al mergear a main
-
-El job `desplegar` del CI corre `deploy.py` con el SHA del commit, después de que el job
-`imagen` publicó la imagen. Un despliegue por vez y solo desde `main`.
-
-Todo merge a `main` —con commit de merge o con squash— es un push a `main`, así que **cada
-merge se despliega solo, sin apretar nada**. La cadena es `pruebas → imagen → desplegar`:
-si la compuerta del 100 % o la paridad de `.env` fallan, no se publica la imagen y no se
-despliega.
-
-Hace falta cargar cuatro secretos en **Settings → Secrets and variables → Actions** del
-repositorio. `REGISTRO` no está en la lista a propósito: el workflow lo deriva del owner
-del repositorio, que es el mismo al que acaba de publicar la imagen.
-
-| Secreto | Qué es | Cómo se obtiene |
-|---|---|---|
-| `SSH_DESTINO` | `usuario@ip-publica` de la instancia | Es el mismo valor que `SSH` en el `.env` local del despliegue. |
-| `RUTA_REMOTA` | Dónde vive el proyecto en la instancia | `/home/ubuntu/cocinadas`. |
-| `SSH_CLAVE_PRIVADA` | Clave privada, entera, de una clave dedicada al CI | `ssh-keygen -t ed25519 -C cocinadas-ci -f cocinadas-ci` y pegar el contenido de `cocinadas-ci`. |
-| `SSH_HOST_KEY` | La huella de la instancia | `ssh-keyscan -t ed25519 <IP_PUBLICA>` y pegar la línea que devuelve. |
-
-Y una variable (no secreta) `DOMINIO` con `cocinadas.duckdns.org`, que es lo que el entorno
-muestra como enlace del despliegue.
-
-En la instancia, una sola vez:
+`pnpm preview` sirve `dist/` tal cual. Si querés reproducir la subcarpeta de Pages, copiá
+`dist/` dentro de una carpeta con el nombre del repositorio y servila desde el nivel de
+arriba:
 
 ```bash
-cat cocinadas-ci.pub >> ~/.ssh/authorized_keys   # la PÚBLICA, no la privada
+mkdir -p tmp/pages/cocinadas && cp -r web/dist/* tmp/pages/cocinadas/
+cd tmp/pages && python3 -m http.server 8099
 ```
 
-La clave del CI conviene que sea **dedicada**: si se filtra, se borra esa línea de
-`authorized_keys` y no hay que rotar la clave personal.
+y abrí <http://localhost:8099/cocinadas/>. Es la forma de detectar una ruta absoluta antes
+de que llegue a producción.
 
-**La huella se fija a mano** en vez de aceptar la que venga (`StrictHostKeyChecking=no`):
-aceptar cualquiera es aceptar a quien se ponga en el medio.
+## El día que haya backend
 
-**Ojo con el entorno `produccion`**: si en Settings → Environments → `produccion` hay
-«Required reviewers», el despliegue deja de ser automático y queda esperando aprobación.
-Para que corra solo en cada merge, ese entorno no tiene que tener revisores. (Si en algún
-momento se quiere lo contrario, agregarlos ahí es todo lo que hace falta.)
+Pages sirve archivos: no corre procesos ni tiene base de datos. Cuando las cocinadas tengan
+que salir del celular hay que traer un servidor, y ahí hay dos caminos, analizados en
+[ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md):
 
-**Qué tiene que estar abierto**: el CI entra por SSH desde los runners de GitHub, que no
-tienen IP fija, así que el 22 de la instancia tiene que aceptar conexiones de internet.
-Si eso no se quiere, las alternativas son un runner propio dentro de la VM o una red
-privada tipo Tailscale; en los dos casos cambia solo este job, no el script.
+- **Orígenes separados** (front en Pages, API en un servidor): trae CORS y empuja el token
+  de sesión a `localStorage`, porque una cookie entre sitios necesita `SameSite=None` y
+  Safari la bloquea por omisión — y esto es una app de celular.
+- **Un CDN delante de un dominio propio** (Cloudflare, `/api/*` al servidor): un solo
+  origen, sin CORS y con cookie normal. Cuesta un dominio y es la mejor de las dos.
 
-## Despliegues siguientes y reversión
-
-```bash
-python deployment/oracle-single/deploy.py            # el último commit verificado de main
-python deployment/oracle-single/deploy.py <sha>      # un commit concreto
-python deployment/oracle-single/deploy.py <sha-anterior>   # volver atrás: es el mismo comando
-python deployment/oracle-single/deploy.py --dry-run  # ver qué haría, sin tocar la VM
-```
-
-El script anota qué SHA había antes y lo imprime, así la reversión es copiar ese comando.
-Da el despliegue por bueno con dos comprobaciones: que el sitio interno de salud conteste
-—desde adentro del contenedor, porque en producción `SITE_ADDRESS` es el dominio y una
-petición a `localhost` no coincidiría con ningún sitio de Caddy— y que la imagen traiga
-`/srv/api/catalogo/recetas.json`, porque una imagen construida sin `data/` arrancaría
-igual y serviría una app sin recetas. Si no contesta en dos minutos, muestra los logs y
-dice cómo volver.
-
-**Revertir revierte también las recetas**, porque el catálogo viaja dentro de la imagen
-(ADR-006). Y no hay datos que puedan quedar desfasados: los dos volúmenes son del proxy y
-guardan certificados.
-
-**Lo que la reversión NO revierte** es el Caddyfile del proxy ni los vecinos: son archivos
-que viven en la VM. Si un despliegue cambió el Caddyfile del proxy, volver a un SHA
-anterior lo vuelve a copiar desde ese commit, pero los vecinos quedan como estaban —que es
-lo correcto: son de otras aplicaciones.
-
-### La trampa de los perfiles
-
-`docker compose up -d --remove-orphans` **no baja** un servicio apagado por perfil:
-`--remove-orphans` borra contenedores de servicios que ya no están en el compose, y un
-servicio apagado por perfil sigue estando. O sea que sacar `proxy` de `COMPOSE_PROFILES`
-no lo baja, y el proxy viejo se queda con el 80 y el 443 justo cuando querías dárselos a
-otra aplicación.
-
-`deploy.py` compara `docker compose config --services` (que respeta los perfiles y dice
-qué debería correr) con `docker compose ps --services` (que dice qué corre) y baja la
-diferencia. A mano es lo mismo:
-
-```bash
-docker compose ps --services | grep -vxF "$(docker compose config --services)" | xargs -r docker compose rm -sf
-```
-
-## Seguridad
-
-El detalle y el porqué están en [ADR-014](adr/ADR-014-endurecimiento-antes-de-publicar.md).
-Lo que hay puesto:
-
-| Qué | Dónde se cambia |
-|---|---|
-| Techo del log por contenedor (hoy 1 MB) | `LOG_MAX_SIZE`, `LOG_MAX_FILES` |
-| Techo de CPU por contenedor | `CPU_LIMIT_*` |
-| Nivel de detalle del log de Caddy | `LOG_LEVEL` (`DEBUG`, `INFO`, `WARN`, `ERROR`) |
-| Cabeceras de seguridad y política de contenido | `microservices/frontend/Caddyfile`, que viaja dentro de la imagen de la aplicación |
-| TLS y reparto por dominio | `infrastructure/proxy/Caddyfile`, que se copia a la VM en el despliegue |
-| Sin privilegios nuevos, sin capacidades, disco de solo lectura | `docker-compose.yml` |
-
-Antes de publicar, en la VM:
-
-- En la Security List de la VCN, abrir **solo el 80 y el 443**. `PUERTO_APP` no se abre
-  nunca: es lo único que lo mantiene fuera de internet, porque los puertos que publica
-  Docker no pasan por la cadena `INPUT` de iptables y `ufw` no los protege.
-
-El `.env` de la instancia no tiene ningún secreto (no hay base ni tokens que firmar), así
-que no hay nada que rotar ante un incidente. Lo que todavía no está cubierto es lo que
-llega con las cuentas: hash de contraseñas, límite de intentos de login y vida del token.
-El camino para agregarlo está en
-[ADR-015](adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md).
-
-## Respaldo
-
-**No hay nada que respaldar en el servidor.** Las cocinadas viven en el `localStorage` del
-teléfono de cada persona y el catálogo viaja dentro de la imagen, reconstruible desde el
-commit. Quedan dos volúmenes, y ninguno guarda datos de la aplicación:
-
-| Volumen | Qué se pierde si se pierde | Urgencia |
-|---|---|---|
-| `caddy-datos` | Los certificados TLS del proxy. Se reemiten solos, con los límites de intentos de Let's Encrypt. | Opcional. |
-| `caddy-config` | Configuración derivada de Caddy. Se regenera al arrancar. | No hace falta. |
-
-Los dos son del `proxy`: con el perfil apagado, el proyecto no usa ninguno.
-
-Si igual se quiere guardar los certificados para no reemitirlos, desde la VM:
-
-```bash
-docker run --rm -v cocinadas_caddy-datos:/d -v "$PWD:/b" alpine tar czf /b/caddy-datos.tgz -C /d .
-```
-
-`respaldo.sh` se borró junto con la base: no tenía qué copiar.
-
-**Lo que sí está sin resolver es del lado del usuario**: sin exportar ni sincronizar, el
-historial se pierde con el teléfono. Es exactamente lo que ADR-015 deja preparado para
-revertir el día que haga falta.
-
-## Disco
-
-Cada despliegue deja una imagen. `deploy.py` corre `docker image prune -af --filter
-until=24h` al final e informa cuánto liberó: sin `-a` no libera nada, porque las
-imágenes etiquetadas por SHA nunca están «colgadas».
-
-## Operación diaria
-
-```bash
-ssh <destino> 'cd ~/cocinadas && docker compose ps'                    # qué corre y con qué TAG
-ssh <destino> 'cd ~/cocinadas && docker compose logs -f --tail 100 web proxy'
-ssh <destino> 'docker stats --no-stream'                               # memoria
-ssh <destino> 'df -h / && docker system df'                            # disco
-ssh <destino> 'cd ~/cocinadas && docker compose restart proxy'   # tras tocar un vecino
-```
-
-## Límites del plan gratuito a tener presentes
-
-Transferencia de salida con tope mensual; balanceador de capa 7 limitado a 10 Mbps (el
-de capa 4, sin ese tope); el API Gateway no está en el plan gratuito; una instancia sin
-actividad puede ser reclamada. Verificar los valores vigentes en la documentación de
-Oracle antes de contar con ellos: cambian.
+Lo que ya está preparado para ese día: el prefijo `api/` en las URL y el `Almacen`
+inyectable de `historial/almacen.ts`, que hoy es `localStorage` y mañana puede ser un
+cliente HTTP sin tocar las pantallas.

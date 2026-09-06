@@ -1,6 +1,6 @@
 # ADR-015: De cuatro servicios a una sola SPA estática
 
-**Estado:** Aceptado, enmendado por [ADR-016](ADR-016-proxy-de-la-maquina-como-pieza-aparte.md)
+**Estado:** Aceptado, enmendado por [ADR-016](ADR-016-proxy-de-la-maquina-como-pieza-aparte.md) y [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
 **Fecha:** 2026-09-06
 
 ---
@@ -175,3 +175,12 @@ volúmenes `caddy-datos` y `caddy-config` ya no son de la aplicación sino del p
 proxy apagado, el proyecto no usa ninguno—, y el Caddyfile del proxy es un archivo que el
 despliegue copia a la VM, así que la frase «la configuración del servidor viaja dentro de
 la imagen» vale para la aplicación y no para el proxy.
+
+---
+
+## Enmienda (2026-09-06): [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
+
+Se cumplió hasta el final: no quedó ni ese contenedor. La aplicación es el mismo bundle
+estático con el catálogo generado en el build, pero servido por GitHub Pages en vez de por
+un Caddy propio. Todo lo que este ADR dejó preparado para el regreso de un backend —el
+prefijo `api/` en las URL, el `Almacen` inyectable— sigue en pie y sin cambios.

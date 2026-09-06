@@ -1,16 +1,25 @@
-# Cocinadas
+# Cocinadas · la aplicación
 
-La aplicación entera: la SPA (React 19 + TypeScript, Vite, Vitest) y el generador del
-catálogo. Desde [ADR-015](../../docs/adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)
-no hay ningún otro proyecto; la carpeta sigue llamándose `microservices/frontend` por
-historia, no porque quede algún microservicio.
+Todo el código del proyecto: la SPA (React 19 + TypeScript, Vite, Vitest) y el generador
+del catálogo. No hay ningún otro proyecto — el porqué está en
+[ADR-015](../docs/adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md) y
+[ADR-017](../docs/adr/ADR-017-sitio-estatico-en-github-pages.md).
 
-Cómo levantarla y probarla: ver el README de la raíz y `docs/TESTING.md`.
+Cómo levantarla y probarla: ver el [README de la raíz](../README.md) y
+[docs/TESTING.md](../docs/TESTING.md).
+
+## Rutas relativas, siempre
+
+`vite.config.ts` tiene `base: './'` y **ninguna ruta del código empieza con `/`**
+(`logo.png`, `inicio/1.jpg`, `api/catalogo`). GitHub Pages sirve el sitio en `/<repo>/` y
+no en la raíz, así que una ruta absoluta da 404 solo en producción. El CI lo comprueba
+sobre el `index.html` compilado.
 
 ## El generador del catálogo (`src/catalogo/`)
 
 Corre en Node antes de `vite build` (`pnpm generar:catalogo`), lee `data/` del repositorio
-y escribe `public/api/catalogo/`. Está partido en dos a propósito: `catalogo.ts` es puro y
+—por una ruta relativa a su propio archivo, así que mover la carpeta la rompe— y escribe
+`public/api/catalogo/`. Está partido en dos a propósito: `catalogo.ts` es puro y
 devuelve el plan de qué archivos hay que escribir —se mide al 100 % como todo lo demás—, y
 `generar.ts` solo escribe ese plan a disco, por eso es lo único excluido de la cobertura
 además de `main.tsx`.
@@ -21,8 +30,8 @@ cobertura lo alcance sin configuración aparte.
 ## Archivos estáticos (`public/`)
 
 Lo que está acá se copia tal cual a la raíz del sitio al compilar. Vite no los procesa ni
-les agrega hash: cambiar uno obliga a un despliegue nuevo, y Caddy los sirve con
-`Cache-Control: no-cache` salvo lo que esté bajo `/assets/`.
+les agrega hash: cambiar uno obliga a publicar de nuevo. El `Cache-Control` lo decide
+GitHub Pages; no se puede configurar.
 
 `public/api/catalogo/` no se versiona: lo genera el build desde `data/`.
 
@@ -34,10 +43,10 @@ con reloj y la palabra Cocinadas en degradé naranja a verde), recortada, sin la
 
 | Archivo | Qué es | Tamaño | Dónde se usa |
 |---|---|---|---|
-| `logo.png` | Ícono + palabra, completo | 978 × 325 | Cabecera de la app (`src/App.tsx`) y portada de la documentación (`docs/logo.png`) |
+| `logo.png` | Ícono + palabra, completo | 978 × 325 | Cabecera de la app (`src/App.tsx`) y pantalla de inicio |
 | `marca.png` | Solo la palabra Cocinadas | 642 × 243 | Reservado para cabeceras angostas o fondos oscuros |
 | `icono-512.png` | Solo la olla, lienzo cuadrado | 512 × 512 | Ícono de instalación (PWA) cuando exista el manifest |
-| `icono-192.png` | Ídem | 192 × 192 | `apple-touch-icon` en `index.html` y `docs/icono-192.png` |
+| `icono-192.png` | Ídem | 192 × 192 | `apple-touch-icon` en `index.html` |
 | `favicon.png` | Ídem | 64 × 64 | Favicon en `index.html` |
 | `inicio.jpg` | La foto de la mesada (brócoli, albahaca, limón, ajo, spaghetti sobre pizarra) que entregó Carlos como capa de fondo de la pantalla de inicio, sin la etiqueta "Made with AI" (se recortó la franja superior donde estaba) y comprimida a JPEG | 1024 × 1436 | Fondo de `src/Inicio.tsx`, con `object-fit: cover` y un velo radial oscuro en el centro para que el logo y el lema se lean |
 

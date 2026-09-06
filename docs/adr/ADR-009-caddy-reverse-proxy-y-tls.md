@@ -1,6 +1,6 @@
 # ADR-009: Caddy como reverse proxy con TLS automático
 
-**Estado:** Aceptado, enmendado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md) y [ADR-016](ADR-016-proxy-de-la-maquina-como-pieza-aparte.md)
+**Estado:** Aceptado, enmendado por [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md) , [ADR-016](ADR-016-proxy-de-la-maquina-como-pieza-aparte.md) y [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -110,3 +110,12 @@ dejan de ser parte de la aplicación y pasan a un proxy de la MÁQUINA, en
 de una aplicación y el 80 y el 443 son de una sola. La aplicación queda como inquilina,
 escuchando en `:80` sin saber por qué dominio la llamaron, y conserva lo suyo —cabeceras
 de seguridad, política de contenido, ruteo de la SPA y caché— dentro de su imagen.
+
+---
+
+## Enmienda (2026-09-06): [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
+
+Caddy sale del proyecto: el sitio lo sirve GitHub Pages, con su TLS. Con él se van las
+cabeceras de seguridad y la CSP que vivían en el Caddyfile, porque Pages no deja definir
+cabeceras — queda pendiente recuperar la CSP con `<meta http-equiv>` (docs/SECURITY.md).
+Es la contrapartida concreta de no tener servidor propio.

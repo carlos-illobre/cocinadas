@@ -1,114 +1,96 @@
 # Cocinadas
 
+**La app: <https://carlos-illobre.github.io/cocinadas/>**
+
 La receta como línea de tiempo viva: una app de celular que guía la preparación de un
 plato paso a paso, cronometra cada paso, muestra los procesos que corren en paralelo
 (descongelado, agua, pasta, brócoli tapado) con alarmas, y guarda los tiempos de cada
 cocinada para ver cómo va mejorando cada receta.
 
-El repositorio tiene dos mitades que se alimentan entre sí:
+Es **solo frontend**: un sitio estático que se baja entero al teléfono, con el catálogo de
+recetas adentro. No hay servidor ni base de datos — las cocinadas se guardan en el
+`localStorage` del navegador. El porqué está en
+[ADR-017](docs/adr/ADR-017-sitio-estatico-en-github-pages.md).
 
 | Carpeta | Qué es |
 |---|---|
 | `data/recetas/`, `data/ingredientes/`, `data/utencillos/` | **El catálogo**: recetas como POE (HTML + PDF imprimible + JSON de datos), fichas de ingredientes con foto y fichas de utensilios. Es contenido, no código; la app lo lee tal cual. |
-| `microservices/frontend/`, `tests/`, `deployment/`, `docs/` | **La aplicación**: una SPA React + TypeScript que se sirve como archivos estáticos, con el catálogo generado adentro, y todo lo necesario para probarla, desplegarla y entenderla. |
-| `infrastructure/` | **Lo que no es la aplicación**: contenedores optativos que la acompañan y que en producción pueden estar reemplazados por un servicio de la nube. Hoy, el reverse proxy que ata el 80 y el 443 de la máquina y reparte entre todas las apps que haya (ADR-016). |
-| `docs/mockups/` | El diseño visual de la app: el mockup HTML de la pantalla de cocina (`app-cocina-mockup.html`), el concepto de la pantalla de bienvenida y en `inicio-capas/` los originales de las capas de esa pantalla, con el script que genera las versiones livianas que usa la app. |
+| `web/` | **La aplicación**: la SPA React + TypeScript y el generador que convierte el catálogo en los archivos que ella consume. |
+| `tests/`, `docs/` | La compuerta de cobertura y la documentación. |
 
-## El mockup navegable
+## Cómo se instala y se levanta
 
-El diseño de las pantallas de catálogo (lista de recetas, detalle, mise en place, progreso
-y ajustes) sale de un prototipo hecho en Figma Make, que se puede recorrer como si fuera la
-app:
-
-**https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Cocinadas**
-
-Se abre el archivo y con el botón **Preview** se navega el prototipo a pantalla completa.
-Hace falta que Figma te haya dado acceso al archivo. De ahí salen los colores, las
-tipografías (Nunito y Space Mono) y los dos temas, claro y oscuro, que la app implementa
-en `microservices/frontend/src/estilos.css`. El prototipo tiene además pantallas que la app
-no implementa a propósito: login por nombre, logros, rachas y dificultad.
-
-## Cómo levantarlo
-
-Hace falta Docker con el plugin Compose, Node 22 y pnpm 10 (para las pruebas y el
-desarrollo fuera de Docker).
+Hace falta **Node 22** y **pnpm 10**. Nada más: ni Docker, ni base de datos, ni servidor.
 
 ```bash
-cp .env.example .env
-docker compose up -d --build
+cd web && pnpm install && pnpm dev
 ```
 
-Levanta **dos contenedores**: la aplicación (`web`) y el reverse proxy (`proxy`). Cuando
-están `healthy`, la app está en **http://localhost/** por el proxy y en
-**http://localhost:8180/** directo, y el catálogo, que es parte del bundle, en
-`/api/catalogo/recetas.json`.
+Abre en <http://localhost:5173>. `pnpm dev` genera antes el catálogo leyendo `data/`; si
+tocás una receta o una ficha, volvé a correr `pnpm generar:catalogo`.
 
-El proxy es **optativo**: no es parte de la aplicación sino de la máquina, y es lo único
-que ata el 80 y el 443 (ADR-016). Si la máquina ya tiene otra cosa en esos puertos, se
-apaga con `COMPOSE_PROFILES=` en el `.env` y la app sigue atendiendo en `PUERTO_APP`. Para
-varias aplicaciones en la misma VM, ver «Varias aplicaciones en la misma VM» en
-[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-
-Para desarrollar con recarga en caliente, sin Docker:
+Para ver exactamente lo que se publica:
 
 ```bash
-cd microservices/frontend && pnpm install && pnpm dev
+cd web && pnpm build && pnpm preview
 ```
-
-`pnpm dev` genera el catálogo desde `data/` y levanta Vite en el 5173. Si se toca una
-receta o una ficha, hay que volver a correr `pnpm generar:catalogo`: el catálogo se arma
-en el build, no en cada petición (ADR-015).
 
 ## Cómo se prueba
 
 ```bash
-bash tests/utest.sh            # unitarias de todo, con compuerta del 100 % de cobertura
-bash tests/itest.sh --rapido   # paridad de configuración, sin levantar nada
-bash tests/itest.sh            # lo anterior más el camino de punta a punta (stack arriba)
-bash tests/mutation.sh         # mutation testing: informa, no reprueba
+bash tests/utest.sh
 ```
 
-El detalle de los niveles, las exclusiones de cobertura y el resultado del mutation
-testing está en [docs/TESTING.md](docs/TESTING.md).
+Unitarias con **compuerta del 100 %** en instrucciones, ramas, funciones y líneas. El
+detalle de qué se mide, qué está excluido y por qué, en [docs/TESTING.md](docs/TESTING.md).
 
-## Cómo se despliega
+## Cómo se publica
 
-Al mergear a `main`, el CI publica la imagen y despliega solo a una VM de Oracle Cloud.
-A mano, cuando hace falta volver atrás o probar:
-
-```bash
-python deployment/oracle-single/deploy.py          # el último commit verificado de main
-python deployment/oracle-single/deploy.py <sha>    # un commit concreto, o volver atrás
-```
-
-Guía completa en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+**Cada merge a `main` publica el sitio solo.** El CI corre las pruebas, compila y sube el
+resultado a GitHub Pages; no hay que apretar nada ni entrar a ningún servidor. El detalle
+está en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## El catálogo
 
-**No hay backend.** El catálogo son archivos que se generan al compilar leyendo `data/`, y
-que la app pide bajo `/api/catalogo/` como cualquier otro archivo del bundle. El prefijo
-`/api/` se conserva a propósito: es por donde vuelve un backend el día que las cocinadas
-tengan que salir del celular (ver [ADR-015](docs/adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md)).
+No hay API: el catálogo son archivos que se generan al compilar leyendo `data/`, y que la
+app pide como cualquier otro archivo del sitio.
 
 | Archivo | Qué tiene |
 |---|---|
-| `/api/catalogo/recetas.json` | Un resumen por plato: nombre, momento, porciones, nutrición, `foto` y sus `versiones` (número, clave, título, duración). |
-| `/api/catalogo/recetas/<plato>/<version>.json` | La receta completa (`data/recetas/esquema-receta.md`) con la ruta de la foto de cada ingrediente y utensilio resuelta. `<version>` es la clave (`dos-etapas`) o el número (`2`); se escriben las dos. |
-| `/api/catalogo/fotos/recetas/<plato>.<ext>` | La foto del plato terminado, con caché de un día. |
-| `/api/catalogo/fotos/ingredientes/<id>.<ext>`, `/api/catalogo/fotos/utensilios/<id>.<ext>` | La primera imagen enlazada en la ficha. Solo se copian al bundle las que alguna receta usa. |
+| `api/catalogo/recetas.json` | Un resumen por plato: nombre, momento, porciones, nutrición, `foto` y sus `versiones` (número, clave, título, duración). |
+| `api/catalogo/recetas/<plato>/<version>.json` | La receta completa ([esquema](data/recetas/esquema-receta.md)) con la ruta de la foto de cada ingrediente y utensilio resuelta. `<version>` es la clave (`dos-etapas`) o el número (`2`); se escriben las dos. |
+| `api/catalogo/fotos/recetas/<plato>.<ext>` | La foto del plato terminado. |
+| `api/catalogo/fotos/ingredientes/<id>.<ext>`, `api/catalogo/fotos/utensilios/<id>.<ext>` | La primera imagen enlazada en la ficha. Solo se copian las que alguna receta usa. |
 
-Las cocinadas, el tema y la cocinada en curso viven en el `localStorage` del teléfono
-(`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`). No salen de ahí.
+Se conserva el prefijo `api/` a propósito, aunque no haya ninguna API detrás: es por donde
+entraría un backend el día que las cocinadas tengan que salir del celular.
+
+Las cocinadas, el tema y la cocinada en curso viven en el `localStorage`
+(`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`). No salen del teléfono.
+
+## El mockup navegable
+
+El diseño de las pantallas sale de un prototipo hecho en Figma Make, que se puede recorrer
+como si fuera la app:
+
+**<https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Cocinadas>**
+
+Se abre el archivo y con el botón **Preview** se navega a pantalla completa. Hace falta que
+Figma te haya dado acceso. De ahí salen los colores, las tipografías (Nunito y Space Mono)
+y los dos temas, claro y oscuro, que la app implementa en `web/src/estilos.css`. El
+prototipo tiene además pantallas que la app no implementa a propósito: login por nombre,
+dificultad y los cronómetros por paso independientes.
+
+El resto del diseño visual está en `docs/mockups/`: el mockup HTML de la pantalla de
+cocina, el concepto de la bienvenida, y en `inicio-capas/` los originales de las capas de
+esa pantalla con el script que genera las versiones livianas.
 
 ## Dónde leer más
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): qué hace cada pieza, cómo se comunican y
-  qué ADR respalda cada decisión.
-- [docs/adr/README.md](docs/adr/README.md): el índice de decisiones de arquitectura.
-- [docs/SECURITY.md](docs/SECURITY.md): amenazas, qué las mitiga y qué queda abierto.
-- [docs/adr/ADR-015…](docs/adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md): por qué
-  el proyecto pasó de cuatro servicios a uno, y qué hace falta para volver atrás.
-- [docs/adr/ADR-016…](docs/adr/ADR-016-proxy-de-la-maquina-como-pieza-aparte.md): por qué
-  el reverse proxy no es de la aplicación, y cómo se agrega otra app a la misma máquina.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): qué hace cada pieza y qué ADR respalda cada
+  decisión.
+- [docs/adr/README.md](docs/adr/README.md): el índice de decisiones de arquitectura, con
+  las que se dieron de baja y por qué.
+- [docs/TESTING.md](docs/TESTING.md) y [docs/SECURITY.md](docs/SECURITY.md).
 - [data/recetas/README.md](data/recetas/README.md), [data/ingredientes/README.md](data/ingredientes/README.md),
   [data/utencillos/README.md](data/utencillos/README.md): las convenciones del catálogo.

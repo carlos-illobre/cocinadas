@@ -1,27 +1,17 @@
 flowchart LR
   subgraph dev["Máquina de desarrollo"]
     push["git push (rama → PR → merge a main)"]
-    manual["deploy.py &lt;sha&gt; (a mano, para revertir)"]
   end
-  subgraph gh["GitHub"]
-    ci{"CI: utest.sh 100 %<br/>itest.sh --rapido<br/>compose config"}
-    ghcr[("GHCR<br/>cocinadas-web:&lt;sha&gt;<br/>amd64 + arm64")]
-    pages["GitHub Pages<br/>docs/"]
-    deploy["job desplegar<br/>ssh + deploy.py &lt;sha&gt;"]
+  subgraph gh["GitHub Actions"]
+    pruebas{"utest.sh 100 %<br/>validar-receta.py"}
+    build["pnpm build<br/>genera el catálogo de data/"]
+    guarda{"¿el index.html tiene<br/>rutas absolutas?"}
+    falla["falla el job"]
   end
-  subgraph vm["VM Oracle · Always Free"]
-    compose["docker compose up -d<br/>TAG=&lt;sha&gt; en .env"]
-    limpieza["baja lo que el .env ya no pide<br/>(un perfil apagado no se cae solo)"]
-    health["el sitio de salud contesta<br/>y la imagen trae el catálogo"]
-  end
-  le["Let's Encrypt"]
-  push --> ci
-  ci -- "pasa, en main" --> ghcr
-  ci -- "pasa, en main" --> pages
-  ghcr --> deploy
-  deploy -- "scp compose + Caddyfile del proxy<br/>ssh: fija TAG, pull, up" --> compose
-  manual -- "lo mismo, con otro SHA" --> compose
-  ghcr -- "docker compose pull" --> compose
-  compose --> limpieza --> health
-  health -- "no contesta en 2 min" --> manual
-  compose -- "ACME HTTP-01 · puerto 80 · solo el proxy" --> le
+  pages["GitHub Pages<br/>carlos-illobre.github.io/cocinadas/"]
+  push --> pruebas
+  pruebas -- "no pasa" --> falla
+  pruebas -- "pasa, y es main" --> build
+  build --> guarda
+  guarda -- "sí: no resolverían bajo /cocinadas/" --> falla
+  guarda -- "no" --> pages

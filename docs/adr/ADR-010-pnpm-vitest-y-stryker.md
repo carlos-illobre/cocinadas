@@ -1,6 +1,6 @@
 # ADR-010: pnpm, Vitest y Stryker
 
-**Estado:** Aceptado
+**Estado:** Aceptado, enmendado por [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
 **Fecha:** 2026-09-05
 
 ---
@@ -74,3 +74,12 @@ interfaz; los corredores de `tests/` los invocan y no saben qué herramienta hay
 ## Referencias
 
 - `docs/TESTING.md`.
+
+---
+
+## Enmienda (2026-09-06): [ADR-017](ADR-017-sitio-estatico-en-github-pages.md)
+
+pnpm y Vitest siguen igual, con la compuerta del 100 %. **Stryker se da de baja**: el
+mutation testing corría en el CI sobre cuatro proyectos y, con uno solo y sin servidor, el
+tiempo de CI que costaba dejó de pagarse. Los sobrevivientes que se habían analizado están
+en docs/TESTING.md y siguen siendo válidos como registro.
