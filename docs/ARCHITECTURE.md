@@ -5,12 +5,12 @@ cronómetros por paso y alarmas para los procesos que corren solos, y guarda los
 de cada cocinada para mostrar el progreso por receta.
 
 **Cómo está hecho:** una SPA que se baja entera al teléfono, con el catálogo de recetas
-adentro, publicada como sitio estático en **GitHub Pages**. No hay servidor, ni base de
-datos, ni contenedores: las cocinadas viven en el `localStorage` de cada teléfono.
+adentro, publicada como sitio estático en **GitHub Pages**. Las cocinadas viven en el
+`localStorage` de cada teléfono.
 
-El porqué está en [ADR-015](adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md) (por qué
-no hay backend) y [ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md) (por qué no hay
-servidor), que también dicen qué haría falta el día que eso no alcance.
+El porqué está en [ADR-015](adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md) y
+[ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md), que también dicen qué haría falta
+el día que eso no alcance.
 
 **La app está en <https://carlos-illobre.github.io/cocinadas/>.**
 
@@ -30,8 +30,7 @@ C4Context
 
 ## Componentes
 
-No hay componentes que corran: lo que se publica son archivos. Lo que sigue es cómo se
-arman.
+Lo que se publica son archivos. Lo que sigue es cómo se arman.
 
 | Componente | Carpeta | Responsabilidad | Tecnología |
 |---|---|---|---|
@@ -78,12 +77,12 @@ C4Container
 ## Cómo se comunican
 
 - **Todo lo que pide el navegador son archivos**: el `index.html`, los assets con hash, y
-  el catálogo bajo `api/catalogo/`. No hay nadie del otro lado interpretando nada.
+  el catálogo bajo `api/catalogo/`.
 - **El catálogo son archivos, no una API.** `api/catalogo/recetas.json` es la lista y
   `api/catalogo/recetas/<plato>/<version>.json` es una receta entera, con las rutas de las
   fotos ya resueltas. `api.ts` es el único que sabe que llevan `.json`.
-- Se conserva el prefijo `api/` a propósito, aunque no haya ninguna API detrás: es la
-  puerta por la que vuelve un backend sin tocar el frontend (ADR-015).
+- El prefijo `api/` se conserva a propósito: es la puerta por la que vuelve un backend sin
+  tocar el frontend (ADR-015).
 - **Todas las rutas son relativas.** Pages sirve el sitio en `/<repo>/`, así que una ruta
   absoluta apuntaría al dominio. Con `base: './'` el mismo bundle sirve en cualquier lado
   (ADR-017).
@@ -110,9 +109,8 @@ sequenceDiagram
 
 ## Configuración y despliegue
 
-No hay configuración por ambiente porque hay un solo ambiente: el sitio publicado. Cada
-merge a `main` corre las pruebas, compila y publica en Pages, sin apretar nada. Detalle en
-[DEPLOYMENT.md](DEPLOYMENT.md).
+Hay un solo ambiente: el sitio publicado. Cada merge a `main` corre las pruebas, compila y
+publica en Pages. Detalle en [DEPLOYMENT.md](DEPLOYMENT.md).
 
 El catálogo se genera en el build leyendo `data/` (ADR-006), así que el sitio publicado
 siempre corresponde a un commit entero: revertir el código revierte también las recetas, y

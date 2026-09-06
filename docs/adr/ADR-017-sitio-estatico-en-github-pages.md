@@ -67,8 +67,7 @@ Es la opción elegida.
 ## Decisión
 
 El sitio se publica en **GitHub Pages** en cada merge a `main`, con el dominio que da
-GitHub: <https://carlos-illobre.github.io/cocinadas/>. Sin Oracle, sin Docker, sin
-DuckDNS, sin proxy.
+GitHub: <https://carlos-illobre.github.io/cocinadas/>.
 
 - `microservices/frontend/` pasa a **`web/`**: ya no hay ningún microservicio del que
   distinguirlo.

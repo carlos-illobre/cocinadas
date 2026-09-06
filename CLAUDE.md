@@ -30,9 +30,8 @@ larga de cada decisión: antes de cambiar algo que tenga un ADR, leelo.
 
 ## Cómo está armado
 
-**No hay backend ni servidor.** Es un sitio estático en GitHub Pages
-(<https://carlos-illobre.github.io/cocinadas/>): una SPA que se baja entera al teléfono,
-con el catálogo adentro. Las cocinadas viven en el `localStorage` (`cocinadas.historial`,
+Es un sitio estático en GitHub Pages (<https://carlos-illobre.github.io/cocinadas/>): una
+SPA que se baja entera al teléfono, con el catálogo adentro. Las cocinadas viven en el `localStorage` (`cocinadas.historial`,
 `cocinadas.tema`, `cocinadas.cocinando`). Todo el código está en `web/`.
 
 El catálogo **se genera en el build**: `web/src/catalogo/catalogo.ts` lee `data/` y
@@ -41,10 +40,9 @@ devuelve el plan de archivos (puro, medido al 100 %); `generar.ts` lo escribe en
 `pnpm generar:catalogo` en desarrollo, y a volver a publicar en producción.
 
 El porqué de todo esto —y **qué hace falta el día que las cocinadas tengan que salir del
-celular**— está en los ADR **015** (por qué no hay backend) y **017** (por qué no hay
-servidor). Los ADR 001 a 016 describen microservicios, PostgreSQL, NATS, JWT, Docker,
-Caddy y un despliegue en Oracle que el proyecto tuvo y ya no tiene: están **superados o
-enmendados**, no vigentes. Leerlos como historia, no como estado actual.
+celular**— está en los ADR **015** y **017**. Los ADR 001 a 016 describen microservicios,
+PostgreSQL, NATS, JWT, Docker, Caddy y un despliegue en Oracle que el proyecto tuvo y ya
+no tiene: están **superados o enmendados**. Leerlos como historia, no como estado actual.
 
 ## El producto
 
@@ -99,4 +97,4 @@ terminar**.
 - **Se perdieron las cabeceras de seguridad y la CSP** al salir de Caddy: Pages no deja
   definirlas. Recuperar la CSP con `<meta http-equiv>` está pendiente (`docs/SECURITY.md`).
 - **Cada merge a `main` publica solo.** Lo único configurado en GitHub es
-  Settings → Pages → Source: GitHub Actions. No hay secretos.
+  Settings → Pages → Source: GitHub Actions.

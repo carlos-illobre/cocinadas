@@ -7,33 +7,27 @@ version: 2
 
 updates:
   - package-ecosystem: npm
-    directories:
-      - /microservices/catalogo
-      - /microservices/usuarios
-      - /microservices/cocinadas
-      - /microservices/frontend
+    directory: /web
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      # Las de desarrollo van todas juntas: no llegan a producción.
+      # Las de desarrollo van todas juntas: no llegan al sitio publicado.
       desarrollo:
         dependency-type: development
       produccion:
         dependency-type: production
 
-  # Las imágenes base de los Dockerfile (node, caddy).
-  - package-ecosystem: docker
-    directories:
-      - /microservices/catalogo
-      - /microservices/usuarios
-      - /microservices/cocinadas
-      - /microservices/frontend
-    schedule:
-      interval: weekly
+  # No hay entrada `docker`: el proyecto dejó de tener Dockerfiles (ADR-017).
 
-  # Las acciones del CI, que corren con acceso al repositorio.
+  # Las acciones del CI, que corren con acceso al repositorio. Agrupadas para que una
+  # tanda de versiones nuevas sea un pull request y no cinco.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      acciones:
+        patterns:
+          - '*'

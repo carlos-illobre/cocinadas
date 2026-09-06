@@ -1,7 +1,7 @@
 # Cocinadas · la aplicación
 
 Todo el código del proyecto: la SPA (React 19 + TypeScript, Vite, Vitest) y el generador
-del catálogo. No hay ningún otro proyecto — el porqué está en
+del catálogo. El porqué de que esté todo acá está en
 [ADR-015](../docs/adr/ADR-015-de-cuatro-servicios-a-una-spa-estatica.md) y
 [ADR-017](../docs/adr/ADR-017-sitio-estatico-en-github-pages.md).
 
@@ -10,7 +10,7 @@ Cómo levantarla y probarla: ver el [README de la raíz](../README.md) y
 
 ## Rutas relativas, siempre
 
-`vite.config.ts` tiene `base: './'` y **ninguna ruta del código empieza con `/`**
+`vite.config.ts` tiene `base: './'` y **toda ruta del código es relativa**
 (`logo.png`, `inicio/1.jpg`, `api/catalogo`). GitHub Pages sirve el sitio en `/<repo>/` y
 no en la raíz, así que una ruta absoluta da 404 solo en producción. El CI lo comprueba
 sobre el `index.html` compilado.
