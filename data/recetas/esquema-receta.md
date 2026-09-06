@@ -16,7 +16,7 @@ Todos los tiempos van en **segundos enteros** con sufijo `_s`. Los identificador
 |---|---|---|
 | `esquema` | número | Versión de este esquema. Hoy `1`. |
 | `plato` | texto | Nombre de la carpeta del plato (`spaghetti-integral-brocoli-camarones`). |
-| `version` | objeto | `numero` (1, 2…), `clave` (`linea-de-tiempo`, `dos-etapas`…), `titulo` corto y `resumen` de una oración. |
+| `version` | objeto | `numero` (1, 2…), `clave` (`linea-de-tiempo`, `dos-etapas`…), `titulo` corto tal como lo muestra la app (hoy «Flujo continuo» y «Mise en place primero»), `resumen` de una o dos oraciones que explica qué cambia, e `icono`: un solo emoji que identifica el modo en la tarjeta (hoy ⚡ para el flujo continuo y 🎯 para la mise en place primero). La app ordena las versiones de la más lenta a la más rápida y propone la más lenta. |
 | `nombre` | texto | Título completo del plato. |
 | `momento` | texto | `almuerzo`, `cena`… |
 | `porciones` | número | Rinde. |
@@ -29,7 +29,8 @@ Todos los tiempos van en **segundos enteros** con sufijo `_s`. Los identificador
 | `utensilios` | lista | Ver abajo. |
 | `sobrantes` | texto | Qué se guarda y cómo, para repetir el plato. |
 | `etapas` | lista | Una por reloj. La versión 1 tiene una sola etapa. |
-| `seguridad` | lista de textos | Las reglas de seguridad y conservación del documento. |
+| `criterios` | lista de objetos | La sección «Criterios de diseño» del documento, un objeto `{ "titulo", "texto" }` por criterio, en el mismo orden y con el mismo texto. La app los muestra en la portada de la receta, debajo de los valores. |
+| `seguridad` | lista de textos | Las reglas de seguridad y conservación del documento. La app las muestra en la portada, a continuación de los criterios. |
 
 ## Ingrediente
 

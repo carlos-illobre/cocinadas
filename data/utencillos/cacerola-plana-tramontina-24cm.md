@@ -1,5 +1,7 @@
 # Cacerola plana Tramontina Allegra 24 cm
 
+![Cacerola plana Tramontina 24 cm](fotos/cacerola-plana-tramontina-24cm.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Marca/línea | Tramontina Allegra |
@@ -19,4 +21,3 @@
 
 - Cacerola rasa de 24 cm.
 - Tapa de vidrio con salida de vapor.
-

@@ -1,5 +1,7 @@
 # Rallador Fary Home con mango Cross
 
+![Rallador Fary Home con mango Cross](fotos/rallador-fary-home-cross.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Tipo | Rallador |

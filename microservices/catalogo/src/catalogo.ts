@@ -65,7 +65,7 @@ export function inventariar(directorioDatos: string): Inventario {
 export interface RecetaJson {
   readonly esquema: number;
   readonly plato: string;
-  readonly version: { readonly numero: number; readonly clave: string; readonly titulo: string; readonly resumen: string };
+  readonly version: { readonly numero: number; readonly clave: string; readonly titulo: string; readonly resumen: string; readonly icono: string };
   readonly nombre: string;
   readonly momento: string;
   readonly porciones: number;
@@ -83,6 +83,8 @@ export interface VersionResumen {
   readonly clave: string;
   readonly titulo: string;
   readonly resumen: string;
+  /** Un emoji que identifica el modo en la tarjeta (esquema-receta.md). */
+  readonly icono: string;
   readonly tiempo_total_s: number;
   readonly tiempo_total_texto: string;
 }
@@ -197,6 +199,7 @@ export function cargarCatalogo(directorioDatos: string, avisar: (mensaje: string
     clave: r.version.clave,
     titulo: r.version.titulo,
     resumen: r.version.resumen,
+    icono: r.version.icono,
     tiempo_total_s: r.tiempo_total_s,
     tiempo_total_texto: r.tiempo_total_texto,
   });

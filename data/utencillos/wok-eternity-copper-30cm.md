@@ -1,5 +1,7 @@
 # Wok Eternity Copper 30 cm
 
+![Wok Eternity Copper 30 cm](fotos/wok-eternity-copper-30cm.png)
+
 | Especificación | Dato |
 |---|---|
 | Marca/modelo | Eternity Copper Wok Extra Grande |
@@ -26,4 +28,3 @@
 - Tapa de vidrio templado.
 - Recetario.
 - Instructivo.
-

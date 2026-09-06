@@ -13,7 +13,7 @@ const resumen: RecetaResumen = {
   porciones: 1,
   nutricion: { kcal: 700 },
   foto: '/recetas/pasta-brocoli/foto',
-  versiones: [{ numero: 1, clave: 'linea-de-tiempo', titulo: 'Línea', resumen: 'r', tiempo_total_s: 960, tiempo_total_texto: '16 min' }],
+  versiones: [{ numero: 1, clave: 'linea-de-tiempo', titulo: 'Línea', resumen: 'r', icono: '⚡', tiempo_total_s: 960, tiempo_total_texto: '16 min' }],
 };
 
 let carpeta: string;

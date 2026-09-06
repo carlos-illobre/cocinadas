@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { App, Servicios, versionPorOmision } from './App';
 import type { Avisador } from './cocina/sonido';
+import { CLAVE_COCINADAS, type Almacen } from './historial/almacen';
 import { fetchDeCatalogo, nunca, recetaDosEtapas, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
 import type { Fetch } from './salud';
 
@@ -15,11 +16,36 @@ function fetchCompleto(): Fetch {
   });
 }
 
+function memoria(inicial: Record<string, string> = {}): Almacen & { datos: Map<string, string> } {
+  const datos = new Map(Object.entries(inicial));
+  return { datos, getItem: (k) => datos.get(k) ?? null, setItem: (k, v) => void datos.set(k, v) };
+}
+
 const avisadorFalso: Avisador = { suave: vi.fn(), fuerte: vi.fn() };
 const crearAvisador = vi.fn(() => avisadorFalso);
 
+function montar(extra: { almacen?: ReturnType<typeof memoria>; ahora?: () => number } = {}) {
+  crearAvisador.mockClear();
+  const almacen = extra.almacen ?? memoria();
+  render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} almacen={almacen} nuevoId={() => 'id-1'} {...(extra.ahora === undefined ? {} : { ahora: extra.ahora })} />);
+  return almacen;
+}
+
+/** En la mise en place se tilda cada cosa (ya no hay atajo) y se cocina. */
+function tildarTodoYCocinar(): void {
+  for (const b of screen.getAllByRole('button', { pressed: false })) fireEvent.click(b);
+  fireEvent.click(screen.getByRole('button', { name: 'Todo listo → Cocinar' }));
+}
+
+async function hastaLaCocina(): Promise<void> {
+  fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+  fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Comenzar · 21 min →' }));
+  tildarTodoYCocinar();
+}
+
 describe('versionPorOmision', () => {
-  it('elige la última versión declarada', () => {
+  it('elige la versión más lenta', () => {
     expect(versionPorOmision(resumenSpaghetti)).toBe('dos-etapas');
     expect(versionPorOmision(resumenSinFoto)).toBe('linea-de-tiempo');
   });
@@ -30,109 +56,185 @@ describe('versionPorOmision', () => {
 });
 
 describe('el recorrido de la app', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    crearAvisador.mockClear();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('arranca en la pantalla de inicio sin consultar nada ni crear el avisador', () => {
+  it('arranca en la pantalla de inicio sin consultar nada, sin barra y sin crear el avisador', () => {
     let consultas = 0;
     const fetchImpl: Fetch = () => {
       consultas += 1;
       return nunca('');
     };
-    render(<App fetchImpl={fetchImpl} crearAvisador={crearAvisador} />);
+    render(<App fetchImpl={fetchImpl} crearAvisador={crearAvisador} almacen={memoria()} />);
 
     expect(screen.getByRole('button', { name: 'Empezar' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     expect(consultas).toBe(0);
     expect(crearAvisador).not.toHaveBeenCalled();
   });
 
-  it('inicio → recetas → portada → cocina → resumen → recetas, y el avisador nace con el primer gesto', async () => {
-    vi.useRealTimers();
-    render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} ahora={() => 1_000_000} />);
+  it('inicio → recetas → portada → mise en place → cocina → resumen → progreso, guardando la cocinada y sumando experiencia', async () => {
+    const almacen = montar({ ahora: () => 1_000_000 });
 
     fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
     expect(crearAvisador).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('heading', { level: 1, name: 'Recetas' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: '¿Qué cocinamos hoy?' })).toBeInTheDocument();
+    expect(document.querySelector('.xp-puntos')).toHaveTextContent('0 XP');
+    expect(screen.getByRole('navigation', { name: 'Secciones' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Recetas' })).toHaveAttribute('aria-current', 'page');
 
     fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Spaghetti integral');
-    expect(screen.getByRole('tab', { selected: true })).toHaveTextContent('Versión 2');
+    // La versión por omisión es la más lenta: mise en place primero.
+    expect(screen.getByRole('tab', { name: /Mise en place primero/ })).toHaveAttribute('aria-selected', 'true');
+    // Sin barra en la portada ni en la mise en place ni en la cocina: una sola cosa por pantalla.
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Empezar Etapa 1' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Comenzar · 21 min →' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Mise en place' })).toBeInTheDocument();
+
+    // Volver de la mise en place lleva a la portada de la misma versión.
+    fireEvent.click(screen.getByRole('button', { name: '‹ Volver' }));
+    expect(screen.getByRole('tab', { name: /Mise en place primero/ })).toHaveAttribute('aria-selected', 'true');
+    fireEvent.click(await screen.findByRole('button', { name: 'Comenzar · 21 min →' }));
+    tildarTodoYCocinar();
     expect(screen.getByText('Etapa 1 · Preparación')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Paso 1 de 3');
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
 
-    // Volver desde la cocina lleva a la portada de la misma versión.
+    // Volver desde la cocina lleva a la portada; y de la portada a la lista.
     fireEvent.click(screen.getByRole('button', { name: '‹ Portada' }));
-    expect(screen.getByRole('tab', { selected: true })).toHaveTextContent('Versión 2');
-    // Y desde la portada, a la lista; y otra vez adentro.
-    fireEvent.click(screen.getByRole('button', { name: '‹ Recetas' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Recetas' })).toBeInTheDocument();
-    fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
+    expect(screen.getByRole('tab', { name: /Mise en place primero/ })).toHaveAttribute('aria-selected', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Volver a las recetas' }));
+    expect(screen.getByRole('heading', { level: 1, name: '¿Qué cocinamos hoy?' })).toBeInTheDocument();
 
-    // Cocinar entero: tres pasos de la etapa 1, pausa, cinco de la etapa 2, resumen.
-    fireEvent.click(await screen.findByRole('button', { name: 'Empezar Etapa 1' }));
+    // Cocinar entero y guardar.
+    fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Comenzar · 21 min →' }));
+    tildarTodoYCocinar();
     for (let i = 0; i < 3; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Empezar Etapa 2' }));
     for (let i = 0; i < 5; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
-    expect(screen.getByText('Plato listo · Dos etapas')).toBeInTheDocument();
+    expect(screen.getByText('Plato listo · Mise en place primero')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Volver a las recetas' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Recetas' })).toBeInTheDocument();
-    // El avisador no se vuelve a crear.
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
+    const guardadas = JSON.parse(almacen.datos.get(CLAVE_COCINADAS) ?? '[]') as { id: string; plato: string }[];
+    expect(guardadas).toHaveLength(1);
+    expect(guardadas[0]).toMatchObject({ id: 'id-1', plato: 'spaghetti-integral-brocoli-camarones' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver el progreso' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Progreso' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Progreso' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Spaghetti integral');
     expect(crearAvisador).toHaveBeenCalledTimes(1);
+
+    // Con el reloj quieto la cocinada dura 0 s contra 21 min previstos: suma 0 puntos.
+    fireEvent.click(screen.getByRole('button', { name: 'Recetas' }));
+    expect(document.querySelector('.xp-puntos')).toHaveTextContent('0 XP');
+  });
+
+  it('las pestañas de la barra cambian de sección', async () => {
+    montar();
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Progreso' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Progreso' })).toBeInTheDocument();
+    expect(screen.getByText(/Todavía no hay cocinadas guardadas/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Ajustes' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Recetas' }));
+    expect(screen.getByRole('heading', { level: 1, name: '¿Qué cocinamos hoy?' })).toBeInTheDocument();
+    await screen.findByRole('button', { name: /Spaghetti/ });
+  });
+
+  it('arranca con las cocinadas ya guardadas en el teléfono y su experiencia', () => {
+    const cocinada = { id: 'x', plato: 'p', nombre: 'Plato p', version: { clave: 'c', titulo: 'T' }, fecha: '2026-09-05T10:00:00Z', total_previsto_s: 100, total_real_s: 90, etapas: [], pasos: [], criticos: 0, criticosATiempo: 0 };
+    montar({ almacen: memoria({ [CLAVE_COCINADAS]: JSON.stringify([cocinada]) }) });
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    // 90 s contra 100 s previstos: 90 puntos.
+    expect(document.querySelector('.xp-puntos')).toHaveTextContent('90 XP');
+    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
+    expect(screen.getByText('Hay 1 cocinada guardada', { exact: false })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Progreso' }));
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Plato p');
+  });
+
+  it('desde ajustes se llega al estado de los servicios y se vuelve', async () => {
+    montar();
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Estado de los servicios ›' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Templa' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '‹ Ajustes' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Ajustes' })).toBeInTheDocument();
+  });
+
+  it('cambiar el modo de preparación pide la otra receta', async () => {
+    montar();
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
+    await screen.findByRole('button', { name: 'Comenzar · 21 min →' });
+
+    fireEvent.click(screen.getByRole('tab', { name: /Flujo continuo/ }));
+
+    expect(screen.getByRole('tab', { name: /Flujo continuo/ })).toHaveAttribute('aria-selected', 'true');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Comenzar · 16 min →' })).toBeInTheDocument());
   });
 
   it('sin reloj inyectado, la cocina usa el del navegador', async () => {
-    vi.useRealTimers();
-    render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
-    fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Empezar Etapa 1' }));
+    montar();
+    await hastaLaCocina();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Paso 1 de 3');
   });
 
-  it('cambiar la pestaña de versión pide la otra receta', async () => {
-    vi.useRealTimers();
-    render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
-    fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
-    await screen.findByRole('button', { name: 'Empezar Etapa 1' });
-
-    fireEvent.click(screen.getByRole('tab', { name: /Versión 1/ }));
-
-    expect(screen.getByRole('tab', { selected: true })).toHaveTextContent('Versión 1');
-    await waitFor(() => expect(screen.getByRole('button', { name: /Empezar/ })).toBeInTheDocument());
-  });
-
-  it('desde recetas se llega al estado del sistema y se vuelve', async () => {
-    vi.useRealTimers();
-    render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
-
-    fireEvent.click(screen.getByRole('button', { name: 'Estado del sistema' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Templa' })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: '‹ Recetas' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Recetas' })).toBeInTheDocument();
-  });
-
-  it('usa el fetch y el avisador del navegador cuando no se inyecta ninguno', async () => {
-    vi.useRealTimers();
+  it('usa el fetch, el avisador, el almacén y los ids del navegador cuando no se inyecta nada', async () => {
     const original = globalThis.fetch;
-    globalThis.fetch = (() => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([resumenSpaghetti]) })) as unknown as typeof fetch;
+    const porRuta = fetchCompleto();
+    globalThis.fetch = ((url: string) => porRuta(url)) as unknown as typeof fetch;
     try {
       render(<App />);
-      fireEvent.click(screen.getByRole('button', { name: 'Empezar' }));
-      expect(await screen.findByRole('button', { name: /Spaghetti/ })).toBeInTheDocument();
+      await hastaLaCocina();
+      for (let i = 0; i < 3; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'Empezar Etapa 2' }));
+      for (let i = 0; i < 5; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
+      // Se guardó con el almacén y el id del navegador: aparece en Progreso.
+      fireEvent.click(screen.getByRole('button', { name: 'Ver el progreso' }));
+      expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Spaghetti integral');
     } finally {
       globalThis.fetch = original;
+    }
+  });
+
+  it('si el localStorage del navegador no existe o lanza, la app arranca igual', () => {
+    const roto = {
+      getItem: () => {
+        throw new Error('bloqueado');
+      },
+      setItem: () => {
+        throw new Error('bloqueado');
+      },
+    };
+    vi.stubGlobal('localStorage', roto);
+    try {
+      render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} />);
+      expect(screen.getByRole('button', { name: 'Empezar' })).toBeInTheDocument();
+      // Y si el solo hecho de tocar localStorage lanza (marco aislado), también arranca.
+      vi.unstubAllGlobals();
+      const previo = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        get() {
+          throw new Error('acceso denegado');
+        },
+      });
+      try {
+        render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} />);
+        expect(screen.getAllByRole('button', { name: 'Empezar' })).toHaveLength(2);
+      } finally {
+        if (previo) Object.defineProperty(globalThis, 'localStorage', previo);
+        else delete (globalThis as { localStorage?: unknown }).localStorage;
+      }
+    } finally {
+      vi.unstubAllGlobals();
     }
   });
 });
@@ -154,7 +256,7 @@ describe('Servicios', () => {
     expect(filas[0]).toHaveTextContent('v0.1.0');
     expect(filas[1]).toHaveClass('caido');
     expect(filas[1]).toHaveTextContent('HTTP 503');
-    expect(screen.queryByRole('button', { name: '‹ Recetas' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '‹ Ajustes' })).not.toBeInTheDocument();
   });
 
   it('usa el fetch del navegador cuando no se inyecta ninguno', async () => {

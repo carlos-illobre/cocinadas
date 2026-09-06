@@ -1,5 +1,7 @@
 # Horno freidora de aire Winco W2901
 
+![Horno freidora de aire Winco W2901](fotos/winco-w2901.jpg)
+
 | Especificación | Dato |
 |---|---|
 | Marca/modelo | Winco W2901 |
@@ -27,4 +29,3 @@
 - Cilindro/canasto rotativo.
 - Accesorios de espiedo.
 - Pinza.
-

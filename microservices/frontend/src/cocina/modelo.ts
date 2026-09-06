@@ -121,6 +121,11 @@ export function listo(estado: EstadoCocina, ahora: number): EstadoCocina {
   return { ...base, etapasReales_s, procesos: [], alarma: null, fase: ultima ? 'fin' : 'fin-etapa' };
 }
 
+/** «Reiniciar»: el paso actual vuelve a empezar ahora, con los sub-pasos sin tildar. Los procesos siguen. */
+export function reiniciarPaso(estado: EstadoCocina, ahora: number): EstadoCocina {
+  return { ...estado, inicioPaso_ms: ahora, subpasos: [] };
+}
+
 /** Desde la pausa entre etapas: arranca el reloj de la siguiente. */
 export function empezarEtapa(estado: EstadoCocina, ahora: number): EstadoCocina {
   return { ...estado, fase: 'cocinando', etapa: estado.etapa + 1, paso: 0, inicioEtapa_ms: ahora, inicioPaso_ms: ahora, subpasos: [] };

@@ -8,6 +8,8 @@ export interface VersionResumen {
   readonly clave: string;
   readonly titulo: string;
   readonly resumen: string;
+  /** Un emoji que identifica el modo en su tarjeta. */
+  readonly icono: string;
   readonly tiempo_total_s: number;
   readonly tiempo_total_texto: string;
 }
@@ -27,6 +29,13 @@ export interface Ingrediente {
   readonly nombre: string;
   readonly cantidad: string;
   readonly preparacion: string;
+  readonly foto: string | null;
+}
+
+export interface Utensilio {
+  readonly id: string | null;
+  readonly nombre: string;
+  readonly uso: string;
   readonly foto: string | null;
 }
 
@@ -56,6 +65,12 @@ export interface Proceso {
   readonly al_terminar: string | null;
 }
 
+/** Un criterio de la seccion «Criterios de diseno» del documento. */
+export interface Criterio {
+  readonly titulo: string;
+  readonly texto: string;
+}
+
 export interface Etapa {
   readonly id: string;
   readonly numero: number;
@@ -75,7 +90,15 @@ export interface Receta extends RecetaResumen {
   readonly tiempo_total_s: number;
   readonly tiempo_total_texto: string;
   readonly ingredientes: readonly Ingrediente[];
+  readonly utensilios: readonly Utensilio[];
   readonly etapas: readonly Etapa[];
+  readonly criterios: readonly Criterio[];
+  readonly seguridad: readonly string[];
+}
+
+/** De la más lenta a la más rápida: la lenta es la que se propone, porque es la de cocinar con calma. */
+export function versionesOrdenadas(resumen: RecetaResumen): readonly VersionResumen[] {
+  return [...resumen.versiones].sort((a, b) => b.tiempo_total_s - a.tiempo_total_s);
 }
 
 async function pedir<T>(fetchImpl: Fetch, ruta: string): Promise<T> {

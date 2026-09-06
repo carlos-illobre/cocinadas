@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { BASE_CATALOGO, minutos, reloj, type Proceso as ProcesoReceta, type Receta } from './api';
+import { BASE_CATALOGO, reloj, type Proceso as ProcesoReceta, type Receta } from './api';
+import type { Cocinada } from './historial/almacen';
 import {
   atenderAlarma,
   avanzarReloj,
@@ -14,6 +15,7 @@ import {
   procesosVisibles,
   progresoPaso,
   proximoVencimiento_s,
+  reiniciarPaso,
   resumen,
   tildar,
   transcurridoEtapa_s,
@@ -28,6 +30,8 @@ export interface PropiedadesCocina {
   readonly avisador: Avisador;
   readonly alVolver: () => void;
   readonly alTerminar: () => void;
+  /** Guarda la cocinada terminada (el id lo pone quien guarda). */
+  readonly alGuardar: (cocinada: Omit<Cocinada, 'id'>) => void;
   /** Reloj inyectable; por omisión, el del navegador. */
   readonly ahora?: () => number;
   /** Cada cuánto se redibuja, en ms. */
@@ -42,7 +46,7 @@ const ICONO_PROCESO: Readonly<Record<string, string>> = { frio: '❄', calor: '�
  * vence un proceso crítico, la alarma tapa todo; entre etapas, la pausa; al final, el
  * resumen.
  */
-export function Cocina({ receta, avisador, alVolver, alTerminar, ahora = () => Date.now(), tic_ms = 500 }: PropiedadesCocina): React.JSX.Element {
+export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, ahora = () => Date.now(), tic_ms = 500 }: PropiedadesCocina): React.JSX.Element {
   const [estado, setEstado] = useState<EstadoCocina>(() => empezar(receta, ahora()));
   const [reloj_ms, setReloj] = useState(() => ahora());
   const [mostrarPorQue, setMostrarPorQue] = useState(false);
@@ -90,7 +94,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, ahora = () => D
     return <FinDeEtapa estado={estado} alSeguir={accion(empezarEtapa)} />;
   }
   if (estado.fase === 'fin') {
-    return <Final estado={estado} alVolver={alTerminar} />;
+    return <Final estado={estado} alVolver={alTerminar} alGuardar={alGuardar} fecha={() => new Date(ahora()).toISOString()} />;
   }
 
   const etapa = etapaActual(estado);
@@ -199,6 +203,9 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, ahora = () => D
         <div className="actions">
           <button type="button" className={critica ? 'btn hot' : 'btn primary'} onClick={accion(listo)}>
             {esperaPrevia > 0 ? 'Ya lo hice ✓' : paso.espera ? 'Seguir ✓' : 'Listo, siguiente ✓'}
+          </button>
+          <button type="button" className="btn ghost" aria-label="Reiniciar el paso" title="Reiniciar el paso" onClick={accion(reiniciarPaso)}>
+            ↺
           </button>
           <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => setMostrarPorQue((v) => !v)}>
             ?
@@ -339,6 +346,26 @@ function FinDeEtapa({ estado, alSeguir }: { readonly estado: EstadoCocina; reado
       </div>
       <p className={`lead desvio ${d.signo}`}>{d.signo === 'igual' ? 'Justo a tiempo.' : `${d.texto} respecto de lo previsto.`}</p>
       {etapa.pausa_despues !== null && <p className="lead">{etapa.pausa_despues}</p>}
+      <section className="rail" aria-label="Pasos hechos">
+        <p className="eyebrow">
+          Hecho <span>previsto → real</span>
+        </p>
+        <div className="rows">
+          {(estado.hechos[estado.etapa] as readonly PasoHecho[]).map((p) => {
+            const dp = desvio(p.previsto_s, p.real_s, reloj);
+            return (
+              <div key={p.id} className="row done">
+                <span className="t">{reloj(p.previsto_s)}</span>
+                <span className="dot">
+                  <i />
+                </span>
+                <span className="n">{p.titulo}</span>
+                <span className={`d ${dp.signo === 'mas' ? 'plus' : dp.signo === 'menos' ? 'minus' : ''}`.trimEnd()}>{dp.texto}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
       {siguiente !== undefined && (
         <div className="cta">
           <button type="button" className="btn primary" onClick={alSeguir}>
@@ -351,8 +378,34 @@ function FinDeEtapa({ estado, alSeguir }: { readonly estado: EstadoCocina; reado
   );
 }
 
-function Final({ estado, alVolver }: { readonly estado: EstadoCocina; readonly alVolver: () => void }): React.JSX.Element {
+function Final({
+  estado,
+  alVolver,
+  alGuardar,
+  fecha,
+}: {
+  readonly estado: EstadoCocina;
+  readonly alVolver: () => void;
+  readonly alGuardar: (cocinada: Omit<Cocinada, 'id'>) => void;
+  readonly fecha: () => string;
+}): React.JSX.Element {
   const r = resumen(estado);
+  const [guardada, setGuardada] = useState(false);
+  const guardar = () => {
+    alGuardar({
+      plato: estado.receta.plato,
+      nombre: estado.receta.nombre,
+      version: { clave: estado.receta.version.clave, titulo: estado.receta.version.titulo },
+      fecha: fecha(),
+      total_previsto_s: r.total_previsto_s,
+      total_real_s: r.total_real_s,
+      etapas: r.etapas.map((e) => ({ nombre: e.nombre, previsto_s: e.previsto_s, real_s: e.real_s })),
+      pasos: r.etapas.flatMap((e) => e.pasos),
+      criticos: r.criticos,
+      criticosATiempo: r.criticosATiempo,
+    });
+    setGuardada(true);
+  };
   const d = desvio(r.total_previsto_s, r.total_real_s, reloj);
   return (
     <main className="pantalla sum">
@@ -408,10 +461,16 @@ function Final({ estado, alVolver }: { readonly estado: EstadoCocina; readonly a
         </div>
       </section>
       <div className="cta">
-        <button type="button" className="btn primary" onClick={alVolver}>
-          Volver a las recetas
+        {guardada ? (
+          <p className="over-note ok">✓ Guardada en este teléfono. Se ve en Progreso.</p>
+        ) : (
+          <button type="button" className="btn primary" onClick={guardar}>
+            Guardar esta cocinada
+          </button>
+        )}
+        <button type="button" className={guardada ? 'btn primary' : 'btn ghost ancho'} onClick={alVolver}>
+          {guardada ? 'Ver el progreso' : 'Salir sin guardar'}
         </button>
-        <p className="hint">Guardar esta cocinada en tu perfil llega con las cuentas de usuario. {minutos(r.total_real_s)} en total.</p>
       </div>
     </main>
   );

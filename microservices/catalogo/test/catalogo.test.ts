@@ -17,7 +17,7 @@ function recetaJson(plato: string, numero: number, clave: string, extra: Record<
   return JSON.stringify({
     esquema: 1,
     plato,
-    version: { numero, clave, titulo: `Versión ${numero}`, resumen: 'r' },
+    version: { numero, clave, titulo: `Versión ${numero}`, resumen: 'r', icono: numero === 1 ? '⚡' : '🎯' },
     nombre: `Plato ${plato}`,
     momento: 'cena',
     porciones: 1,
@@ -192,9 +192,9 @@ describe('sobre un directorio de datos', () => {
         nutricion: { kcal: 700 },
         foto: '/recetas/pasta-brocoli/foto',
       });
-      expect(pasta?.versiones.map((v) => [v.numero, v.clave, v.tiempo_total_s, v.tiempo_total_texto])).toEqual([
-        [1, 'linea-de-tiempo', 600, '10 min'],
-        [2, 'dos-etapas', 1200, '20 min'],
+      expect(pasta?.versiones.map((v) => [v.numero, v.clave, v.icono, v.tiempo_total_s, v.tiempo_total_texto])).toEqual([
+        [1, 'linea-de-tiempo', '⚡', 600, '10 min'],
+        [2, 'dos-etapas', '🎯', 1200, '20 min'],
       ]);
     });
 

@@ -1,5 +1,7 @@
 # Horno pizzero Suono Nápoli Air Pizza 32 cm
 
+![Horno pizzero Suono Nápoli Air Pizza 32 cm](fotos/suono-napoli-air-pizza-32cm.webp)
+
 | Especificación | Dato |
 |---|---|
 | Marca/modelo | Suono Nápoli Air Pizza |
@@ -18,4 +20,3 @@
 
 - Piedra pizzera refractaria de 32 cm.
 - Pala metálica para pizza.
-

@@ -1,5 +1,7 @@
 # Cuchara de madera gastronómica FERPA 60 cm
 
+![Cuchara de madera FERPA 60 cm](fotos/cuchara-madera-ferpa-60cm.webp)
+
 | Especificación | Dato |
 |---|---|
 | Tipo | Cuchara de madera gastronómica |

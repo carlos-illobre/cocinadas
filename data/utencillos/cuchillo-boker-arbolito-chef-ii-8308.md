@@ -1,5 +1,7 @@
 # Cuchillo Böker Arbolito Chef II 8308
 
+![Cuchillo Böker Arbolito Chef II 8308](fotos/cuchillo-boker-arbolito-chef-ii-8308.webp)
+
 | Especificación | Dato |
 |---|---|
 | Marca | Böker Arbolito |
@@ -16,4 +18,3 @@
 ## Incluye
 
 - 1 cuchillo Böker Arbolito Chef II 8308.
-

@@ -8,116 +8,133 @@ const nada = () => undefined;
 const ruta = '/recetas/spaghetti-integral-brocoli-camarones';
 
 describe('Portada', () => {
-  it('muestra título, porciones, momento, foto y valores antes de que llegue la receta', () => {
+  it('muestra la foto a sangre, el título y los valores antes de que llegue la receta', () => {
     render(<Portada fetchImpl={nunca} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Spaghetti integral');
-    expect(screen.getByText('1 porción · cena')).toBeInTheDocument();
-    expect(document.querySelector('img.plato-hero')).toHaveAttribute('src', `/api/catalogo${ruta}/foto`);
-    expect(screen.getByText('720 kcal')).toBeInTheDocument();
-    expect(screen.getByText('38 g proteína')).toBeInTheDocument();
-    expect(screen.getByText('17 g fibra')).toBeInTheDocument();
+    expect(document.querySelector('.detalle-foto')).toHaveAttribute('src', `/api/catalogo${ruta}/foto`);
+    expect(document.querySelector('.detalle-hero')).not.toHaveClass('sin-foto');
+
+    const valores = document.querySelectorAll('.valor');
+    expect(valores).toHaveLength(4);
+    // El tiempo es el del modo elegido: mise en place primero, 21 min.
+    expect(valores[0]).toHaveTextContent('21 min');
+    expect(valores[0]).toHaveTextContent('Tiempo');
+    expect(valores[1]).toHaveTextContent('1');
+    expect(valores[1]).toHaveTextContent('Porciones');
+    expect(valores[2]).toHaveTextContent('720 kcal');
+    expect(valores[3]).toHaveTextContent('38 g');
+    expect(valores[3]).toHaveTextContent('Proteína');
+
     expect(screen.getByRole('status')).toHaveTextContent('Abriendo la receta…');
+    expect(screen.queryByRole('button', { name: /Comenzar/ })).not.toBeInTheDocument();
   });
 
-  it('sin foto no dibuja la imagen, y con más de una porción lo dice en plural', () => {
+  it('sin foto usa una cabecera lisa, y sin más de un modo no ofrece elegir', () => {
     render(<Portada fetchImpl={nunca} resumen={resumenSinFoto} version="linea-de-tiempo" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
 
-    expect(document.querySelector('img.plato-hero')).toBeNull();
-    expect(screen.getByText('2 porciones · almuerzo')).toBeInTheDocument();
+    expect(document.querySelector('.detalle-foto')).toBeNull();
+    expect(document.querySelector('.detalle-hero')).toHaveClass('sin-foto');
+    expect(document.querySelectorAll('.valor')[0]).toHaveTextContent('25 min');
+    expect(screen.queryByRole('tablist', { name: 'Modo de preparación' })).not.toBeInTheDocument();
   });
 
-  it('la pestaña marca la versión elegida y avisa al cambiarla', () => {
+  it('si la versión pedida no existe, el tiempo es el del modo propuesto', () => {
+    render(<Portada fetchImpl={nunca} resumen={resumenSpaghetti} version="inexistente" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
+    expect(document.querySelectorAll('.valor')[0]).toHaveTextContent('21 min');
+    expect(screen.queryAllByRole('tab', { selected: true })).toHaveLength(0);
+  });
+
+  it('un resumen sin versiones muestra 0 min', () => {
+    render(<Portada fetchImpl={nunca} resumen={{ ...resumenSinFoto, versiones: [] }} version="x" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
+    expect(document.querySelectorAll('.valor')[0]).toHaveTextContent('0 min');
+  });
+
+  it('los modos van de la más lenta a la más rápida, con ícono, tiempo y resumen, y avisan al elegir', () => {
     const alCambiarVersion = vi.fn();
     render(<Portada fetchImpl={nunca} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={alCambiarVersion} alVolver={nada} alEmpezar={nada} />);
 
-    const pestanas = screen.getAllByRole('tab');
-    expect(pestanas).toHaveLength(2);
-    expect(pestanas[0]).toHaveAttribute('aria-selected', 'false');
-    expect(pestanas[0]?.className).toBe('');
-    expect(pestanas[1]).toHaveAttribute('aria-selected', 'true');
-    expect(pestanas[1]).toHaveClass('on');
-    expect(pestanas[1]).toHaveTextContent('Versión 2 · Dos etapas');
-    expect(pestanas[1]).toHaveTextContent('11 + 10 min');
+    const modos = screen.getAllByRole('tab', { name: /Mise en place primero|Flujo continuo/ });
+    expect(modos).toHaveLength(2);
+    expect(modos[0]).toHaveTextContent('🎯');
+    expect(modos[0]).toHaveTextContent('Mise en place primero');
+    expect(modos[0]).toHaveTextContent('21 min');
+    expect(modos[0]).toHaveTextContent('Primero se prepara todo sin apuro.');
+    expect(modos[0]).toHaveAttribute('aria-selected', 'true');
+    expect(modos[0]).toHaveClass('on');
+    expect(modos[0]?.querySelector('.circulo')).toHaveTextContent('✓');
+    expect(modos[1]).toHaveTextContent('⚡');
+    expect(modos[1]).toHaveTextContent('Flujo continuo');
+    expect(modos[1]).toHaveTextContent('16 min');
+    expect(modos[1]).toHaveAttribute('aria-selected', 'false');
+    expect(modos[1]?.className).toBe('modo');
+    expect(modos[1]?.querySelector('.circulo')).toHaveTextContent('');
 
-    fireEvent.click(pestanas[0] as HTMLElement);
+    fireEvent.click(modos[1] as HTMLElement);
     expect(alCambiarVersion).toHaveBeenCalledWith('linea-de-tiempo');
   });
 
-  it('pide la receta de la versión elegida y muestra ingredientes y etapas', async () => {
-    const fetchImpl = fetchDeCatalogo({ [`${ruta}/dos-etapas`]: recetaDosEtapas });
-    render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
-
-    expect(await screen.findByText('Ingredientes')).toBeInTheDocument();
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    const ingredientes = screen.getAllByRole('listitem');
-    expect(ingredientes).toHaveLength(3);
-    expect(ingredientes[0]?.querySelector('img.ph')).toHaveAttribute('src', '/api/catalogo/ingredientes/brocoli-entero/foto');
-    expect(ingredientes[0]).toHaveTextContent('½ pieza');
-    expect(ingredientes[0]).toHaveAttribute('title', 'Brócoli fresco entero: ½ pieza, Flores, tallo y hojas');
-    expect(ingredientes[1]?.querySelector('.ph-vacio')).toHaveTextContent(/^A$/);
-    expect(ingredientes[2]?.querySelector('.ph-vacio')).toHaveTextContent(/^A$/);
-
-    const etapas = screen.getAllByRole('article');
-    expect(etapas).toHaveLength(2);
-    expect(etapas[0]).toHaveClass('stage');
-    expect(etapas[0]).not.toHaveClass('hot');
-    expect(etapas[0]).toHaveTextContent('Etapa 1 · Preparación');
-    expect(etapas[0]).toHaveTextContent('11 min');
-    expect(etapas[0]).toHaveTextContent('Al abrir el freezer.');
-    expect(etapas[0]).toHaveTextContent('3 pasos · 1 procesos en paralelo');
-    expect(etapas[0]).not.toHaveTextContent('tiempo crítico');
-    expect(etapas[0]).toHaveTextContent('Después puede haber pausa.');
-    expect(etapas[1]).toHaveClass('hot');
-    expect(etapas[1]).toHaveTextContent('5 pasos · 2 procesos en paralelo · 3 con tiempo crítico');
-    expect(etapas[1]).not.toHaveTextContent('pausa');
-  });
-
-  it('el botón nombra la primera etapa cuando hay más de una, y dice el primer paso', async () => {
+  it('con la receta muestra los criterios de diseño, la seguridad, ingredientes y utensilios, y el botón de comenzar', async () => {
     const alEmpezar = vi.fn();
     const fetchImpl = fetchDeCatalogo({ [`${ruta}/dos-etapas`]: recetaDosEtapas });
     render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={alEmpezar} />);
 
-    const boton = await screen.findByRole('button', { name: 'Empezar Etapa 1' });
-    expect(screen.getByText('Primer paso: pesar y poner a descongelar los camarones')).toBeInTheDocument();
+    const boton = await screen.findByRole('button', { name: 'Comenzar · 21 min →' });
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+    const criterios = document.querySelectorAll('.criterio');
+    expect(criterios).toHaveLength(2);
+    expect(criterios[0]).toHaveTextContent('Criterio principal: dos etapas. La etapa 1 reúne todo lo que no exige vigilancia.');
+    expect(screen.getByRole('heading', { level: 3, name: 'Seguridad y conservación' })).toBeInTheDocument();
+    const seguridad = document.querySelectorAll('.seguridad li');
+    expect(seguridad).toHaveLength(2);
+    expect(seguridad[1]).toHaveTextContent('Descongelar solo en agua fría.');
+
+    const solapaIngredientes = screen.getByRole('tab', { name: 'Ingredientes' });
+    expect(solapaIngredientes).toHaveAttribute('aria-selected', 'true');
+    const ingredientes = document.querySelectorAll('.fila');
+    expect(ingredientes).toHaveLength(3);
+    expect(ingredientes[0]?.querySelector('.fila-nombre')).toHaveTextContent('Brócoli fresco entero');
+    expect(ingredientes[0]?.querySelector('.fila-cantidad')).toHaveTextContent('½ pieza');
+
+    const solapaUtensilios = screen.getByRole('tab', { name: 'Utensilios' });
+    fireEvent.click(solapaUtensilios);
+    expect(solapaUtensilios).toHaveAttribute('aria-selected', 'true');
+    expect(solapaIngredientes.className).toBe('');
+    const utensilios = document.querySelectorAll('.fila');
+    expect(utensilios).toHaveLength(3);
+    expect(utensilios[0]).toHaveTextContent('🔧');
+    expect(utensilios[0]).toHaveTextContent('Wok Eternity 30 cm con su tapa');
+    expect(utensilios[0]?.querySelector('.fila-cantidad')).toBeNull();
+    fireEvent.click(solapaIngredientes);
+    expect(solapaIngredientes).toHaveAttribute('aria-selected', 'true');
 
     fireEvent.click(boton);
     expect(alEmpezar).toHaveBeenCalledWith(recetaDosEtapas);
   });
 
-  it('con una sola etapa el botón dice el tiempo total', async () => {
+  it('sin reglas de seguridad no muestra esa sección', async () => {
+    const fetchImpl = fetchDeCatalogo({ [`${ruta}/dos-etapas`]: { ...recetaDosEtapas, seguridad: [] } });
+    render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
+    await screen.findByRole('button', { name: /Comenzar/ });
+    expect(screen.queryByRole('heading', { level: 3, name: 'Seguridad y conservación' })).not.toBeInTheDocument();
+  });
+
+  it('con el modo rápido el botón dice su tiempo', async () => {
     const fetchImpl = fetchDeCatalogo({ [`${ruta}/linea-de-tiempo`]: recetaUnaEtapa });
     render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="linea-de-tiempo" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
-
-    expect(await screen.findByRole('button', { name: 'Empezar · 16 min' })).toBeInTheDocument();
-  });
-
-  it('una etapa sin pasos no rompe la portada', async () => {
-    const etapa = { ...(recetaDosEtapas.etapas[0] as (typeof recetaDosEtapas.etapas)[number]), pasos: [] };
-    const fetchImpl = fetchDeCatalogo({ [`${ruta}/dos-etapas`]: { ...recetaDosEtapas, etapas: [etapa] } });
-    render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
-
-    expect(await screen.findByRole('button', { name: 'Empezar · 21 min' })).toBeInTheDocument();
-    expect(screen.getByText('Primer paso:')).toBeInTheDocument();
-  });
-
-  it('una receta sin etapas ni pasos no rompe la portada', async () => {
-    const fetchImpl = fetchDeCatalogo({ [`${ruta}/dos-etapas`]: { ...recetaDosEtapas, etapas: [] } });
-    render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
-
-    expect(await screen.findByRole('button', { name: 'Empezar · 21 min' })).toBeInTheDocument();
-    expect(screen.getByText('Primer paso:')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Comenzar · 16 min →' })).toBeInTheDocument();
   });
 
   it('vuelve a pedir la receta cuando cambia la versión', async () => {
     const fetchImpl = vi.fn(fetchDeCatalogo({ [`${ruta}/dos-etapas`]: recetaDosEtapas, [`${ruta}/linea-de-tiempo`]: recetaUnaEtapa }));
     const { rerender } = render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
-    await screen.findByRole('button', { name: 'Empezar Etapa 1' });
+    await screen.findByRole('button', { name: 'Comenzar · 21 min →' });
 
     rerender(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="linea-de-tiempo" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
 
     expect(screen.getByRole('status')).toHaveTextContent('Abriendo la receta…');
-    expect(await screen.findByRole('button', { name: 'Empezar · 16 min' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Comenzar · 16 min →' })).toBeInTheDocument();
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
@@ -131,13 +148,14 @@ describe('Portada', () => {
         : Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(recetaUnaEtapa) });
     const { rerender } = render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
     rerender(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="linea-de-tiempo" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
-    await screen.findByRole('button', { name: 'Empezar · 16 min' });
+    await screen.findByRole('button', { name: 'Comenzar · 16 min →' });
 
     resolverVieja({ ok: true, status: 200, json: () => Promise.resolve(recetaDosEtapas) });
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(screen.getByRole('button', { name: 'Empezar · 16 min' })).toBeInTheDocument();
+    expect(document.querySelectorAll('.criterio')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: 'Comenzar · 16 min →' })).toBeInTheDocument();
   });
 
   it('un fallo tardío de la versión anterior tampoco pisa a la nueva', async () => {
@@ -150,7 +168,7 @@ describe('Portada', () => {
         : Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(recetaUnaEtapa) });
     const { rerender } = render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
     rerender(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="linea-de-tiempo" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
-    await screen.findByRole('button', { name: 'Empezar · 16 min' });
+    await screen.findByRole('button', { name: 'Comenzar · 16 min →' });
 
     rechazarVieja(new Error('tarde'));
     await Promise.resolve();
@@ -162,22 +180,20 @@ describe('Portada', () => {
   it('muestra el error si la receta no se puede abrir', async () => {
     const fetchImpl = fetchDeCatalogo({}, { [`${ruta}/dos-etapas`]: 404 });
     render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
-
     expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo abrir la receta: el catálogo respondió HTTP 404');
+    expect(screen.queryByRole('button', { name: /Comenzar/ })).not.toBeInTheDocument();
   });
 
   it('convierte a texto un fallo que no es un Error', async () => {
     const fetchImpl: Fetch = () => Promise.reject('se cortó');
     render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
-
     expect(await screen.findByRole('alert')).toHaveTextContent('se cortó');
   });
 
   it('vuelve a la lista', () => {
     const alVolver = vi.fn();
     render(<Portada fetchImpl={nunca} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={alVolver} alEmpezar={nada} />);
-
-    fireEvent.click(screen.getByRole('button', { name: '‹ Recetas' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Volver a las recetas' }));
     expect(alVolver).toHaveBeenCalledTimes(1);
   });
 
@@ -192,6 +208,6 @@ describe('Portada', () => {
     resolver({ ok: true, status: 200, json: () => Promise.resolve(recetaDosEtapas) });
 
     await Promise.resolve();
-    expect(screen.queryByRole('article')).not.toBeInTheDocument();
+    expect(document.querySelector('.criterio')).toBeNull();
   });
 });

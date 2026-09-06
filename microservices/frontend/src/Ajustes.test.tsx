@@ -1,0 +1,31 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { Ajustes } from './Ajustes';
+
+const nada = () => undefined;
+
+describe('Ajustes', () => {
+  it('muestra la versión, las cocinadas y el estado de los servicios', () => {
+    render(<Ajustes alVerEstado={nada} cocinadasGuardadas={0} version="0.3.0" />);
+
+    expect(screen.getByText('Templa 0.3.0')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Ajustes' })).toBeInTheDocument();
+    expect(screen.getByText('Todavía no hay cocinadas guardadas.', { exact: false })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Estado de los servicios ›' })).toBeInTheDocument();
+  });
+
+  it.each([
+    [1, 'Hay 1 cocinada guardada en este teléfono.'],
+    [4, 'Hay 4 cocinadas guardadas en este teléfono.'],
+  ])('cuenta las cocinadas guardadas (%i)', (n, texto) => {
+    render(<Ajustes alVerEstado={nada} cocinadasGuardadas={n} version="0.3.0" />);
+    expect(screen.getByText(texto, { exact: false })).toBeInTheDocument();
+  });
+
+  it('abre el estado de los servicios', () => {
+    const alVerEstado = vi.fn();
+    render(<Ajustes alVerEstado={alVerEstado} cocinadasGuardadas={0} version="0.3.0" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Estado de los servicios ›' }));
+    expect(alVerEstado).toHaveBeenCalledTimes(1);
+  });
+});

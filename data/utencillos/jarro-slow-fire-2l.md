@@ -17,4 +17,3 @@
 ## Incluye
 
 - 1 jarro hervidor de 2 L con asa integrada.
-

@@ -11,8 +11,8 @@ export const resumenSpaghetti: RecetaResumen = {
   nutricion: { kcal: 720, proteina_g: 38, fibra_g: 17, sodio_mg: 250 },
   foto: '/recetas/spaghetti-integral-brocoli-camarones/foto',
   versiones: [
-    { numero: 1, clave: 'linea-de-tiempo', titulo: 'Línea de tiempo única', resumen: 'Un solo reloj.', tiempo_total_s: 960, tiempo_total_texto: '16 min' },
-    { numero: 2, clave: 'dos-etapas', titulo: 'Dos etapas', resumen: 'Con pausa.', tiempo_total_s: 1260, tiempo_total_texto: '11 + 10 min' },
+    { numero: 1, clave: 'linea-de-tiempo', titulo: 'Flujo continuo', resumen: 'Todo en una sola pasada.', icono: '⚡', tiempo_total_s: 960, tiempo_total_texto: '16 min' },
+    { numero: 2, clave: 'dos-etapas', titulo: 'Mise en place primero', resumen: 'Primero se prepara todo sin apuro.', icono: '🎯', tiempo_total_s: 1260, tiempo_total_texto: '11 + 10 min' },
   ],
 };
 
@@ -23,7 +23,7 @@ export const resumenSinFoto: RecetaResumen = {
   porciones: 2,
   nutricion: { kcal: 600, proteina_g: 40, fibra_g: 9, sodio_mg: 200 },
   foto: null,
-  versiones: [{ numero: 1, clave: 'linea-de-tiempo', titulo: 'Línea de tiempo única', resumen: 'r', tiempo_total_s: 1500, tiempo_total_texto: '25 min' }],
+  versiones: [{ numero: 1, clave: 'linea-de-tiempo', titulo: 'Flujo continuo', resumen: 'r', icono: '⚡', tiempo_total_s: 1500, tiempo_total_texto: '25 min' }],
 };
 
 export const recetaDosEtapas: Receta = {
@@ -32,6 +32,16 @@ export const recetaDosEtapas: Receta = {
   sal_agregada_g: 0,
   tiempo_total_s: 1260,
   tiempo_total_texto: '11 + 10 min',
+  criterios: [
+    { titulo: 'Criterio principal: dos etapas', texto: 'La etapa 1 reúne todo lo que no exige vigilancia.' },
+    { titulo: 'Costo de la separación', texto: 'Cocinar en dos etapas tarda 21 min en vez de 16.' },
+  ],
+  seguridad: ['Tabla y cuchillo solo tocan vegetales.', 'Descongelar solo en agua fría.'],
+  utensilios: [
+    { id: 'wok-eternity-copper-30cm', nombre: 'Wok Eternity 30 cm con su tapa', uso: 'Todo lo del wok', foto: '/utensilios/wok-eternity-copper-30cm/foto' },
+    { id: 'jarro-slow-fire-2l', nombre: 'Jarro hervidor Slow Fire 2 L', uso: 'Hervir la pasta', foto: null },
+    { id: null, nombre: '1 bol mediano', uso: 'Descongelar', foto: null },
+  ],
   ingredientes: [
     { id: 'brocoli-entero', nombre: 'Brócoli fresco entero', cantidad: '½ pieza', preparacion: 'Flores, tallo y hojas', foto: '/ingredientes/brocoli-entero/foto' },
     { id: 'ajo-picado-congelado', nombre: 'Ajo picado congelado', cantidad: '1 cdta', preparacion: 'Directo al wok', foto: null },
