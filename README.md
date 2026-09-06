@@ -47,6 +47,11 @@ Cuando los ocho contenedores están `healthy`:
 | http://localhost/api/cocinadas/health | `cocinadas` |
 | http://localhost:3001 · 3002 · 3003 · 8080 | Los mismos servicios sin pasar por el proxy |
 
+Todos esos puertos del lado del host salen del `.env` (`PUERTO_HTTP`, `PUERTO_FRONTEND`,
+`PUERTO_CATALOGO`…): si la máquina ya tiene otra aplicación en el 80, el 443 o el 8080,
+se mueven ahí y nada más. Para compartir la VM con otra aplicación, ver
+«Convivir con otra aplicación en la misma VM» en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
 Para desarrollar un servicio con recarga en caliente contra el resto del stack en Docker:
 
 ```bash

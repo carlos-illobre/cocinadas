@@ -20,14 +20,62 @@ SHA de commit (ADR-011). Todo lo específico vive en `deployment/oracle-single/`
 
 ## Puertos
 
-| Puerto | Quién | Desde dónde |
-|---|---|---|
-| 80, 443 (TCP y UDP) | `reverse-proxy` | Internet. **Los únicos que se abren en la Security List.** |
-| 3001, 3002, 3003, 8080 | catalogo, usuarios, cocinadas, frontend | Solo `127.0.0.1` de la VM (`PUBLISH_ADDR`). Los usa `deploy.sh` para comprobar los `/health`. |
-| 5432, 4222, 8222 | postgres, nats | Solo la red interna del compose. Para mirarlos: `docker compose exec` o túnel SSH. |
+Adentro de los contenedores los puertos no cambian nunca. Del lado del host los decide
+el `.env`, para poder convivir con otra aplicación en la misma máquina.
+
+| Variable | Valor por omisión | Quién | Desde dónde |
+|---|---|---|---|
+| `PUERTO_HTTP`, `PUERTO_HTTPS` | 80, 443 (TCP y UDP) | `reverse-proxy` | La interfaz que diga `PROXY_ADDR`. **Los únicos que se abren en la Security List.** |
+| `PUERTO_CATALOGO`, `PUERTO_USUARIOS`, `PUERTO_COCINADAS`, `PUERTO_FRONTEND` | 3101, 3102, 3103, 8180 | catalogo, usuarios, cocinadas, frontend | Solo `127.0.0.1` de la VM (`PUBLISH_ADDR`). Los usa `deploy.sh` para comprobar los `/health`. |
+| — | 5432, 4222, 8222 | postgres, nats | Solo la red interna del compose. Para mirarlos: `docker compose exec` o túnel SSH. |
 
 Los puertos que publica Docker no pasan por la cadena `INPUT` de iptables: `ufw` no
 los protege. Lo que decide qué está abierto es la Security List de la VCN.
+
+## Convivir con otra aplicación en la misma VM
+
+Dos aplicaciones pueden compartir la máquina, pero **el 80 y el 443 son de una sola**: el
+navegador no elige puerto. La que los tiene le pasa a la otra el tráfico de su dominio.
+
+Si Templa es la que los tiene, no hay nada que hacer: los valores de `.env.oracle`
+funcionan tal cual y Caddy emite el certificado de `templa.duckdns.org` solo.
+
+Si los tiene la otra aplicación, en el `.env` de Templa:
+
+```
+PROXY_ADDR=127.0.0.1
+PUERTO_HTTP=8280
+PUERTO_HTTPS=8243
+SITE_ADDRESS=http://templa.duckdns.org
+```
+
+`SITE_ADDRESS` con `http://` es lo que apaga el TLS de Caddy: el certificado lo maneja el
+otro proxy, que es el que ve Internet. `PROXY_ADDR=127.0.0.1` deja a Templa fuera del
+alcance de la red, solo accesible desde la propia VM.
+
+Del lado del otro proxy hay que agregar el dominio. Con nginx:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name templa.duckdns.org;
+    # El mismo certificado que ya maneje ese proxy, emitido también para este dominio.
+    location / {
+        proxy_pass http://127.0.0.1:8280;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Y en la Security List de la VCN no se abre nada nuevo: el 8280 no sale de la máquina.
+
+Los demás puertos no chocan si cada aplicación usa los suyos. Para ver qué está tomado:
+
+```bash
+sudo ss -lntp
+```
 
 ## Los dos `.env` de un despliegue
 

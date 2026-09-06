@@ -20,7 +20,11 @@
 # pseudo terminal que compite con la redirección de stdin.
 set -uo pipefail
 
-PUERTOS=(80 443)               # los que el compose publica hacia afuera (reverse-proxy)
+# Los que el compose publica hacia afuera (reverse-proxy) con la configuración por
+# omisión. Si la máquina ya tiene otra aplicación en el 80 y el 443, el aviso de acá es
+# justamente lo que hay que ver: Templa se mueve con PUERTO_HTTP y PUERTO_HTTPS en su
+# .env, y esa otra aplicación le pasa el tráfico (docs/DEPLOYMENT.md).
+PUERTOS=(80 443)
 # Suma de los mem_limit de .env.oracle: 3 × 256 (node) + 512 (postgres) + 256 (nats)
 # + 2 × 128 (proxy y frontend) = 1792 MB. Si cambian los techos, cambia esto.
 MEMORIA_NECESARIA_MB=1792
@@ -95,6 +99,7 @@ for puerto in "${PUERTOS[@]}"; do
     if ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE "[:.]${puerto}\$"; then
         aviso "el $puerto ya está ocupado"
         nota "si el stack ya está corriendo, es esperable"
+        nota "si es otra aplicación: mové Templa con PUERTO_HTTP y PUERTO_HTTPS (docs/DEPLOYMENT.md)"
     else
         ok "el $puerto está libre"
     fi

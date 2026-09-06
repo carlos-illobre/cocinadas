@@ -58,11 +58,31 @@ set -a; . "$CONFIG"; set +a
 : "${RUTA_REMOTA:?falta RUTA_REMOTA en $CONFIG}"    # dónde vive el proyecto en la instancia
 
 RAMA_PRINCIPAL=main
-# Puertos de /health publicados en 127.0.0.1 de la instancia (PUBLISH_ADDR). Salen del
-# docker-compose.yml; si cambian ahí, cambian acá.
-SERVICIOS_CON_HEALTH=("catalogo:3001" "usuarios:3002" "cocinadas:3003" "frontend:8080")
+# Puertos de /health publicados en 127.0.0.1 de la instancia. Los define el .env de la
+# VM, no este script: en una máquina compartida con otra aplicación se mueven ahí. Los
+# valores de acá son el respaldo para --dry-run, que no llega a leer el .env remoto.
+PUERTOS_POR_OMISION=("catalogo:3101" "usuarios:3102" "cocinadas:3103" "frontend:8180")
 
-[ "$DRY_RUN" = si ] && info "(modo --dry-run: nada de lo que sigue toca la instancia)"
+# Los puertos reales salen del .env de la instancia; si no se puede leer, los de arriba.
+leer_puertos_remotos() {
+    local salida
+    salida=$(ssh "$SSH" "sed -n 's/^PUERTO_\(CATALOGO\|USUARIOS\|COCINADAS\|FRONTEND\)=//p' '$RUTA_REMOTA/.env'" 2>/dev/null) || return 1
+    [ "$(echo "$salida" | grep -c .)" -eq 4 ] || return 1
+    local puertos=()
+    local i=0
+    for servicio in catalogo usuarios cocinadas frontend; do
+        i=$((i+1))
+        puertos+=("$servicio:$(echo "$salida" | sed -n "${i}p")")
+    done
+    SERVICIOS_CON_HEALTH=("${puertos[@]}")
+}
+
+SERVICIOS_CON_HEALTH=("${PUERTOS_POR_OMISION[@]}")
+if [ "$DRY_RUN" = si ]; then
+    info "(modo --dry-run: nada de lo que sigue toca la instancia)"
+else
+    leer_puertos_remotos || info "no pude leer los PUERTO_* del .env remoto: uso los de por omisión"
+fi
 
 # ── Qué versión desplegar ────────────────────────────────────────────────────
 
