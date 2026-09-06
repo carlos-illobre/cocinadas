@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   type ArchivoJson,
@@ -115,22 +115,41 @@ describe('esImagen', () => {
 
 describe('urlDeFoto', () => {
   it('lleva la extensión del archivo de origen, en minúscula', () => {
-    expect(urlDeFoto('ingredientes', 'brocoli-entero', '/x/y/brocoli.JPG')).toBe('/fotos/ingredientes/brocoli-entero.jpg');
+    expect(urlDeFoto('ingredientes', 'brocoli-entero', '/x/y/brocoli.WEBP')).toBe('/fotos/ingredientes/brocoli-entero.webp');
   });
 });
 
+/**
+ * Las versiones chicas que `pnpm optimizar` habría dejado en `web/assets/`: la misma ruta
+ * relativa que el original, con extensión `.webp`. Es lo que se publica.
+ */
+function armarAssets(datos: string, assets: string): void {
+  for (const relativo of [
+    'recetas/pasta-brocoli/pasta-brocoli.webp',
+    'ingredientes/fotos-envases/brocoli.webp',
+    'utencillos/fotos/wok-30cm-frente.webp',
+  ]) {
+    mkdirSync(join(assets, dirname(relativo)), { recursive: true });
+    writeFileSync(join(assets, relativo), 'webp');
+  }
+}
+
 describe('sobre un directorio de datos', () => {
   let raiz: string;
+  let assets: string;
   let avisos: string[];
 
   beforeEach(() => {
     raiz = mkdtempSync(join(tmpdir(), 'catalogo-'));
+    assets = mkdtempSync(join(tmpdir(), 'assets-'));
     armarDatos(raiz);
+    armarAssets(raiz, assets);
     avisos = [];
   });
 
   afterEach(() => {
     rmSync(raiz, { recursive: true, force: true });
+    rmSync(assets, { recursive: true, force: true });
   });
 
   describe('fotoDeFicha', () => {
@@ -191,7 +210,7 @@ describe('sobre un directorio de datos', () => {
       plan.json.find((a) => a.ruta === ruta)?.contenido;
 
     it('escribe recetas.json con un resumen por plato y las versiones ordenadas por número', () => {
-      const plan = planificar(raiz, (m) => avisos.push(m));
+      const plan = planificar(raiz, assets, (m) => avisos.push(m));
       const lista = json(plan, 'recetas.json') as readonly RecetaResumen[];
       // El orden es el del disco: readdirSync devuelve las carpetas alfabéticamente.
       expect(lista.map((r) => r.plato)).toEqual(['otro-plato', 'pasta-brocoli', 'zeta-sin-archivo']);
@@ -201,7 +220,7 @@ describe('sobre un directorio de datos', () => {
         momento: 'cena',
         porciones: 1,
         nutricion: { kcal: 700 },
-        foto: '/fotos/recetas/pasta-brocoli.jpg',
+        foto: '/fotos/recetas/pasta-brocoli.webp',
       });
       expect(pasta?.versiones.map((v) => [v.numero, v.clave, v.icono, v.tiempo_total_s, v.tiempo_total_texto])).toEqual([
         [1, 'linea-de-tiempo', '⚡', 600, '10 min'],
@@ -210,7 +229,7 @@ describe('sobre un directorio de datos', () => {
     });
 
     it('deja sin foto al plato que no la declara y al que la declara pero no está en disco', () => {
-      const plan = planificar(raiz, () => undefined);
+      const plan = planificar(raiz, assets, () => undefined);
       const lista = json(plan, 'recetas.json') as readonly RecetaResumen[];
       expect(lista.find((r) => r.plato === 'otro-plato')?.foto).toBeNull();
       expect(lista.find((r) => r.plato === 'zeta-sin-archivo')?.foto).toBeNull();
@@ -218,33 +237,44 @@ describe('sobre un directorio de datos', () => {
     });
 
     it('escribe cada versión por clave y por número, con las fotos resueltas', () => {
-      const plan = planificar(raiz, () => undefined);
+      const plan = planificar(raiz, assets, () => undefined);
       for (const ruta of ['recetas/pasta-brocoli/dos-etapas.json', 'recetas/pasta-brocoli/2.json']) {
         const receta = json(plan, ruta) as RecetaServida;
         expect(receta.version.numero).toBe(2);
-        expect(receta.foto).toBe('/fotos/recetas/pasta-brocoli.jpg');
+        expect(receta.foto).toBe('/fotos/recetas/pasta-brocoli.webp');
         expect(receta.ingredientes.map((i) => [i.id, i.foto])).toEqual([
-          ['brocoli-entero', '/fotos/ingredientes/brocoli-entero.jpg'],
+          ['brocoli-entero', '/fotos/ingredientes/brocoli-entero.webp'],
           ['sin-foto', null],
           [null, null],
         ]);
         expect(receta.utensilios.map((u) => [u.id, u.foto])).toEqual([
-          ['wok-30cm', '/fotos/utensilios/wok-30cm.png'],
+          ['wok-30cm', '/fotos/utensilios/wok-30cm.webp'],
           [null, null],
         ]);
       }
     });
 
     it('copia solo las fotos que alguna receta referencia, una sola vez cada una', () => {
-      const plan = planificar(raiz, () => undefined);
+      const plan = planificar(raiz, assets, () => undefined);
       expect(plan.fotos.map((f) => f.ruta).sort()).toEqual([
-        'fotos/ingredientes/brocoli-entero.jpg',
-        'fotos/recetas/pasta-brocoli.jpg',
-        'fotos/utensilios/wok-30cm.png',
+        'fotos/ingredientes/brocoli-entero.webp',
+        'fotos/recetas/pasta-brocoli.webp',
+        'fotos/utensilios/wok-30cm.webp',
       ]);
-      expect(plan.fotos.find((f) => f.ruta === 'fotos/utensilios/wok-30cm.png')?.origen).toBe(
-        resolve(raiz, 'utencillos', 'fotos', 'wok-30cm-frente.PNG'),
+      // Lo que se copia sale de assets, no de data: es la versión chica.
+      expect(plan.fotos.find((f) => f.ruta === 'fotos/utensilios/wok-30cm.webp')?.origen).toBe(
+        resolve(assets, 'utencillos', 'fotos', 'wok-30cm-frente.webp'),
       );
+      expect(plan.faltantes).toEqual([]);
+    });
+
+    it('avisa qué versión chica falta en vez de publicar la receta sin foto', () => {
+      rmSync(join(assets, 'utencillos', 'fotos', 'wok-30cm-frente.webp'));
+      const plan = planificar(raiz, assets, () => undefined);
+
+      expect(plan.faltantes).toEqual([join('utencillos', 'fotos', 'wok-30cm-frente.webp')]);
+      // Y no se copia: lo que falta no se publica a medias.
+      expect(plan.fotos.map((f) => f.ruta)).not.toContain('fotos/utensilios/wok-30cm.webp');
     });
   });
 });

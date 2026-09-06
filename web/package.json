@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "pnpm generar:catalogo && vite",
     "generar:catalogo": "tsx src/catalogo/generar.ts",
+    "optimizar": "tsx src/imagenes/optimizar.ts",
     "build": "pnpm generar:catalogo && tsc -p tsconfig.build.json --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",

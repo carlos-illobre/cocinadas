@@ -30,7 +30,7 @@ export function Inicio({ alEntrar }: PropiedadesInicio): React.JSX.Element {
   return (
     <section className="inicio" aria-labelledby="inicio-lema">
       <div className="inicio-escena" aria-hidden="true">
-        <img className="inicio-fondo" src="inicio/1.jpg" alt="" fetchPriority="high" />
+        <img className="inicio-fondo" src="inicio/1.webp" alt="" fetchPriority="high" />
         <div className="inicio-capas arriba">
           {CAPAS_ARRIBA.map((n) => (
             <img key={n} className="inicio-capa" src={`inicio/${n}.webp`} alt="" decoding="async" />

@@ -27,13 +27,40 @@ además de `main.tsx`.
 Vive en `src/` y no en una carpeta de herramientas justamente para que la compuerta de
 cobertura lo alcance sin configuración aparte.
 
+## Las imágenes: originales en un lado, versiones chicas en otro
+
+Los **originales** viven en `data/` (ingredientes, utensilios, fotos de recetas) y en
+`docs/mockups/inicio-capas/` (las capas de la pantalla de inicio). Ahí pueden pesar lo que
+haga falta: una foto de ingrediente de 2000 × 2000 está bien como fuente.
+
+Las **versiones que se publican** están en `assets/`, en WebP y al tamaño al que se
+muestran. Se versionan, y se regeneran con:
+
+```bash
+pnpm optimizar          # las que falten o hayan cambiado
+pnpm optimizar --todas  # rehace todas
+```
+
+`src/imagenes/plan.ts` decide qué se convierte, a qué ancho y con qué nombre —y se mide al
+100 %—; `src/imagenes/optimizar.ts` maneja el navegador que convierte. Se usa el canvas de
+Chrome y no una librería para no agregar una dependencia por un comando que se corre a
+mano cada tanto.
+
+Si una receta usa una foto que todavía no tiene versión chica, **el build corta** y dice
+cuál falta: publicar una receta sin sus fotos es peor que no publicar.
+
+Los anchos salen de a qué tamaño se muestra cada cosa en el CSS: 128 px para ingredientes
+y utensilios (se ven a 38–52), 860 para la foto del plato (ocupa los 430 de ancho de la
+app, a 2×) y 1000 para las capas de inicio. Nunca se agranda.
+
 ## Archivos estáticos (`public/`)
 
 Lo que está acá se copia tal cual a la raíz del sitio al compilar. Vite no los procesa ni
 les agrega hash: cambiar uno obliga a publicar de nuevo. El `Cache-Control` lo decide
 GitHub Pages; no se puede configurar.
 
-`public/api/catalogo/` no se versiona: lo genera el build desde `data/`.
+`public/api/catalogo/` y `public/inicio/` no se versionan: los genera el build a partir de
+`data/` y de `assets/`.
 
 ## La identidad visual
 
@@ -51,7 +78,7 @@ Lo que queda son las imágenes **sin texto adentro**, que no envejecen:
 
 | Archivo | Qué es | Tamaño | Dónde se usa |
 |---|---|---|---|
-| `icono-512.png` | Solo la olla, lienzo cuadrado | 512 × 512 | Ícono de instalación (PWA) cuando exista el manifest |
+| `icono-512.png` | Solo la olla, lienzo cuadrado | 512 × 512 | **No está en `public/`**: vive en `docs/mockups/marca/`. Se publicaba sin que nada lo usara, y son 233 KB. Vuelve acá el día que haya un manifest de PWA que lo pida. |
 | `icono-192.png` | Ídem | 192 × 192 | La olla de la marca (`src/Logotipo.tsx`) y el `apple-touch-icon` de `index.html`. Se muestra a unos 88 px: 192 cubre pantallas del doble de densidad, y la de 512 pesaría 238 KB en vez de 42 |
 | `favicon.png` | Ídem | 64 × 64 | Favicon en `index.html` |
 | `inicio.jpg` | La foto de la mesada (brócoli, albahaca, limón, ajo, spaghetti sobre pizarra) que entregó Carlos como capa de fondo de la pantalla de inicio, sin la etiqueta "Made with AI" (se recortó la franja superior donde estaba) y comprimida a JPEG | 1024 × 1436 | Fondo de `src/Inicio.tsx`, con `object-fit: cover` y un velo radial oscuro en el centro para que el logo y el lema se lean |

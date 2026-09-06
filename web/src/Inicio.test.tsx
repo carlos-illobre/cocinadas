@@ -14,10 +14,10 @@ describe('Inicio', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
-  it('arma la escena con el fondo en JPEG y los vegetales en WebP, anclados arriba y abajo', () => {
+  it('arma la escena con el fondo y los vegetales en WebP, anclados arriba y abajo', () => {
     const { container } = render(<Inicio alEntrar={() => undefined} />);
 
-    expect(container.querySelector('img.inicio-fondo')).toHaveAttribute('src', 'inicio/1.jpg');
+    expect(container.querySelector('img.inicio-fondo')).toHaveAttribute('src', 'inicio/1.webp');
     const arriba = [...container.querySelectorAll('.inicio-capas.arriba img')];
     const abajo = [...container.querySelectorAll('.inicio-capas.abajo img')];
     expect(arriba.map((c) => c.getAttribute('src'))).toEqual(['inicio/2.webp', 'inicio/3.webp', 'inicio/4.webp', 'inicio/5.webp', 'inicio/6.webp']);

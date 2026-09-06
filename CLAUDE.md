@@ -39,6 +39,11 @@ devuelve el plan de archivos (puro, medido al 100 %); `generar.ts` lo escribe en
 `web/public/api/catalogo/`, que no se versiona. Tocar una receta obliga a
 `pnpm generar:catalogo` en desarrollo, y a volver a publicar en producción.
 
+**Las imágenes tienen dos vidas**: los originales en `data/` y `docs/mockups/`, que pueden
+pesar lo que quieran, y las versiones que se publican en `web/assets/`, en WebP y al
+tamaño al que se muestran. Se versionan y se regeneran con `pnpm optimizar`. Si agregás
+una foto y no corrés ese comando, **el build corta** y te dice cuál falta.
+
 El porqué de todo esto —y **qué hace falta el día que las cocinadas tengan que salir del
 celular**— está en los ADR **015** y **017**. Los ADR 001 a 016 describen microservicios,
 PostgreSQL, NATS, JWT, Docker, Caddy y un despliegue en Oracle que el proyecto tuvo y ya
@@ -74,6 +79,7 @@ Las recetas las genera la skill `receta-poe-fitness`, que vive fuera del reposit
 bash tests/utest.sh                          # unitarias, con la compuerta del 100 %
 cd web && pnpm dev                           # la app en http://localhost:5173
 cd web && pnpm generar:catalogo              # tras tocar una receta o una ficha
+cd web && pnpm optimizar                     # tras agregar o cambiar una imagen
 cd web && pnpm build && pnpm preview         # exactamente lo que se publica
 python3 data/recetas/validar-receta.py       # el catálogo del repositorio es válido
 ```
@@ -93,7 +99,9 @@ terminar**.
   tercer argumento. El día que haya enlaces profundos, esto hay que rehacerlo.
 - **`web/src/catalogo/generar.ts` busca `data/` por una ruta relativa a su propio
   archivo.** Si se mueve de carpeta, hay que ajustarla — y lo mismo vale para
-  `src/cocina/receta-real.test.ts`, que importa los JSON reales.
+  `src/imagenes/optimizar.ts` y `src/cocina/receta-real.test.ts`.
+- **`pnpm optimizar` necesita Chrome o Chromium instalado.** Convierte con el canvas del
+  navegador para no agregar una dependencia de imágenes al proyecto.
 - **Se perdieron las cabeceras de seguridad y la CSP** al salir de Caddy: Pages no deja
   definirlas. Recuperar la CSP con `<meta http-equiv>` está pendiente (`docs/SECURITY.md`).
 - **Cada merge a `main` publica solo.** Lo único configurado en GitHub es

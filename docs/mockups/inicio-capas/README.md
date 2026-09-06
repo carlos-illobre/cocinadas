@@ -18,12 +18,20 @@ node docs/mockups/inicio-capas/quitar-fondo.mjs <carpeta-origen> 11.png <carpeta
 Nunca pisa el archivo de entrada: deja `11-sin-fondo.png` al lado, para mirar el recorte,
 y el `11.webp` que usa la app.
 
-Lo que usa la app son las versiones livianas en
-`microservices/frontend/public/inicio/`: el fondo en JPEG y los vegetales en WebP, a
-1000 px de ancho. Las once juntas pesan 425 KB.
+Lo que usa la app son las versiones livianas en `web/assets/inicio/`, todas en WebP a
+1000 px de ancho. Las once juntas pesan 364 KB.
 
-Para regenerarlas después de cambiar un original, con Chrome instalado:
+Para regenerarlas después de cambiar un original, con Chrome o Chromium instalado:
 
 ```
-node docs/mockups/inicio-capas/optimizar.mjs <carpeta-con-los-png> <carpeta-de-salida>
+cd web && pnpm optimizar
 ```
+
+Ese comando reemplaza al `optimizar.mjs` que vivía acá: ahora las capas de inicio se
+convierten con el mismo script que las fotos del catálogo (`web/src/imagenes/`), que
+además sabe cuáles están al día y no las rehace al pepe. Las excepciones de esta carpeta
+—que la 11 sale de `11-sin-fondo.png` y que la composición original no es una capa— están
+declaradas ahí, en `FUENTES`.
+
+`quitar-fondo.mjs` sigue acá: es lo que produce `11-sin-fondo.png` a partir de `11.png`, y
+eso se hace una sola vez por capa que llegue con fondo.
