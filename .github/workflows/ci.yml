@@ -56,7 +56,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Trivy sobre el repositorio
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.29.0
+        # `continue-on-error` también en el paso, y no solo en el job: sin esto, cuando
+        # Trivy no puede bajar su base de datos, el PR queda con una cruz roja aunque el
+        # job no bloquee. Una comprobación que avisa y siempre se ve en rojo enseña a
+        # ignorar las comprobaciones, que es peor que no tenerla. Los hallazgos se leen
+        # en el log del job.
+        continue-on-error: true
+        env:
+          # La base de vulnerabilidades se baja de ghcr.io, que limita las descargas
+          # anónimas y a veces contesta TOOMANYREQUESTS. Estos son los espejos que
+          # publica el propio proyecto para ese caso.
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1
         with:
           scan-type: fs
           scanners: vuln,secret,misconfig
