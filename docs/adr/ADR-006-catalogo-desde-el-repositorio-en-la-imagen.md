@@ -29,7 +29,7 @@ que no cambian entre peticiones.
 
 `./data/recetas:/datos/recetas:ro` en el compose. Parecía la más simple y la que respeta la
 invariante 7 al pie de la letra. No lo es: en la VM no hay una copia del repositorio
-(`deploy.sh` copia solo el compose y el Caddyfile), así que habría que clonar y hacer
+(`deploy.py` copia solo el compose y el Caddyfile), así que habría que clonar y hacer
 `git pull` en la instancia en cada despliegue, y la versión del catálogo dejaría de estar
 atada al SHA desplegado: una reversión de imagen no revertiría las recetas.
 
@@ -70,7 +70,7 @@ lo que las dependencias de base de datos agregan a los otros.
 ### Negativas
 
 - Cambiar una coma de una receta obliga a construir y desplegar la imagen de `catalogo`.
-  Es el precio de la coherencia; con `deploy.sh` cuesta un comando.
+  Es el precio de la coherencia; con `deploy.py` cuesta un comando.
 - El contexto de build de `catalogo` es la raíz del repositorio: un cambio en las
   carpetas de datos invalida su caché de capas (solo la última capa, por el orden del
   Dockerfile).

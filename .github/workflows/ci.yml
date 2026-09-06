@@ -4,10 +4,10 @@
 #             No bloquea; deja los informes como artefacto.
 #   imagenes  solo en main y solo si las pruebas pasaron: construye las cuatro imágenes
 #             para amd64 y arm64 y las publica en GHCR etiquetadas por SHA (ADR-011).
-#             deploy.sh trae exactamente ese SHA a la instancia.
+#             deploy.py trae exactamente ese SHA a la instancia.
 #   sitio     solo en main: publica docs/ en GitHub Pages.
 #   desplegar solo en main y después de imagenes: entra por SSH a la instancia de Oracle
-#             y corre deploy.sh con el SHA de este commit. Las imágenes ya están
+#             y corre deploy.py con el SHA de este commit. Las imágenes ya están
 #             publicadas, así que la instancia solo las trae y reemplaza contenedores.
 name: ci
 
@@ -43,7 +43,13 @@ jobs:
       - name: Compose resuelve sin variables sin definir
         run: cp .env.example .env && docker compose config --quiet
       - name: Sintaxis de los scripts de despliegue
-        run: bash -n deployment/oracle-single/deploy.sh && bash -n deployment/oracle-single/preflight.sh
+        run: |
+          python -m py_compile deployment/oracle-single/deploy.py
+          bash -n deployment/oracle-single/preflight.sh
+          bash -n deployment/oracle-single/respaldo.sh
+          # Sin .env el --dry-run usa valores de ejemplo: comprueba que el script
+          # entero corre y qué comandos mandaría, sin tocar ninguna instancia.
+          python deployment/oracle-single/deploy.py --dry-run > /dev/null
       - name: Informes de cobertura
         if: always()
         uses: actions/upload-artifact@v4
@@ -199,7 +205,7 @@ jobs:
       # El SHA va explícito: el script, sin argumento, desplegaría la punta de
       # origin/main, que para cuando esto corre podría ser otro commit.
       - name: Desplegar ${{ github.sha }}
-        run: bash deployment/oracle-single/deploy.sh "${{ github.sha }}"
+        run: python deployment/oracle-single/deploy.py "${{ github.sha }}"
 
   sitio:
     needs: pruebas

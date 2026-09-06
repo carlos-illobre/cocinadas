@@ -4,7 +4,7 @@
 # configuración todavía es barato.
 #
 # Levantar en local:   docker compose up -d --build
-# Producción:          deployment/oracle-single/deploy.sh (trae las imágenes por SHA)
+# Producción:          deployment/oracle-single/deploy.py (trae las imágenes por SHA)
 
 name: templa
 

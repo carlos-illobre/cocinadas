@@ -26,7 +26,7 @@ el `.env`, para poder convivir con otra aplicación en la misma máquina.
 | Variable | Valor por omisión | Quién | Desde dónde |
 |---|---|---|---|
 | `PUERTO_HTTP`, `PUERTO_HTTPS` | 80, 443 (TCP y UDP) | `reverse-proxy` | La interfaz que diga `PROXY_ADDR`. **Los únicos que se abren en la Security List.** |
-| `PUERTO_CATALOGO`, `PUERTO_USUARIOS`, `PUERTO_COCINADAS`, `PUERTO_FRONTEND` | 3101, 3102, 3103, 8180 | catalogo, usuarios, cocinadas, frontend | Solo `127.0.0.1` de la VM (`PUBLISH_ADDR`). Los usa `deploy.sh` para comprobar los `/health`. |
+| `PUERTO_CATALOGO`, `PUERTO_USUARIOS`, `PUERTO_COCINADAS`, `PUERTO_FRONTEND` | 3101, 3102, 3103, 8180 | catalogo, usuarios, cocinadas, frontend | Solo `127.0.0.1` de la VM (`PUBLISH_ADDR`). Los usa `deploy.py` para comprobar los `/health`. |
 | — | 5432, 4222, 8222 | postgres, nats | Solo la red interna del compose. Para mirarlos: `docker compose exec` o túnel SSH. |
 
 Los puertos que publica Docker no pasan por la cadena `INPUT` de iptables: `ufw` no
@@ -81,7 +81,7 @@ sudo ss -lntp
 
 | Archivo | Dónde | Qué tiene | Plantilla |
 |---|---|---|---|
-| `.env` de la **aplicación** | `RUTA_REMOTA/.env` en la VM | Las 13 variables del compose con valores de producción; `deploy.sh` solo le cambia `TAG`. | `deployment/oracle-single/.env.oracle` |
+| `.env` de la **aplicación** | `RUTA_REMOTA/.env` en la VM | Las 13 variables del compose con valores de producción; `deploy.py` solo le cambia `TAG`. | `deployment/oracle-single/.env.oracle` |
 | `.env` del **despliegue** | `deployment/oracle-single/.env` en tu máquina | `SSH` y `RUTA_REMOTA`: cómo llegar a la VM. | `deployment/oracle-single/.env.deploy.example` |
 
 Los dos están en el `.gitignore`. `tests/integration/paridad-env.sh` comprueba que cada
@@ -89,19 +89,19 @@ uno declare exactamente lo que su plantilla.
 
 ## Primer despliegue
 
-1. `ssh <destino> 'bash -s' < deployment/oracle-single/preflight.sh` desde tu máquina:
-   verifica memoria, disco, Docker, puertos y firewall sin tocar nada.
+1. `python deployment/oracle-single/deploy.py --preflight` desde tu máquina: verifica
+   memoria, disco, Docker, puertos y firewall en la instancia, sin tocar nada.
 2. En la VM: `mkdir -p ~/templa && cd ~/templa`, copiar `.env.oracle` como `.env`
    y completar los marcadores (`REGISTRO`, contraseña, `JWT_SECRET` con
    `openssl rand -base64 48`).
 3. En tu máquina: copiar `.env.deploy.example` a `deployment/oracle-single/.env` y
    completar `SSH` y `RUTA_REMOTA`.
 4. Mergear a `main` y esperar a que el CI publique las imágenes (job `imagenes`).
-5. `bash deployment/oracle-single/deploy.sh`.
+5. `python deployment/oracle-single/deploy.py`.
 
 ## Despliegue automático al mergear a main
 
-El job `desplegar` del CI corre `deploy.sh` con el SHA del commit, después de que el job
+El job `desplegar` del CI corre `deploy.py` con el SHA del commit, después de que el job
 `imagenes` publicó las cuatro imágenes. Un despliegue por vez y solo desde `main`.
 
 Hace falta cargar cuatro secretos en **Settings → Secrets and variables → Actions** del
@@ -140,10 +140,10 @@ privada tipo Tailscale; en los dos casos cambia solo este job, no el script.
 ## Despliegues siguientes y reversión
 
 ```bash
-bash deployment/oracle-single/deploy.sh            # el último commit verificado de main
-bash deployment/oracle-single/deploy.sh <sha>      # un commit concreto
-bash deployment/oracle-single/deploy.sh <sha-anterior>   # volver atrás: es el mismo comando
-bash deployment/oracle-single/deploy.sh --dry-run  # ver qué haría, sin tocar la VM
+python deployment/oracle-single/deploy.py            # el último commit verificado de main
+python deployment/oracle-single/deploy.py <sha>      # un commit concreto
+python deployment/oracle-single/deploy.py <sha-anterior>   # volver atrás: es el mismo comando
+python deployment/oracle-single/deploy.py --dry-run  # ver qué haría, sin tocar la VM
 ```
 
 El script anota qué SHA había antes y lo imprime, así la reversión es copiar ese comando.
@@ -209,7 +209,7 @@ Se corre **en la VM** y acepta `--dry-run` para ver qué haría. En el cron:
 
 ## Disco
 
-Cada despliegue deja imágenes. `deploy.sh` corre `docker image prune -af --filter
+Cada despliegue deja imágenes. `deploy.py` corre `docker image prune -af --filter
 until=24h` al final e informa cuánto liberó: sin `-a` no libera nada, porque las
 imágenes etiquetadas por SHA nunca están «colgadas».
 

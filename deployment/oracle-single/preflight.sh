@@ -88,7 +88,7 @@ else
 fi
 
 command -v curl >/dev/null 2>&1 \
-    && ok "curl está (deploy.sh lo usa para comprobar los /health)" \
+    && ok "curl está (deploy.py lo usa para comprobar los /health)" \
     || mal "falta curl" "sudo apt-get install -y curl"
 
 # ── Los puertos ──────────────────────────────────────────────────────────────

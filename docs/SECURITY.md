@@ -40,4 +40,4 @@ abierto se dice con todas las letras: una lista de mitigaciones sin huecos es pr
 2. Rotar `POSTGRES_PASSWORD`: cambiarla en PostgreSQL (`ALTER USER`) y en el `.env`, y
    recrear los servicios con base.
 3. Revisar `docker compose logs` del proxy: Caddy registra cada petición con origen.
-4. Si hay que volver a una versión anterior del código: `deploy.sh <sha>`.
+4. Si hay que volver a una versión anterior del código: `deploy.py <sha>`.

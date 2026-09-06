@@ -99,7 +99,7 @@ sequenceDiagram
 Un solo `docker-compose.yml` para todos los ambientes; lo que cambia entre ambientes vive
 en el `.env` y en ningún otro lado (ADR-001). Una variable ausente corta el arranque. Las
 imágenes se construyen en el CI para `amd64` y `arm64`, se publican en GHCR etiquetadas
-por SHA, y `deployment/oracle-single/deploy.sh` trae exactamente ese SHA a la VM
+por SHA, y `deployment/oracle-single/deploy.py` trae exactamente ese SHA a la VM
 (ADR-011). Detalle en [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ```mermaid
@@ -108,7 +108,7 @@ flowchart LR
   gh -- CI: utest + paridad --> ci{pasa?}
   ci -- sí, en main --> ghcr[(GHCR<br/>imágenes por SHA<br/>amd64 + arm64)]
   ci -- sí, en main --> pages[GitHub Pages<br/>docs/]
-  dev -- deploy.sh <sha> --> vm[VM Oracle<br/>docker compose]
+  dev -- deploy.py &lt;sha&gt; --> vm[VM Oracle<br/>docker compose]
   ghcr -- compose pull --> vm
   vm -- ACME HTTP-01 --> le[Let's Encrypt]
 ```

@@ -81,8 +81,8 @@ falta volver atrás o probar:
 En una VM de Oracle Cloud con Docker, por SHA de commit y con reversión:
 
 ```bash
-bash deployment/oracle-single/deploy.sh          # el último commit verificado de main
-bash deployment/oracle-single/deploy.sh <sha>    # un commit concreto, o volver atrás
+python deployment/oracle-single/deploy.py          # el último commit verificado de main
+python deployment/oracle-single/deploy.py <sha>    # un commit concreto, o volver atrás
 ```
 
 Guía completa en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).

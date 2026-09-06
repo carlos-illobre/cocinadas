@@ -44,7 +44,7 @@ Es la opción elegida.
 - El CI (`.github/workflows/ci.yml`) construye las cuatro imágenes con `buildx` para
   `linux/amd64` y `linux/arm64` solo en `main` y solo si pasaron las pruebas, y las
   publica en `ghcr.io/<usuario>/templa-<servicio>:<sha>`. **Nunca `latest`.**
-- `deployment/oracle-single/deploy.sh` corre desde la máquina de quien despliega: fija
+- `deployment/oracle-single/deploy.py` corre desde la máquina de quien despliega: fija
   `TAG=<sha>` en el `.env` de la instancia, hace `docker compose pull` y `up -d`, y da el
   despliegue por bueno solo cuando los `/health` contestan. Revertir es el mismo script
   con el SHA anterior.
