@@ -6,7 +6,7 @@
 # Levantar en local:   docker compose up -d --build
 # Producción:          deployment/oracle-single/deploy.py (trae las imágenes por SHA)
 
-name: templa
+name: cocinadas
 
 # Rotación del log de TODOS los contenedores. El driver json-file no tiene límite por
 # omisión: lo que un servicio escriba se guarda para siempre, y con el disco lleno se cae
@@ -31,9 +31,15 @@ x-endurecido: &endurecido
     - ALL
 
 services:
-  reverse-proxy:
-    # Caddy sirve el frontend, enruta /api/<servicio>/ y emite y renueva el TLS (ADR-009).
-    image: caddy:2-alpine
+  web:
+    # Único servicio: Caddy sirve la SPA con el catálogo adentro y emite y renueva el TLS
+    # (ADR-009, ADR-015). No hay nada detrás que proxear: el bundle es la aplicación.
+    image: ${REGISTRO:?falta REGISTRO en el .env}/cocinadas-web:${TAG:?falta TAG en el .env}
+    build:
+      # Contexto en la raíz porque el build genera el catálogo leyendo data/ (ADR-006).
+      # Lo que entra lo limita el .dockerignore de la raíz.
+      context: .
+      dockerfile: microservices/frontend/Dockerfile
     <<: *endurecido
     # Caddy necesita atarse al 80 y al 443, que son privilegiados: es la única capacidad
     # que se le devuelve después de sacarle todas.
@@ -50,59 +56,28 @@ services:
       # `http://localhost` en desarrollo (sin TLS); el dominio a secas en producción, y
       # Caddy pide el certificado a Let's Encrypt solo.
       SITE_ADDRESS: ${SITE_ADDRESS:?falta SITE_ADDRESS en el .env}
+      # DEBUG en el Caddyfile enciende el log detallado; cualquier otro valor lo deja en
+      # el nivel normal. Es la única forma que tiene Caddy de subir el detalle.
+      LOG_LEVEL: ${LOG_LEVEL:?falta LOG_LEVEL en el .env}
     ports:
       # Todos los puertos del lado del host salen del .env: en una máquina donde ya corre
       # otra aplicación, dos proxies no pueden quedarse los dos con el 80 y el 443, y
-      # mover a Templa tiene que ser cambiar el .env y nada más. Adentro del contenedor
+      # mover a Cocinadas tiene que ser cambiar el .env y nada más. Adentro del contenedor
       # Caddy sigue escuchando en 80 y 443 siempre.
       #
-      # PROXY_ADDR es 0.0.0.0 cuando Templa es la única aplicación que atiende de afuera,
-      # y 127.0.0.1 cuando otro proxy de la misma máquina le pasa el tráfico
+      # PROXY_ADDR es 0.0.0.0 cuando Cocinadas es la única aplicación que atiende de
+      # afuera, y 127.0.0.1 cuando otro proxy de la misma máquina le pasa el tráfico
       # (deployment/oracle-single/README.md).
       - "${PROXY_ADDR:?falta PROXY_ADDR en el .env}:${PUERTO_HTTP:?falta PUERTO_HTTP en el .env}:80"
       - "${PROXY_ADDR:?falta PROXY_ADDR en el .env}:${PUERTO_HTTPS:?falta PUERTO_HTTPS en el .env}:443"
       - "${PROXY_ADDR:?falta PROXY_ADDR en el .env}:${PUERTO_HTTPS:?falta PUERTO_HTTPS en el .env}:443/udp"
     volumes:
-      - ./infrastructure/reverse-proxy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-datos:/data
       - caddy-config:/config
-    depends_on:
-      frontend:
-        condition: service_healthy
     healthcheck:
       # Contra el sitio interno de salud del Caddyfile, no contra la API de
       # administración: esa quedó apagada.
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8081/salud"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-
-  frontend:
-    # La SPA React compilada, servida por su propio Caddy en modo file server (ADR-013).
-    image: ${REGISTRO:?falta REGISTRO en el .env}/templa-frontend:${TAG:?falta TAG en el .env}
-    build:
-      context: ./microservices/frontend
-    <<: *endurecido
-    # El binario de Caddy trae NET_BIND_SERVICE como capacidad de archivo. Si no está en
-    # el conjunto del contenedor, el exec falla con «operation not permitted» aunque el
-    # puerto que use sea alto, como acá.
-    cap_add:
-      - NET_BIND_SERVICE
-    restart: unless-stopped
-    logging: *logging
-    mem_limit: ${MEM_LIMIT_PROXY:?falta MEM_LIMIT_PROXY en el .env}
-    cpus: ${CPU_LIMIT_PROXY:?falta CPU_LIMIT_PROXY en el .env}
-    read_only: true
-    # Este Caddy no guarda nada entre arranques (no emite certificados): sus directorios
-    # de trabajo viven en memoria y desaparecen con el contenedor.
-    tmpfs:
-      - /tmp
-      - /data
-      - /config
-    ports:
-      - "${PUBLISH_ADDR:?falta PUBLISH_ADDR en el .env}:${PUERTO_FRONTEND:?falta PUERTO_FRONTEND en el .env}:8080"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
       interval: 15s
       timeout: 5s
       retries: 5

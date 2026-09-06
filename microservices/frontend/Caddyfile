@@ -1,25 +1,68 @@
-# File server de la SPA (ADR-013). Escucha en 8080 sin TLS: el TLS lo termina el reverse
-# proxy del sistema (infrastructure/reverse-proxy/Caddyfile).
+# El único servidor del sistema (ADR-009, ADR-015): sirve la SPA con el catálogo adentro
+# y termina el TLS. No proxea a nadie porque no hay nada detrás.
+#
+# SITE_ADDRESS sale del .env: `http://localhost` en desarrollo (sin TLS, sin redirección),
+# el dominio a secas en producción, con lo que Caddy pide el certificado a Let's Encrypt
+# por HTTP-01 (el puerto 80 tiene que estar abierto en la Security List) y lo renueva
+# solo, recargando sin reiniciar. Es el punto que con nginx+certbot hay que orquestar a
+# mano y que se olvida.
 {
-	# Sin TLS ni puerto de administración: esta instancia solo sirve archivos.
-	auto_https off
+	# La API de administración deja reconfigurar el servidor entero por HTTP. No hace
+	# falta: la configuración cambia recreando el contenedor.
 	admin off
+	log {
+		output stdout
+		format console
+		level {$LOG_LEVEL}
+	}
 }
 
-:8080 {
+# Sitio interno para el healthcheck del compose y del despliegue. No se publica ningún
+# puerto hacia acá: solo se llega desde adentro del contenedor.
+:8081 {
+	respond /salud 200
+}
+
+{$SITE_ADDRESS} {
 	root * /srv
 	encode zstd gzip
 
-	# Para el healthcheck del compose y del deploy: 200 sin tocar el disco.
-	respond /health 200
+	# Cabeceras de seguridad, para todo lo que sale de acá.
+	header {
+		# Un año de HTTPS obligatorio. Sobre http:// el navegador la ignora, así que en
+		# desarrollo no molesta.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# Sin adivinar el tipo: una foto servida como imagen no se ejecuta como script.
+		X-Content-Type-Options "nosniff"
+		# Al salir del sitio se manda el origen, nunca la ruta completa.
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# Nada de cámara, micrófono ni ubicación: la app no los usa.
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+		# De dónde puede cargar cada cosa. Las tipografías vienen de Google Fonts; el resto
+		# es propio. `unsafe-inline` en los estilos es por los `style` que pone React para
+		# las barras y el gantt; los scripts no lo tienen.
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		# El servidor no anuncia qué es.
+		-Server
+	}
 
 	# Las rutas del navegador (/receta/..., /cocinando/...) no existen como archivo: se
-	# devuelve index.html y la SPA las resuelve.
-	try_files {path} /index.html
+	# devuelve index.html y la SPA las resuelve. El catálogo queda afuera: pedir un JSON
+	# que no existe tiene que dar 404 y no el index.html, que api.ts leería como receta.
+	@spa not path /api/*
+	handle @spa {
+		try_files {path} /index.html
+	}
+
 	file_server
 
 	# Los assets llevan hash en el nombre: se pueden cachear sin límite. index.html no.
 	@assets path /assets/*
 	header @assets Cache-Control "public, max-age=31536000, immutable"
 	header /index.html Cache-Control "no-cache"
+
+	# Las fotos del catálogo cambian solo con un despliegue nuevo (viajan en la imagen,
+	# ADR-006): un día de caché evita bajar 25 fotos cada vez que se abre una receta.
+	@fotos path /api/catalogo/fotos/*
+	header @fotos Cache-Control "public, max-age=86400"
 }

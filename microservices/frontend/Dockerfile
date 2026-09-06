@@ -39,7 +39,7 @@ RUN addgroup -g 10001 -S app && adduser -u 10001 -G app -S -D -H app \
 COPY --chown=app:app microservices/frontend/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build --chown=app:app /repo/microservices/frontend/dist /srv
 USER app
-EXPOSE 8080
+EXPOSE 80 443
 HEALTHCHECK --interval=15s --timeout=5s --retries=5 \
-  CMD wget -qO- http://127.0.0.1:8080/health || exit 1
+  CMD wget -qO- http://127.0.0.1:8081/salud || exit 1
 CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

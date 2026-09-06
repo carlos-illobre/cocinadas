@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Camino de punta a punta: cada servicio contesta /health en su puerto publicado, y también
-# a través del reverse proxy por /api/<servicio>/health, que es como llega el frontend.
+# Camino de punta a punta contra el único contenedor: la SPA se sirve, el catálogo que se
+# generó en el build está en el bundle y sus fotos salen como imágenes.
 # Necesita el stack arriba (docker compose up -d).
 set -uo pipefail
 . "$(dirname "$0")/comun.sh"
@@ -24,35 +24,19 @@ esperar_200() {
     return 1
 }
 
-comprobar() {
-    local nombre=$1 url=$2 esperado=$3
-    if esperar_200 "$url"; then
-        cuerpo=$(curl -sf "$url")
-        if printf '%s' "$cuerpo" | grep -q "\"servicio\":\"$esperado\""; then
-            ok "$nombre → $url"
-        else
-            mal "$nombre contestó 200 pero no es $esperado: $cuerpo"
-            fallos=$((fallos+1))
-        fi
-    else
-        mal "$nombre no contestó 200 en 60 s: $url"
-        fallos=$((fallos+1))
-    fi
-}
-
-titulo "Puertos publicados"
-# Los puertos del host salen del .env: si se mueven para convivir con otra aplicación,
-# la prueba los sigue en vez de fallar contra el valor viejo.
-puerto() { sed -n "s/^$1=//p" .env | tail -1; }
-P_FRONTEND=$(puerto PUERTO_FRONTEND)
-
-if esperar_200 "http://localhost:${P_FRONTEND}/health"; then ok "frontend → http://localhost:${P_FRONTEND}/health"; else mal "frontend no contestó"; fallos=$((fallos+1)); fi
-
-titulo "A través del reverse proxy ($SITE_ADDRESS)"
+titulo "La aplicación en $SITE_ADDRESS"
 if esperar_200 "$SITE_ADDRESS/" && curl -sf "$SITE_ADDRESS/" | grep -q '<div id="raiz">'; then
     ok "la SPA se sirve en $SITE_ADDRESS/"
 else
     mal "la SPA no se sirve en $SITE_ADDRESS/"
+    fallos=$((fallos+1))
+fi
+
+# Una ruta del navegador no existe como archivo: tiene que caer en el index.html.
+if curl -sf "$SITE_ADDRESS/cualquier/ruta/de/la/spa" | grep -q '<div id="raiz">'; then
+    ok "las rutas del navegador caen en el index.html"
+else
+    mal "una ruta de la SPA no devolvió el index.html"
     fallos=$((fallos+1))
 fi
 
@@ -65,6 +49,16 @@ if [ -n "$plato" ]; then
     ok "recetas.json trae al menos un plato: $plato"
 else
     mal "recetas.json no trae ninguna receta: ${recetas:-sin respuesta}"
+    fallos=$((fallos+1))
+fi
+
+# Un JSON que no existe tiene que dar 404 y no el index.html: si el try_files se comiera
+# /api/, api.ts intentaría leer la página como si fuera una receta.
+codigo=$(curl -s -o /dev/null -w '%{http_code}' "$SITE_ADDRESS/api/catalogo/recetas/no-existe/1.json")
+if [ "$codigo" = 404 ]; then
+    ok "una receta inexistente da 404 y no el index.html"
+else
+    mal "una receta inexistente contestó $codigo en vez de 404"
     fallos=$((fallos+1))
 fi
 
