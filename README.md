@@ -8,7 +8,8 @@ plato paso a paso, cronometra cada paso, muestra los procesos que corren en para
 cocinada para ver cómo va mejorando cada receta.
 
 Es **solo frontend**: un sitio estático que se baja entero al teléfono, con el catálogo de
-recetas adentro. Las cocinadas se guardan en el `localStorage` del navegador. El porqué está en
+recetas adentro, y **se puede agregar a la pantalla de inicio** para que abra sin la barra
+del navegador. Las cocinadas se guardan en el `localStorage` del navegador. El porqué está en
 [ADR-017](docs/adr/ADR-017-sitio-estatico-en-github-pages.md).
 
 | Carpeta | Qué es |
