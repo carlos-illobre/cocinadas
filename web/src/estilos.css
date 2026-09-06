@@ -1256,6 +1256,13 @@ h1 {
 .now h2 { font-family: var(--display); font-weight: 700; font-size: 21px; letter-spacing: -0.02em; line-height: 1.1; margin: 0; text-wrap: balance; }
 .big { display: flex; align-items: baseline; gap: 8px; font-family: var(--display); font-weight: 700; font-size: 58px; letter-spacing: -0.04em; line-height: 0.95; font-variant-numeric: tabular-nums; }
 .big small { font-family: var(--body); font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+/*
+ * El previsto es la meta de la cocinada: es contra ese número que se miden los puntos.
+ * Iba en el gris de nota al pie y en 13px, que en modo oscuro casi no se leía. Ahora el
+ * número sale en la tipografía y el color del cronómetro que tiene al lado, y lo que
+ * queda de etiqueta es solo el «de … previstos» que lo rodea.
+ */
+.big small.meta b { font-family: var(--display); font-size: 22px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; color: var(--ink); }
 .big .over { font-size: 26px; color: var(--coral); letter-spacing: -0.02em; animation: titilar 1s steps(1) infinite; }
 .track { height: 8px; border-radius: 4px; background: var(--soft); margin: 12px 0; position: relative; }
 .track i { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--green); }
@@ -1266,14 +1273,19 @@ h1 {
 .over-note { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--coral-deep, #b83e1c); background: var(--coral-soft); border-radius: 10px; padding: 7px 10px; margin: -2px 0 10px; font-weight: 600; }
 .over-note.ok { color: var(--green); background: var(--green-soft); }
 .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.steps button { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; width: 100%; border: 0; background: none; padding: 0; text-align: left; font: inherit; font-size: 13.5px; line-height: 1.35; color: inherit; cursor: pointer; }
+/* Los subpasos son lo que se lee con las manos ocupadas y el teléfono en la mesada: 15.5px es lo que se alcanza a leer de parado. */
+.steps button { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; width: 100%; border: 0; background: none; padding: 0; text-align: left; font: inherit; font-size: 15.5px; line-height: 1.45; color: inherit; cursor: pointer; }
 .steps button::before { content: "✓"; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line-fuerte); background: var(--paper); color: transparent; font-size: 12px; font-weight: 800; line-height: 1; display: grid; place-items: center; margin-top: 1px; transition: background 0.15s ease, border-color 0.15s ease; }
 .steps li.ok button { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
 .steps li.ok button::before { background: var(--green); border-color: var(--green); color: #fff; }
 .steps button:focus-visible { outline: 0; }
 .steps button:focus-visible::before { outline: 3px solid var(--brand); outline-offset: 2px; }
-.por-que { margin: 12px 0 0; font-size: 12.5px; color: var(--muted); background: var(--soft); border-radius: 10px; padding: 8px 10px; line-height: 1.4; }
-.por-que b { color: var(--ink); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 6px; }
+/*
+ * El «por qué» se abre a propósito, tocando el `?`: es texto que se viene a leer, no una
+ * nota al margen. En el gris de nota al pie y a 12.5px no se leía, y menos en modo oscuro.
+ */
+.por-que { margin: 12px 0 0; font-size: 14.5px; color: var(--ink); background: var(--soft); border-radius: 10px; padding: 10px 12px; line-height: 1.5; }
+.por-que b { color: var(--brand); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 6px; }
 .actions { display: flex; gap: 10px; margin-top: 14px; }
 .actions .btn { flex: 1; width: auto; height: 54px; padding: 0 16px; }
 .btn.hot { background: var(--coral); color: #fff; }

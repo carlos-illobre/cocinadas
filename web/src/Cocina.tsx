@@ -192,7 +192,13 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
         ) : (
           <div className="big">
             {reloj(progreso.transcurrido_s)}
-            {progreso.exceso_s > 0 ? <span className="over">+{reloj(progreso.exceso_s)}</span> : <small>de {reloj(progreso.previsto_s)} previstos</small>}
+            {progreso.exceso_s > 0 ? (
+              <span className="over">+{reloj(progreso.exceso_s)}</span>
+            ) : (
+              <small className="meta">
+                de <b>{reloj(progreso.previsto_s)}</b> previstos
+              </small>
+            )}
           </div>
         )}
 
