@@ -7,7 +7,7 @@
 # Las capas van de lo que menos cambia a lo que más: dependencias, código, datos.
 
 # ── 1. Dependencias ──────────────────────────────────────────────────────────
-FROM node:22-alpine AS deps
+FROM node:26-alpine AS deps
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
 COPY microservices/catalogo/package.json microservices/catalogo/pnpm-lock.yaml ./
@@ -20,7 +20,7 @@ COPY microservices/catalogo/src ./src
 RUN pnpm build && pnpm prune --prod
 
 # ── 3. Imagen final ──────────────────────────────────────────────────────────
-FROM node:22-alpine AS runtime
+FROM node:26-alpine AS runtime
 # uid literal (no asignado por el sistema): los volúmenes guardan el número, y si cambia
 # entre versiones el contenedor deja de poder escribir sin ninguna explicación.
 RUN addgroup -g 10001 -S app && adduser -u 10001 -G app -S -D -H app
