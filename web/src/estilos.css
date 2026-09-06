@@ -1212,9 +1212,14 @@ h1 {
   transition: color 0.2s ease;
 }
 
-.tabbar button svg {
-  width: 22px;
-  height: 22px;
+/*
+ * Los íconos son emoji, así que su tamaño es `font-size` y no `width`. Hasta acá la regla
+ * apuntaba a `svg` —de cuando se pensaban vectoriales— y nunca aplicaba: el emoji heredaba
+ * los 11px de la etiqueta y se veía diminuto. 22px es el del prototipo de Figma.
+ */
+.tabbar-icono {
+  font-size: 22px;
+  line-height: 1;
 }
 
 .tabbar button.on {
