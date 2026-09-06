@@ -50,6 +50,27 @@ describe('Portada', () => {
     expect(document.querySelectorAll('.valor')[0]).toHaveTextContent('0 min');
   });
 
+  it('el título pide elegir y el «?» explica qué se elige', () => {
+    render(<Portada fetchImpl={nunca} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
+
+    expect(screen.getByRole('heading', { level: 3, name: 'Seleccioná el modo de preparación' })).toBeInTheDocument();
+    const ayuda = screen.getByRole('button', { name: 'Qué es el modo de preparación' });
+    expect(ayuda).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText(/cambia el orden de los pasos/)).not.toBeInTheDocument();
+
+    fireEvent.click(ayuda);
+    expect(ayuda).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/cambia el orden de los pasos/)).toBeInTheDocument();
+
+    fireEvent.click(ayuda);
+    expect(screen.queryByText(/cambia el orden de los pasos/)).not.toBeInTheDocument();
+  });
+
+  it('sin más de un modo no hay título ni ayuda', () => {
+    render(<Portada fetchImpl={nunca} resumen={resumenSinFoto} version="linea-de-tiempo" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
+    expect(screen.queryByRole('button', { name: 'Qué es el modo de preparación' })).not.toBeInTheDocument();
+  });
+
   it('los modos van de la más lenta a la más rápida, con ícono, tiempo y resumen, y avisan al elegir', () => {
     const alCambiarVersion = vi.fn();
     render(<Portada fetchImpl={nunca} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={alCambiarVersion} alVolver={nada} alEmpezar={nada} />);

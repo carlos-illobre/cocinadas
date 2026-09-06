@@ -24,6 +24,7 @@ type Solapa = 'ingredientes' | 'utensilios';
 export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolver, alEmpezar }: PropiedadesPortada): React.JSX.Element {
   const [carga, setCarga] = useState<Carga>({ estado: 'cargando' });
   const [solapa, setSolapa] = useState<Solapa>('ingredientes');
+  const [ayuda, setAyuda] = useState(false);
 
   useEffect(() => {
     let vigente = true;
@@ -75,9 +76,19 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
 
       {versiones.length > 1 && (
         <section className="modos-bloque" aria-labelledby="titulo-modo">
-          <h3 id="titulo-modo" className="titulo-seccion">
-            Modo de preparación
-          </h3>
+          <div className="titulo-con-ayuda">
+            <h3 id="titulo-modo" className="titulo-seccion">
+              Seleccioná el modo de preparación
+            </h3>
+            <button type="button" className="ayuda" aria-label="Qué es el modo de preparación" aria-expanded={ayuda} aria-controls="ayuda-modo" onClick={() => setAyuda(!ayuda)}>
+              ?
+            </button>
+          </div>
+          {ayuda && (
+            <p id="ayuda-modo" className="ayuda-texto">
+              La receta se puede cocinar de más de una manera. Tocá la que quieras usar: cambia el orden de los pasos y el tiempo total, no el plato ni las cantidades. Podés cambiarla hasta que empieces a cocinar.
+            </p>
+          )}
           <div className="modos" role="tablist" aria-label="Modo de preparación">
             {versiones.map((v) => (
               <button key={v.clave} type="button" role="tab" aria-selected={v.clave === version} className={v.clave === version ? 'modo on' : 'modo'} onClick={() => alCambiarVersion(v.clave)}>
