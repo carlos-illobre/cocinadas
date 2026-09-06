@@ -8,8 +8,7 @@ plato paso a paso, cronometra cada paso, muestra los procesos que corren en para
 cocinada para ver cómo va mejorando cada receta.
 
 Es **solo frontend**: un sitio estático que se baja entero al teléfono, con el catálogo de
-recetas adentro. No hay servidor ni base de datos — las cocinadas se guardan en el
-`localStorage` del navegador. El porqué está en
+recetas adentro. Las cocinadas se guardan en el `localStorage` del navegador. El porqué está en
 [ADR-017](docs/adr/ADR-017-sitio-estatico-en-github-pages.md).
 
 | Carpeta | Qué es |
@@ -20,7 +19,7 @@ recetas adentro. No hay servidor ni base de datos — las cocinadas se guardan e
 
 ## Cómo se instala y se levanta
 
-Hace falta **Node 22** y **pnpm 10**. Nada más: ni Docker, ni base de datos, ni servidor.
+Hace falta **Node 22** y **pnpm 10**.
 
 ```bash
 cd web && pnpm install && pnpm dev
@@ -47,13 +46,12 @@ detalle de qué se mide, qué está excluido y por qué, en [docs/TESTING.md](do
 ## Cómo se publica
 
 **Cada merge a `main` publica el sitio solo.** El CI corre las pruebas, compila y sube el
-resultado a GitHub Pages; no hay que apretar nada ni entrar a ningún servidor. El detalle
-está en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+resultado a GitHub Pages. El detalle está en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## El catálogo
 
-No hay API: el catálogo son archivos que se generan al compilar leyendo `data/`, y que la
-app pide como cualquier otro archivo del sitio.
+El catálogo son archivos que se generan al compilar leyendo `data/`, y que la app pide
+como cualquier otro archivo del sitio.
 
 | Archivo | Qué tiene |
 |---|---|
@@ -62,8 +60,8 @@ app pide como cualquier otro archivo del sitio.
 | `api/catalogo/fotos/recetas/<plato>.<ext>` | La foto del plato terminado. |
 | `api/catalogo/fotos/ingredientes/<id>.<ext>`, `api/catalogo/fotos/utensilios/<id>.<ext>` | La primera imagen enlazada en la ficha. Solo se copian las que alguna receta usa. |
 
-Se conserva el prefijo `api/` a propósito, aunque no haya ninguna API detrás: es por donde
-entraría un backend el día que las cocinadas tengan que salir del celular.
+El prefijo `api/` se conserva a propósito: es por donde entraría un backend el día que
+las cocinadas tengan que salir del celular.
 
 Las cocinadas, el tema y la cocinada en curso viven en el `localStorage`
 (`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`). No salen del teléfono.

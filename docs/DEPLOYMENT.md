@@ -1,12 +1,11 @@
 # Despliegue
 
-**Cada merge a `main` publica el sitio solo.** No hay servidor, ni claves, ni nada que
-apretar: el CI corre las pruebas, compila y sube el resultado a GitHub Pages.
+**Cada merge a `main` publica el sitio solo.** El CI corre las pruebas, compila y sube el
+resultado a GitHub Pages.
 
 **La app: <https://carlos-illobre.github.io/cocinadas/>**
 
-El porqué de que no haya servidor está en
-[ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md).
+El porqué está en [ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md).
 
 ## El pipeline
 
@@ -26,9 +25,8 @@ Todo merge a `main` —con commit de merge o con squash— es un push a `main`, 
 Una sola cosa, y una sola vez: **Settings → Pages → Build and deployment → Source:
 GitHub Actions**.
 
-Nada más. Sin secretos, sin variables, sin entornos con revisores. El job se autentica con
-el token OIDC del propio workflow, que es para lo que están los permisos `pages: write` e
-`id-token: write`.
+El job se autentica con el token OIDC del propio workflow, que es para lo que están los
+permisos `pages: write` e `id-token: write`.
 
 El repositorio tiene que ser **público** para que Pages sea gratis. Lo es.
 
@@ -57,7 +55,7 @@ anotado como pendiente en [SECURITY.md](SECURITY.md): la CSP se puede recuperar 
 
 ## Revertir
 
-No hay comando de reversión: se revierte el commit y se mergea.
+Se revierte el commit y se mergea.
 
 ```bash
 git revert <sha>
@@ -92,8 +90,8 @@ de que llegue a producción.
 
 ## El día que haya backend
 
-Pages sirve archivos: no corre procesos ni tiene base de datos. Cuando las cocinadas tengan
-que salir del celular hay que traer un servidor, y ahí hay dos caminos, analizados en
+Pages sirve archivos. Cuando las cocinadas tengan que salir del celular hay que traer un
+servidor, y ahí hay dos caminos, analizados en
 [ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md):
 
 - **Orígenes separados** (front en Pages, API en un servidor): trae CORS y empuja el token

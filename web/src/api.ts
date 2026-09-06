@@ -1,14 +1,13 @@
 import type { Fetch } from './salud';
 
 /**
- * Dónde queda el catálogo dentro del bundle. No hay un servicio detrás: son archivos
- * generados en el build (ADR-015).
+ * Dónde queda el catálogo dentro del bundle: archivos generados en el build (ADR-015).
  *
  * RELATIVA, sin barra inicial: GitHub Pages sirve el sitio en `/<repo>/`, así que
  * `/api/catalogo` pediría la raíz del dominio y daría 404. Se resuelve contra la página,
  * que siempre está en la base porque la app nunca cambia la URL.
  *
- * Se conserva el prefijo `api/` a propósito: es por donde entra un backend el día que las
+ * El prefijo `api/` se conserva a propósito: es por donde entra un backend el día que las
  * cocinadas salgan del celular, sin tocar las pantallas.
  */
 export const BASE_CATALOGO = 'api/catalogo';
