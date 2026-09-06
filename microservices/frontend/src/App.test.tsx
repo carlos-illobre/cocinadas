@@ -1,9 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { App, Servicios, versionPorOmision } from './App';
 import type { Avisador } from './cocina/sonido';
 import { CLAVE_COCINADAS, type Almacen } from './historial/almacen';
 import { CLAVE_TEMA } from './tema';
+import { CLAVE_EN_CURSO } from './cocina/enCurso';
 import { fetchDeCatalogo, nunca, recetaDosEtapas, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
 import type { Fetch } from './salud';
 
@@ -99,8 +100,11 @@ describe('el recorrido de la app', () => {
     expect(screen.getByText('Etapa 1 · Preparación')).toBeInTheDocument();
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
 
-    // Volver desde la cocina lleva a la portada; y de la portada a la lista.
-    fireEvent.click(screen.getByRole('button', { name: '‹ Portada' }));
+    // Volver desde la cocina lleva a la pantalla anterior, que es la mise en place; de
+    // ahí a la portada, y de la portada a la lista.
+    fireEvent.click(screen.getByRole('button', { name: '‹ Volver' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Mise en place' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '‹ Volver' }));
     expect(screen.getByRole('tab', { name: /Mise en place primero/ })).toHaveAttribute('aria-selected', 'true');
     fireEvent.click(screen.getByRole('button', { name: 'Volver a las recetas' }));
     expect(screen.getByRole('heading', { level: 1, name: '¿Qué cocinamos hoy?' })).toBeInTheDocument();
@@ -151,6 +155,85 @@ describe('el recorrido de la app', () => {
     expect(document.documentElement.getAttribute('data-tema')).toBe('oscuro');
     fireEvent.click(screen.getByRole('button', { name: 'Perfil' }));
     expect(screen.getByRole('button', { name: 'Cambiar a modo claro' })).toBeInTheDocument();
+  });
+
+  it('el botón de atrás del teléfono vuelve a la pantalla anterior, y en la primera se va del sitio', () => {
+    montar();
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Perfil' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Aprendiz' })).toBeInTheDocument();
+
+    // Lo que dispara el botón físico.
+    fireEvent.popState(window);
+    expect(screen.getByRole('heading', { level: 1, name: '¿Qué cocinamos hoy?' })).toBeInTheDocument();
+
+    fireEvent.popState(window);
+    expect(screen.getByRole('button', { name: 'Entrar sin cuenta' })).toBeInTheDocument();
+
+    // En la primera pantalla ya no hay a dónde volver: la app se queda como está y el
+    // navegador se va del sitio.
+    fireEvent.popState(window);
+    expect(screen.getByRole('button', { name: 'Entrar sin cuenta' })).toBeInTheDocument();
+  });
+
+  it('volver con un botón de la pantalla no cuenta dos veces con el del teléfono', async () => {
+    montar();
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Spaghetti/ }));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Spaghetti integral');
+
+    // El botón de la pantalla ya consume su entrada del historial…
+    fireEvent.click(screen.getByRole('button', { name: 'Volver a las recetas' }));
+    expect(screen.getByRole('heading', { level: 1, name: '¿Qué cocinamos hoy?' })).toBeInTheDocument();
+
+    // …así que el popstate que llega después no tiene que mover nada más.
+    fireEvent.popState(window);
+    expect(screen.getByRole('heading', { level: 1, name: '¿Qué cocinamos hoy?' })).toBeInTheDocument();
+  });
+
+  it('salir de la cocina con el botón de atrás descarta la cocinada en curso', async () => {
+    const almacen = montar();
+    await hastaLaCocina();
+    expect(almacen.datos.get(CLAVE_EN_CURSO)).toBeTruthy();
+
+    fireEvent.popState(window);
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Mise en place' })).toBeInTheDocument();
+    expect(almacen.datos.get(CLAVE_EN_CURSO)).toBe('');
+  });
+
+  it('si quedó una cocinada a medio hacer, arranca en la cocina y no en la bienvenida', async () => {
+    const almacen = montar();
+    await hastaLaCocina();
+    const guardado = almacen.datos.get(CLAVE_EN_CURSO) ?? '';
+    expect(guardado).not.toBe('');
+    cleanup();
+
+    // Otra carga de la app con lo que quedó guardado: es lo que pasa al recargar o cuando
+    // el teléfono descartó la pestaña.
+    render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} almacen={memoria({ [CLAVE_EN_CURSO]: guardado })} nuevoId={() => 'id-1'} />);
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Paso 1 de 3');
+    // Y el botón de atrás desde ahí lleva a la bienvenida, no fuera del sitio.
+    fireEvent.popState(window);
+    expect(screen.getByRole('button', { name: 'Entrar sin cuenta' })).toBeInTheDocument();
+  });
+
+  it('al retomar una cocinada, el avisador se crea con el primer toque', async () => {
+    const almacen = montar();
+    await hastaLaCocina();
+    const guardado = almacen.datos.get(CLAVE_EN_CURSO) ?? '';
+    cleanup();
+    crearAvisador.mockClear();
+
+    // Retomando no se pasa por «Entrar», así que no hubo gesto todavía.
+    render(<App fetchImpl={fetchCompleto()} crearAvisador={crearAvisador} almacen={memoria({ [CLAVE_EN_CURSO]: guardado })} nuevoId={() => 'id-1'} />);
+    expect(crearAvisador).not.toHaveBeenCalled();
+
+    fireEvent.pointerDown(document.body);
+
+    // Sin esto, una cocinada retomada se quedaría sin alarmas.
+    expect(crearAvisador).toHaveBeenCalledTimes(1);
   });
 
   it('las pestañas de la barra cambian de sección', async () => {

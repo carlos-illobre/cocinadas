@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { versionesOrdenadas, type Receta, type RecetaResumen } from './api';
 import { BarraInferior, type Pestana } from './BarraInferior';
+import { borrarEnCurso, recetaEnCurso } from './cocina/enCurso';
 import { avisadorDelNavegador, SIN_AVISADOR, type Avisador } from './cocina/sonido';
 import { Cocina } from './Cocina';
 import { almacenSeguro, guardarCocinada, listarCocinadas, type Almacen, type Cocinada } from './historial/almacen';
@@ -39,6 +40,11 @@ export type Pantalla =
   | { readonly nombre: 'servicios' };
 
 const fetchNavegador: Fetch = (url) => fetch(url);
+
+/** La pila sin su última pantalla; con una sola no se toca, porque no hay a dónde volver. */
+function sinLaUltima(pila: readonly Pantalla[]): readonly Pantalla[] {
+  return pila.length > 1 ? pila.slice(0, -1) : pila;
+}
 const VERSION_APP = '0.3.0';
 
 function almacenDelNavegador(): Almacen {
@@ -56,7 +62,16 @@ function almacenDelNavegador(): Almacen {
  * este objeto se mapea a la URL.
  */
 export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNavegador, ahora, almacen = almacenDelNavegador(), nuevoId = () => crypto.randomUUID() }: PropiedadesApp): React.JSX.Element {
-  const [pantalla, setPantalla] = useState<Pantalla>({ nombre: 'inicio' });
+  // Si quedó una cocinada a medio hacer, se vuelve directo a la cocina. Es lo que pasa
+  // cuando el teléfono descarta la pestaña o alguien recarga sin querer.
+  const [pila, setPila] = useState<readonly Pantalla[]>(() => {
+    const receta = recetaEnCurso(almacen, ahora === undefined ? Date.now() : ahora());
+    return receta === null ? [{ nombre: 'inicio' }] : [{ nombre: 'inicio' }, { nombre: 'cocina', receta }];
+  });
+  const pantalla = pila[pila.length - 1] as Pantalla;
+  // El botón de atrás del teléfono dispara `popstate`; sin la pila, la app no tendría a
+  // dónde volver y el navegador se iría del sitio.
+  const volviendoSolo = useRef(false);
   // El navegador solo deja sonar después de un gesto: el avisador se crea al tocar
   // «Empezar» en la pantalla de inicio, y de ahí en más se reutiliza.
   const [avisador, setAvisador] = useState<Avisador>(SIN_AVISADOR);
@@ -67,6 +82,39 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
     aplicarTema(document.documentElement, tema);
   }, [tema]);
 
+  // Atrás del teléfono: se descarta la pantalla de arriba de la pila. Cuando ya no queda
+  // ninguna, no se hace nada y el navegador se va del sitio, que es lo esperable.
+  useEffect(() => {
+    const atrasDelTelefono = () => {
+      if (volviendoSolo.current) {
+        volviendoSolo.current = false;
+        return;
+      }
+      setPila((prev) => {
+        // Salir de la cocina con el botón de atrás es salir: la cocinada a medio hacer se
+        // descarta igual que con «‹ Volver», para no retomarla sin querer más tarde.
+        if (prev.length > 1 && (prev[prev.length - 1] as Pantalla).nombre === 'cocina') {
+          borrarEnCurso(almacen);
+        }
+        return sinLaUltima(prev);
+      });
+    };
+    window.addEventListener('popstate', atrasDelTelefono);
+    return () => window.removeEventListener('popstate', atrasDelTelefono);
+  }, [almacen]);
+
+  // El navegador solo deja sonar después de un gesto. Al retomar una cocinada no se pasa
+  // por «Entrar», así que el avisador se crea con el primer toque, sea el que sea: sin
+  // esto, una cocinada retomada se queda sin alarmas.
+  useEffect(() => {
+    if (avisador !== SIN_AVISADOR) {
+      return undefined;
+    }
+    const crear = () => setAvisador(crearAvisador());
+    document.addEventListener('pointerdown', crear, { once: true });
+    return () => document.removeEventListener('pointerdown', crear);
+  }, [avisador, crearAvisador]);
+
   const cambiarTema = () => {
     const otro = elOtro(tema);
     guardarTema(almacen, otro);
@@ -75,7 +123,23 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
 
   const experiencia = experienciaDe(cocinadas);
 
-  const irA = (pestana: Pestana) => setPantalla({ nombre: pestana });
+  /** Ir a una pantalla nueva: se apila y se agrega una entrada al historial. */
+  const avanzar = (p: Pantalla) => {
+    window.history.pushState(null, '');
+    setPila((prev) => [...prev, p]);
+  };
+
+  /** Volver: se desapila acá y se consume la entrada del historial sin reaccionar a ella. */
+  const atras = () => {
+    volviendoSolo.current = true;
+    setPila(sinLaUltima);
+    window.history.back();
+  };
+
+  /** Cambiar algo de la pantalla actual sin apilar otra (elegir el modo de preparación). */
+  const reemplazar = (p: Pantalla) => setPila((prev) => [...prev.slice(0, -1), p]);
+
+  const irA = (pestana: Pestana) => avanzar({ nombre: pestana });
 
   const conBarra = (activa: Pestana, contenido: React.JSX.Element) => (
     <>
@@ -90,48 +154,45 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
         <Inicio
           alEntrar={() => {
             setAvisador(crearAvisador());
-            setPantalla({ nombre: 'recetas' });
+            avanzar({ nombre: 'recetas' });
           }}
         />
       );
     case 'recetas':
-      return conBarra('recetas', <Recetas fetchImpl={fetchImpl} xp={experiencia} alElegir={(resumen) => setPantalla({ nombre: 'portada', resumen, version: versionPorOmision(resumen) })} />);
+      return conBarra('recetas', <Recetas fetchImpl={fetchImpl} xp={experiencia} alElegir={(resumen) => avanzar({ nombre: 'portada', resumen, version: versionPorOmision(resumen) })} />);
     case 'portada':
       return (
         <Portada
           fetchImpl={fetchImpl}
           resumen={pantalla.resumen}
           version={pantalla.version}
-          alCambiarVersion={(version) => setPantalla({ ...pantalla, version })}
-          alVolver={() => setPantalla({ nombre: 'recetas' })}
-          alEmpezar={(receta) => setPantalla({ nombre: 'mise', receta })}
+          alCambiarVersion={(version) => reemplazar({ ...pantalla, version })}
+          alVolver={atras}
+          alEmpezar={(receta) => avanzar({ nombre: 'mise', receta })}
         />
       );
     case 'mise':
-      return <MiseEnPlace receta={pantalla.receta} alVolver={() => setPantalla(portadaDe(pantalla.receta))} alCocinar={() => setPantalla({ nombre: 'cocina', receta: pantalla.receta })} />;
+      return <MiseEnPlace receta={pantalla.receta} alVolver={atras} alCocinar={() => avanzar({ nombre: 'cocina', receta: pantalla.receta })} />;
     case 'cocina':
       return (
         <Cocina
           receta={pantalla.receta}
           avisador={avisador}
           {...(ahora === undefined ? {} : { ahora })}
-          alVolver={() => setPantalla(portadaDe(pantalla.receta))}
-          alTerminar={() => setPantalla({ nombre: 'historial' })}
+          alVolver={atras}
+          alTerminar={() => avanzar({ nombre: 'historial' })}
           cocinadas={cocinadas}
+          almacen={almacen}
           alGuardar={(cocinada) => setCocinadas(guardarCocinada(almacen, { ...cocinada, id: nuevoId() }))}
         />
       );
     case 'historial':
       return conBarra('historial', <Historial cocinadas={cocinadas} />);
     case 'perfil':
-      return conBarra('perfil', <Perfil cocinadas={cocinadas} xp={experiencia} tema={tema} alCambiarTema={cambiarTema} alVerEstado={() => setPantalla({ nombre: 'servicios' })} version={VERSION_APP} />);
+      return conBarra('perfil', <Perfil cocinadas={cocinadas} xp={experiencia} tema={tema} alCambiarTema={cambiarTema} alVerEstado={() => avanzar({ nombre: 'servicios' })} version={VERSION_APP} />);
     case 'servicios':
-      return <Servicios fetchImpl={fetchImpl} alVolver={() => setPantalla({ nombre: 'perfil' })} />;
+      return <Servicios fetchImpl={fetchImpl} alVolver={atras} />;
   }
-}
-
-function portadaDe(receta: Receta): Pantalla {
-  return { nombre: 'portada', resumen: receta, version: receta.version.clave };
 }
 
 /** La versión más lenta es la que la receta recomienda para cocinar con calma. */
