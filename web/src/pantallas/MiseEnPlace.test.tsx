@@ -63,6 +63,7 @@ describe('MiseEnPlace', () => {
     expect(screen.getByRole('progressbar')).toHaveClass('completo');
     expect(screen.getByText('100%')).toBeInTheDocument();
     expect(screen.queryByText('Marcá todos los items para continuar')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Desmarcar todos' })).toBeInTheDocument();
     const cocinar = screen.getByRole('button', { name: 'Todo listo → Cocinar' });
     expect(cocinar).toBeEnabled();
     expect(cocinar).toHaveClass('verde');
@@ -82,5 +83,15 @@ describe('MiseEnPlace', () => {
     render(<MiseEnPlace receta={recetaDosEtapas} alVolver={alVolver} alCocinar={nada} />);
     fireEvent.click(screen.getByRole('button', { name: '‹ Volver' }));
     expect(alVolver).toHaveBeenCalledTimes(1);
+  });
+
+  it('«Marcá todos» marca todo de un toque, y «Desmarcar todos» lo deshace', () => {
+    render(<MiseEnPlace receta={recetaDosEtapas} alVolver={nada} alCocinar={nada} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Marcá todos los items para continuar' }));
+    expect(screen.getByText('6 de 6 items')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Todo listo → Cocinar' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Desmarcar todos' }));
+    expect(screen.getByText('0 de 6 items')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Faltan 6 items' })).toBeDisabled();
   });
 });

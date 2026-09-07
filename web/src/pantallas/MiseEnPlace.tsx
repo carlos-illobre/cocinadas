@@ -20,6 +20,9 @@ export function MiseEnPlace({ receta, alVolver, alCocinar }: PropiedadesMiseEnPl
   const ingredientes: readonly Item[] = receta.ingredientes.map((x, i) => ({ clave: `i-${i}`, nombre: x.nombre, detalle: x.cantidad, foto: x.foto, icono: '🥄' }));
   const total = utensilios.length + ingredientes.length;
   const hechos = tildados.size;
+  const alternarTodos = (): void => {
+    setTildados(hechos < total ? new Set([...utensilios, ...ingredientes].map((x) => x.clave)) : new Set());
+  };
   const porcentaje = total === 0 ? 0 : Math.round((hechos / total) * 100);
   const completo = total > 0 && hechos === total;
 
@@ -39,6 +42,11 @@ export function MiseEnPlace({ receta, alVolver, alCocinar }: PropiedadesMiseEnPl
         </button>
         <h1>Mise en place</h1>
         <p className="saludo">Verificá que tenés todo antes de empezar</p>
+      </header>
+
+      {/* La barra va fuera del <header> y fija arriba: un `sticky` solo se pega mientras su
+          padre está a la vista, y la cabecera se va con el scroll. */}
+      <div className="fijo">
         <div className={completo ? 'mise-progreso completo' : 'mise-progreso'} role="progressbar" aria-label="Preparado" aria-valuemin={0} aria-valuemax={total} aria-valuenow={hechos}>
           <div className="xp-fila">
             <span className="xp-nivel">
@@ -50,7 +58,7 @@ export function MiseEnPlace({ receta, alVolver, alCocinar }: PropiedadesMiseEnPl
             <i style={{ width: `${porcentaje}%` }} />
           </div>
         </div>
-      </header>
+      </div>
 
       <div className="cuerpo">
         <Lista titulo="Utensilios" icono="🔧" items={utensilios} tildados={tildados} alternar={alternar} />
@@ -58,7 +66,10 @@ export function MiseEnPlace({ receta, alVolver, alCocinar }: PropiedadesMiseEnPl
       </div>
 
       <div className="cta-fija">
-        {!completo && <p className="hint">Marcá todos los items para continuar</p>}
+        {/* Un toque marca todo; con todo marcado, otro lo desmarca. */}
+        <button type="button" className="enlace marcar-todos" onClick={alternarTodos}>
+          {completo ? 'Desmarcar todos' : 'Marcá todos los items para continuar'}
+        </button>
         <button type="button" className={completo ? 'btn verde' : 'btn primary'} disabled={!completo} onClick={alCocinar}>
           {completo ? 'Todo listo → Cocinar' : `Faltan ${total - hechos} items`}
         </button>
