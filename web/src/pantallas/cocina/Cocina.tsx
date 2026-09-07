@@ -58,6 +58,8 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
   // «Receta completada» con un botón, como en el prototipo, y el festejo —confeti y
   // sonido— arranca recién al tocarlo.
   const [verResultados, setVerResultados] = useState(false);
+  /** La foto del paso ampliada, para ver qué es; null cuando no se está mirando. */
+  const [fotoAmpliada, setFotoAmpliada] = useState(false);
 
   // El tic: redibuja y deja que el modelo detecte vencimientos.
   useEffect(() => {
@@ -114,6 +116,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
     setReloj(t);
     setEstado((e) => f(e, t));
     setMostrarPorQue(false);
+    setFotoAmpliada(false);
   };
 
   if (estado.fase === 'alarma') {
@@ -133,6 +136,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
   const critica = etapa.vigilancia;
   const transcurridoEtapa = transcurridoEtapa_s(estado, reloj_ms);
   const fotoPaso = fotoDe(receta, paso.ingredientes[0] ?? null);
+  const ingredientePaso = receta.ingredientes.find((i) => i.id === paso.ingredientes[0])?.nombre ?? '';
   const vence = proximoVencimiento_s(estado, reloj_ms);
   const esperaPrevia = esperaPrevia_s(estado, reloj_ms);
 
@@ -203,7 +207,18 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
               mientras se está en tiempo, roja y latiendo pasado. Debajo del número va la
               meta —el previsto— y no «transcurrido»: es contra eso que se mide. */}
           <div className="ttl">
-            {fotoPaso !== null && <img className="ph" src={fotoPaso} alt="" />}
+            {fotoPaso !== null && (
+              <button
+                type="button"
+                className="ver-foto"
+                aria-label={`Ver la foto de ${ingredientePaso}`}
+                onClick={() => {
+                  setFotoAmpliada(true);
+                }}
+              >
+                <img className="ph" src={fotoPaso} alt="" />
+              </button>
+            )}
             <h2 id="titulo-paso">{paso.titulo}</h2>
             <div className="cronometro">
               {esperaPrevia > 0 ? (
@@ -289,6 +304,22 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
       )}
 
       <Riel estado={estado} ahora={reloj_ms} />
+
+      {/* Ampliada a pantalla completa, para ver qué es; se cierra tocando en cualquier lado. */}
+      {fotoAmpliada && fotoPaso !== null && (
+        <button
+          type="button"
+          className="foto-ampliada"
+          aria-label={`Cerrar la foto de ${ingredientePaso}`}
+          onClick={() => {
+            setFotoAmpliada(false);
+          }}
+        >
+          <img src={fotoPaso} alt={ingredientePaso} />
+          <b>{ingredientePaso}</b>
+          <small>Tocá para cerrar</small>
+        </button>
+      )}
     </main>
   );
 }

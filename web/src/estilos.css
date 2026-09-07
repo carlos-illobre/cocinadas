@@ -29,16 +29,16 @@
   --now-tinte: #f0fbf7;
   --now-tinte-hot: #fff3ee;
   --rojo: #ff3b30;
-  --now-tinte-pasado: #fff0ef;
-  --now-tinte-pasado-fuerte: #ffd9d6;
+  --now-tinte-pasado: #ffe9e7;
+  --now-tinte-pasado-fuerte: #ffc4bf;
 }
 
 [data-tema='oscuro'] {
   --now-tinte: rgba(6, 214, 160, 0.08);
   --now-tinte-hot: rgba(255, 107, 53, 0.1);
   --rojo: #ff3b30;
-  --now-tinte-pasado: rgba(255, 59, 48, 0.12);
-  --now-tinte-pasado-fuerte: rgba(255, 59, 48, 0.26);
+  --now-tinte-pasado: rgba(255, 59, 48, 0.16);
+  --now-tinte-pasado-fuerte: rgba(255, 59, 48, 0.42);
   --ground: #0d0d0d;
   --paper: #1c1c1e;
   --line: rgba(255, 255, 255, 0.07);
@@ -1304,11 +1304,22 @@ h1 {
  * Pasado de tiempo, la tarjeta entera late en rojo, como en el prototipo: es la alarma
  * silenciosa de la cocina. Late el marco y el tinte, no el texto, para que siga legible.
  */
-.now.pasado { border-color: var(--rojo); animation: latido-rojo 0.8s ease-in-out infinite; }
+/*
+ * El rojo va como estilo estático y la animación solo lo hace latir: con «reducir
+ * movimiento» (o el ahorro de batería del teléfono) la animación se apaga, y la tarjeta
+ * tiene que quedar roja igual. Antes el rojo vivía adentro de los keyframes y sin ellos
+ * la tarjeta pasada seguía verde.
+ */
+.now.pasado { border-color: var(--rojo); background: var(--now-tinte-pasado); animation: latido-rojo 0.8s ease-in-out infinite; }
 @keyframes latido-rojo {
-  0%, 100% { background: var(--now-tinte-pasado); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.35); }
-  50% { background: var(--now-tinte-pasado-fuerte); box-shadow: 0 0 0 6px rgba(255, 59, 48, 0); }
+  0%, 100% { background: var(--now-tinte-pasado); border-color: var(--rojo); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.45); }
+  50% { background: var(--now-tinte-pasado-fuerte); border-color: rgba(255, 59, 48, 0.35); box-shadow: 0 0 0 8px rgba(255, 59, 48, 0); }
 }
+/* Pasado, nada queda en verde salvo los tildes de los sub-pasos. */
+.now.pasado .hd .eyebrow { color: var(--coral); }
+.now.pasado .over-note.ok { color: var(--coral); background: rgba(255, 107, 53, 0.12); }
+.now.pasado .cronometro { animation: pulso-caja 0.8s ease-in-out infinite; }
+@keyframes pulso-caja { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 .now.pasado .btn.listo { background: linear-gradient(135deg, var(--rojo), var(--coral)); color: #fff; box-shadow: 0 4px 16px rgba(255, 59, 48, 0.4); }
 .now .hd { display: flex; justify-content: space-between; align-items: center; }
 .now .hd .eyebrow { color: var(--green); margin: 0; }
@@ -1317,6 +1328,14 @@ h1 {
 .now .ttl { align-items: flex-start; }
 .now .ttl h2 { flex: 1; min-width: 0; }
 .now .ttl .ph { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+.now .ttl .ver-foto { padding: 0; border: 0; background: none; flex-shrink: 0; cursor: pointer; border-radius: 10px; }
+.now .ttl .ver-foto:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+/* La foto ampliada: tapa todo, se cierra tocando en cualquier lado. */
+.foto-ampliada { position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, 0.85); border: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; cursor: pointer; }
+/* A todo el ancho: las fotos publicadas son miniaturas (plan.ts, `miniatura`), así que más grande que esto no hay. */
+.foto-ampliada img { width: 100%; max-width: 380px; max-height: 70vh; border-radius: 16px; object-fit: contain; background: #fff; padding: 12px; box-sizing: border-box; }
+.foto-ampliada b { color: #fff; font-family: var(--display); font-size: 20px; text-align: center; text-wrap: balance; }
+.foto-ampliada small { color: rgba(255, 255, 255, 0.7); font-size: 14px; }
 /* La cajita del cronómetro del prototipo: número mono y grande, la meta debajo. */
 .cronometro { flex: 0 0 auto; min-width: 78px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 12px; border-radius: 14px; border: 2px solid var(--green); background: rgba(6, 214, 160, 0.12); }
 .cronometro b { font-family: var(--mono); font-size: 24px; font-weight: 700; line-height: 1; color: var(--green); font-variant-numeric: tabular-nums; }
@@ -1492,7 +1511,7 @@ h1 {
 .sum .stg { font-family: var(--display); font-weight: 700; font-size: 16px; margin: 8px 0 2px; display: flex; justify-content: space-between; }
 .sum .stg span { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--muted); }
 .sum .row { height: 42px; }
-@media (prefers-reduced-motion: reduce) { .proc.warn, .cronometro .over, .track .ov, .alarma .ring, .alarma, .now.pasado { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .proc.warn, .cronometro .over, .track .ov, .alarma .ring, .alarma, .now.pasado, .now.pasado .cronometro { animation: none; } }
 
 /* ---------- historial ---------- */
 .historial { padding-top: 28px; }

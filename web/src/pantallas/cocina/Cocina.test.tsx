@@ -78,6 +78,22 @@ describe('Cocina · etapa tranquila', () => {
     expect(screen.queryByRole('button', { name: 'Listo, siguiente ✓' })).not.toBeInTheDocument();
   });
 
+  it('la foto del paso se amplía al tocarla y se cierra tocando en cualquier lado o al pasar de paso', () => {
+    const { listo } = armar();
+    // El primer paso no tiene ingrediente con foto; el segundo, el brócoli, sí.
+    listo();
+    expect(screen.queryByRole('button', { name: /Cerrar la foto/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Ver la foto de Brócoli fresco entero' }));
+    const ampliada = screen.getByRole('button', { name: 'Cerrar la foto de Brócoli fresco entero' });
+    expect(ampliada.querySelector('img')).toHaveAttribute('alt', 'Brócoli fresco entero');
+    fireEvent.click(ampliada);
+    expect(screen.queryByRole('button', { name: /Cerrar la foto/ })).not.toBeInTheDocument();
+    // Abierta y se pasa de paso: se cierra sola.
+    fireEvent.click(screen.getByRole('button', { name: /Ver la foto/ }));
+    listo();
+    expect(screen.queryByRole('button', { name: /Cerrar la foto/ })).not.toBeInTheDocument();
+  });
+
   it('los sub-pasos se tildan y destildan', () => {
     armar();
     const sub = screen.getByRole('button', { name: 'Tarar el bol.' });
