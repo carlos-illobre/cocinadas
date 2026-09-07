@@ -1578,6 +1578,11 @@ h1 {
   padding-top: 0;
 }
 
+/* Un poco de aire entre la grilla de logros y el título que sigue. */
+.perfil section + section {
+  margin-top: 28px;
+}
+
 .perfil-cabecera {
   text-align: center;
 }
