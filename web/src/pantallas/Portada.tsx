@@ -17,7 +17,7 @@ type Carga = { readonly estado: 'cargando' } | { readonly estado: 'error'; reado
 type Solapa = 'ingredientes' | 'utensilios';
 
 /**
- * El detalle de la receta del prototipo de Figma: la foto a sangre con el título encima,
+ * El detalle de la receta: la foto a sangre con el título encima,
  * la fila de valores, el modo de preparación como tarjetas, ingredientes o utensilios, y
  * el botón de comenzar fijo al pie. Los criterios de diseño y las reglas de seguridad
  * están en los datos de la receta, pero no acá: hacían la pantalla larguísima.

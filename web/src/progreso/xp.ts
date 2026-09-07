@@ -3,7 +3,7 @@ import type { Cocinada } from '../historial/almacen';
 /**
  * La experiencia (XP) y los niveles.
  *
- * El criterio es el del prototipo de Figma, adoptado con la pantalla de resultados: una
+ * El criterio, adoptado con la pantalla de resultados: una
  * cocinada suma un fijo por completarla, un bonus si el total quedó dentro del margen
  * del tiempo previsto, y un tanto por cada paso que no se pasó de su tiempo. Está
  * confirmado por Carlos (CLAUDE.md); cambiarlo no tocaría nada guardado, porque la

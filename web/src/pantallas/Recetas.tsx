@@ -12,7 +12,7 @@ export interface PropiedadesRecetas {
 type Carga = { readonly estado: 'cargando' } | { readonly estado: 'error'; readonly detalle: string } | { readonly estado: 'lista'; readonly recetas: readonly RecetaResumen[] };
 
 /**
- * La pantalla de inicio del prototipo de Figma: cabecera oscura con el saludo y la
+ * La pantalla de inicio: cabecera oscura con el saludo y la
  * barra de experiencia, y una tarjeta grande por plato, con su foto a sangre y los
  * datos en chips sobre la foto. Tocar la tarjeta abre la receta.
  */

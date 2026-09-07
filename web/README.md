@@ -30,7 +30,7 @@ cobertura lo alcance sin configuración aparte.
 ## Las imágenes: originales en un lado, versiones chicas en otro
 
 Los **originales** viven en `data/` (ingredientes, utensilios, fotos de recetas) y en
-`docs/mockups/inicio-capas/` (las capas de la pantalla de inicio). Ahí pueden pesar lo que
+`data/inicio-capas/` (las capas de la pantalla de inicio). Ahí pueden pesar lo que
 haga falta: una foto de ingrediente de 2000 × 2000 está bien como fuente.
 
 Las **versiones que se publican** están en `assets/`, en WebP y al tamaño al que se
@@ -103,6 +103,3 @@ Para regenerar la olla desde otro original: se recorta a la izquierda de la pala
 logo original, la columna con menos píxeles opacos entre las dos partes— y se centra en un
 lienzo cuadrado antes de reducirla.
 
-El concepto de pantalla de bienvenida que acompañó al logo (fondo negro con verduras y
-el lema «Tu receta, al punto justo») está en `docs/mockups/bienvenida-concepto.png`: es
-referencia de diseño, no se sirve desde acá.

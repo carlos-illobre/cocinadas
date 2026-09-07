@@ -12,7 +12,7 @@ pierden), encoge un poco el borde para llevarse la sombra y le devuelve su color
 el blanco que traía mezclado, que es lo que dejaría un halo sobre la pizarra.
 
 ```
-node docs/mockups/inicio-capas/quitar-fondo.mjs <carpeta-origen> 11.png <carpeta-de-salida>
+node data/inicio-capas/quitar-fondo.mjs <carpeta-origen> 11.png <carpeta-de-salida>
 ```
 
 Nunca pisa el archivo de entrada: deja `11-sin-fondo.png` al lado, para mirar el recorte,

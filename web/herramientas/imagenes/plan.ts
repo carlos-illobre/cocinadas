@@ -1,7 +1,7 @@
 /**
  * Qué imagen hay que achicar, a cuánto, y dónde va la versión chica.
  *
- * Los originales viven en `data/` y en `docs/mockups/`, y ahí se quedan: son la fuente y
+ * Los originales viven en `data/`, y ahí se quedan: son la fuente y
  * pueden pesar lo que haga falta. Las versiones que se publican van a `web/assets/`, y
  * **se versionan**: se regeneran con `pnpm optimizar` cuando cambia un original.
  *
@@ -30,7 +30,7 @@ export function esImagen(ruta: string): boolean {
  * - `plato`: la foto de la receta. Ocupa el ancho de la app (430 px) en la tarjeta y en la
  *   portada a sangre; 860 es 2×.
  * - `escena`: las capas de la pantalla de inicio, sobre un lienzo de 1414 × 2000. Los
- *   1000 px vienen del pipeline anterior (docs/mockups/inicio-capas/README.md).
+ *   1000 px vienen del pipeline anterior (data/inicio-capas/README.md).
  * - `grande`: la misma foto de ingrediente o utensilio, para cuando se toca la miniatura
  *   y se amplía a pantalla completa (componentes/FotoAmpliable). 720 es casi 2× de los
  *   380 px a los que se muestra.
@@ -83,7 +83,7 @@ export const FUENTES: readonly Fuente[] = [
   { directorio: 'data/ingredientes', destino: 'web/assets/ingredientes-grandes', uso: 'grande' },
   { directorio: 'data/utencillos', destino: 'web/assets/utencillos-grandes', uso: 'grande' },
   {
-    directorio: 'docs/mockups/inicio-capas',
+    directorio: 'data/inicio-capas',
     destino: 'web/assets/inicio',
     uso: 'escena',
     excluir: ['11.png', 'composicion-original.jpg'],

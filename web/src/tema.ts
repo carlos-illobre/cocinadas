@@ -1,7 +1,7 @@
 import type { Almacen } from './historial/almacen';
 
 /**
- * El tema visual, como en el prototipo de Figma: claro (el de la cocina con luz) u
+ * El tema visual: claro (el de la cocina con luz) u
  * oscuro, con un solo interruptor en Ajustes. Se guarda en el dispositivo y se aplica
  * como atributo `data-tema` en el elemento raíz; el CSS redefine los tokens de color
  * según ese atributo (estilos.css).

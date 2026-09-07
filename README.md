@@ -29,7 +29,7 @@ cd web && pnpm install && pnpm dev
 Abre en <http://localhost:5173>. `pnpm dev` genera antes el catálogo leyendo `data/`; si
 tocás una receta o una ficha, volvé a correr `pnpm generar:catalogo`.
 
-Las imágenes tienen los originales en `data/` y `docs/mockups/`, y las versiones que se
+Las imágenes tienen los originales en `data/`, y las versiones que se
 publican —en WebP y al tamaño al que se muestran— en `web/assets/`. Si agregás o cambiás
 una foto: `cd web && pnpm optimizar` (necesita Chrome o Chromium).
 
@@ -79,22 +79,12 @@ las cocinadas tengan que salir del celular.
 Las cocinadas, el tema y la cocinada en curso viven en el `localStorage`
 (`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`). No salen del teléfono.
 
-## El mockup navegable
+## El diseño
 
-El diseño de las pantallas sale de un prototipo hecho en Figma Make, que se puede recorrer
-como si fuera la app:
-
-**<https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Cocinadas>**
-
-Se abre el archivo y con el botón **Preview** se navega a pantalla completa. Hace falta que
-Figma te haya dado acceso. De ahí salen los colores, las tipografías (Nunito y Space Mono)
-y los dos temas, claro y oscuro, que la app implementa en `web/src/estilos.css`. El
-prototipo tiene además pantallas que la app no implementa a propósito: login por nombre,
-dificultad y los cronómetros por paso independientes.
-
-El resto del diseño visual está en `docs/mockups/`: el mockup HTML de la pantalla de
-cocina, el concepto de la bienvenida, y en `inicio-capas/` los originales de las capas de
-esa pantalla con el script que genera las versiones livianas.
+La interfaz actual es la fuente de verdad: no hay prototipo aparte. Los colores, las
+tipografías (Nunito para todo, Space Mono para los números, Lobster solo para la marca) y
+los dos temas, claro y oscuro, viven en `web/src/estilos.css`. Las capas de la pantalla de
+inicio, con el script que genera las versiones livianas, están en `data/inicio-capas/`.
 
 ## Dónde leer más
 

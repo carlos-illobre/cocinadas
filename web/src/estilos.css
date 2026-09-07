@@ -1,5 +1,5 @@
 /*
- * Tokens del prototipo de Figma (https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Cocinadas).
+ * Los tokens del diseño: colores, tipografías y espaciados de toda la app.
  * Los valores son los mismos que el prototipo define como `--th-*` para cada tema; acá
  * conservan los nombres que usa el resto de la hoja. El tema se elige en Ajustes y se
  * aplica como `data-tema` en el elemento raíz (src/tema.ts); claro es el de arranque, y
@@ -123,9 +123,7 @@ body {
   margin: 0 auto;
   padding: 48px 20px;
   /*
-   * Cada pantalla entra deslizándose desde abajo, como en el prototipo de Figma: ahí
-   * todas montan con `screen screen-enter`, que es este mismo movimiento. Los 30px, los
-   * 0.35s y la curva salen de su bundle publicado.
+   * Cada pantalla entra deslizándose desde abajo: 30px, 0.35s y una curva suave.
    *
    * Va en la clase que comparten todas las pantallas y no en cada una: la animación se
    * dispara al montar, y App cambia de componente en cada navegación.
@@ -158,8 +156,8 @@ body {
 }
 
 /*
- * Los tamaños de texto salieron del prototipo de Figma, que se dibuja en una pantalla
- * grande y se mira de cerca. Esta app se lee de parado, a un brazo del teléfono y con las
+ * Los tamaños de texto originales estaban pensados para una pantalla grande que se mira de
+ * cerca. Esta app se lee de parado, a un brazo del teléfono y con las
  * manos ocupadas: 53 declaraciones estaban entre 10 y 13 px, casi todas en gris.
  *
  * Se subieron en dos pasadas, la segunda porque la primera se quedó corta al mirarla en
@@ -197,7 +195,7 @@ h1 {
   margin: 0 0 24px;
 }
 
-/* ---------- cabecera y cuerpo: la estructura de todas las pantallas de Figma ---------- */
+/* ---------- cabecera y cuerpo: la estructura de todas las pantallas ---------- */
 .cabecera {
   background: var(--header-bg);
   color: var(--header-text);
@@ -255,7 +253,7 @@ h1 {
   font-weight: 600;
 }
 
-/* ---------- experiencia y progreso (la tarjeta de nivel de Figma) ---------- */
+/* ---------- experiencia y progreso (la tarjeta de nivel) ---------- */
 .xp {
   background: var(--xp-card);
   border: 1px solid var(--line);
@@ -508,7 +506,7 @@ h1 {
   outline-offset: 3px;
 }
 
-/* ---------- comunes de las pantallas de catálogo (copiadas del prototipo de Figma) ---------- */
+/* ---------- comunes de las pantallas de catálogo ---------- */
 .enlace {
   border: 0;
   background: none;
@@ -1243,7 +1241,7 @@ h1 {
 /*
  * Los íconos son emoji, así que su tamaño es `font-size` y no `width`. Hasta acá la regla
  * apuntaba a `svg` —de cuando se pensaban vectoriales— y nunca aplicaba: el emoji heredaba
- * los 11px de la etiqueta y se veía diminuto. 22px es el del prototipo de Figma.
+ * los 11px de la etiqueta y se veía diminuto.
  */
 .tabbar-icono {
   font-size: 22px;
