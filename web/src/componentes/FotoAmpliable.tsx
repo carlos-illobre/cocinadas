@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { flushSync } from 'react-dom';
 
 interface Propiedades {
   readonly src: string;
@@ -16,25 +17,42 @@ function nombreDeTransicion(src: string): string {
 }
 
 /**
- * Cambia el estado dentro de una View Transition si el navegador la tiene: la miniatura
- * y la foto grande comparten `view-transition-name`, así que una se transforma en la otra
- * al abrir y al cerrar. Sin la API, el cambio es directo y queda el fundido del CSS.
- */
-function conTransicion(cambio: () => void): void {
-  if (typeof document.startViewTransition === 'function') {
-    document.startViewTransition(cambio);
-  } else {
-    cambio();
-  }
-}
-
-/**
  * Una foto chica que se amplía a pantalla completa al tocarla, para ver qué es. Se cierra
  * tocando en cualquier lado. Ampliada usa la versión grande del catálogo (`foto_grande`).
+ *
+ * La miniatura y la grande comparten un `view-transition-name`, así el navegador
+ * transforma una en la otra al abrir y al cerrar. El nombre lo lleva **solo la foto que
+ * está transicionando y solo mientras dura la transición**: cada elemento con nombre se
+ * captura en su propio grupo y se dibuja por encima del fundido de la pantalla, así que
+ * si todas las miniaturas lo llevaran, todas flotarían sobre el fondo oscurecido hasta el
+ * final. Sin la API, el cambio es directo y queda el fundido del CSS.
  */
 export function FotoAmpliable({ src, srcGrande, nombre, className }: Propiedades): React.JSX.Element {
   const [abierta, setAbierta] = useState(false);
+  const [transicionando, setTransicionando] = useState(false);
   const transicion = nombreDeTransicion(src);
+
+  const cambiar = (nuevoEstado: boolean): void => {
+    if (typeof document.startViewTransition !== 'function') {
+      setAbierta(nuevoEstado);
+      return;
+    }
+    // El nombre tiene que estar en el DOM antes de que la API capture el «antes», y el
+    // cambio de estado tiene que aplicarse dentro del callback, de forma sincrónica:
+    // React agrupa las actualizaciones, y sin `flushSync` la captura vería el DOM viejo.
+    flushSync(() => {
+      setTransicionando(true);
+    });
+    const transicionEnCurso = document.startViewTransition(() => {
+      flushSync(() => {
+        setAbierta(nuevoEstado);
+      });
+    });
+    void transicionEnCurso.finished.finally(() => {
+      setTransicionando(false);
+    });
+  };
+
   return (
     <>
       <button
@@ -42,13 +60,11 @@ export function FotoAmpliable({ src, srcGrande, nombre, className }: Propiedades
         className="ver-foto"
         aria-label={`Ver la foto de ${nombre}`}
         onClick={() => {
-          conTransicion(() => {
-            setAbierta(true);
-          });
+          cambiar(true);
         }}
       >
-        {/* Solo un elemento puede llevar el nombre a la vez: la miniatura lo suelta mientras la grande está abierta. */}
-        <img className={className} src={src} alt="" loading="lazy" style={{ viewTransitionName: abierta ? 'none' : transicion }} />
+        {/* La miniatura lleva el nombre solo en los extremos de la transición en los que ella es la foto: antes de abrir y después de cerrar. */}
+        <img className={className} src={src} alt="" loading="lazy" style={{ viewTransitionName: transicionando && !abierta ? transicion : 'none' }} />
       </button>
       {abierta && (
         <button
@@ -56,9 +72,7 @@ export function FotoAmpliable({ src, srcGrande, nombre, className }: Propiedades
           className="foto-ampliada"
           aria-label={`Cerrar la foto de ${nombre}`}
           onClick={() => {
-            conTransicion(() => {
-              setAbierta(false);
-            });
+            cambiar(false);
           }}
         >
           <img src={srcGrande ?? src} alt={nombre} style={{ viewTransitionName: transicion }} />
