@@ -1,4 +1,4 @@
-import type { Cocinada } from './historial/almacen';
+import type { Cocinada } from '../historial/almacen';
 
 /**
  * Los logros, como en el prototipo de Figma pero medidos con lo que la app realmente

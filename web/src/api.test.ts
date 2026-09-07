@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BASE_CATALOGO, listarRecetas, minutos, obtenerReceta, reloj, urlFoto, type Fetch } from './api';
+import { BASE_CATALOGO, listarRecetas, minutos, obtenerReceta, reloj, urlFoto, versionPorOmision, type Fetch } from './api';
+import { resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
 
 function fetchQueDevuelve(cuerpo: unknown, ok = true, status = 200): { fetchImpl: Fetch; urls: string[] } {
   const urls: string[] = [];
@@ -67,5 +68,16 @@ describe('reloj', () => {
     [1260, '21:00'],
   ])('%i s → %s', (s, texto) => {
     expect(reloj(s)).toBe(texto);
+  });
+});
+
+describe('versionPorOmision', () => {
+  it('elige la versión más lenta', () => {
+    expect(versionPorOmision(resumenSpaghetti)).toBe('dos-etapas');
+    expect(versionPorOmision(resumenSinFoto)).toBe('linea-de-tiempo');
+  });
+
+  it('cae en «1» si el resumen no trae versiones', () => {
+    expect(versionPorOmision({ ...resumenSinFoto, versiones: [] })).toBe('1');
   });
 });

@@ -42,18 +42,17 @@ describe.each([
   it('se cocina entera exactamente a tiempo: cada paso a su duración, cada alarma atendida', () => {
     let t = 0;
     let e = empezar(receta, t);
-    for (let etapa = 0; etapa < receta.etapas.length; etapa += 1) {
-      const pasos = receta.etapas[etapa]?.pasos ?? [];
+    for (const etapaReceta of receta.etapas) {
       const inicioEtapa = t;
-      for (let i = 0; i < pasos.length; i += 1) {
-        expect(pasoActual(e).id).toBe(pasos[i]?.id);
+      for (const paso of etapaReceta.pasos) {
+        expect(pasoActual(e).id).toBe(paso.id);
         // Cada paso termina exactamente cuando la receta lo prevé, huecos incluidos.
-        t = inicioEtapa + ((pasos[i]?.inicio_s ?? 0) + (pasos[i]?.duracion_s ?? 0)) * 1000;
+        t = inicioEtapa + (paso.inicio_s + paso.duracion_s) * 1000;
         e = avanzarReloj(e, t);
         if (e.fase === 'alarma') {
           e = atenderAlarma(e, t);
           // Si la alarma cerró una espera, el bucle ya está en el paso siguiente.
-          if (pasoActual(e).id !== pasos[i]?.id) continue;
+          if (pasoActual(e).id !== paso.id) continue;
         }
         e = listo(e, t);
       }

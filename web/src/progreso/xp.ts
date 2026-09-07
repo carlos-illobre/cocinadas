@@ -1,4 +1,4 @@
-import type { Cocinada } from './historial/almacen';
+import type { Cocinada } from '../historial/almacen';
 
 /**
  * La experiencia (XP) y los niveles. Se premia la precisión, no la velocidad: una

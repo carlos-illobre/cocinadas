@@ -35,7 +35,7 @@ Lo que se publica son archivos. Lo que sigue es cómo se arman.
 | Componente | Carpeta | Responsabilidad | Tecnología |
 |---|---|---|---|
 | **la SPA** | `web/src` | Toda la aplicación (ver abajo). | React 19 + TypeScript, compilada con Vite (ADR-013). |
-| **el catálogo** | `web/src/catalogo` | Lee `data/recetas/`, `data/ingredientes/` y `data/utencillos/` **en el build** y escribe el JSON y las fotos que la SPA consume. | Node, corre una vez por publicación con `tsx`. `catalogo.ts` es puro y decide qué archivos van; `generar.ts` solo los escribe (ADR-006, ADR-015). |
+| **el catálogo** | `web/herramientas/catalogo` | Lee `data/recetas/`, `data/ingredientes/` y `data/utencillos/` **en el build** y escribe el JSON y las fotos que la SPA consume. | Node, corre una vez por publicación con `tsx`. `catalogo.ts` es puro y decide qué archivos van; `generar.ts` solo los escribe (ADR-006, ADR-015). |
 | **el hosting** | — | Sirve `web/dist/` por HTTPS, con CDN. | GitHub Pages (ADR-017). |
 
 ### Qué hace la SPA
@@ -57,8 +57,8 @@ Ajustes y se guardan en el teléfono.
 No tiene estado propio ni enrutador: la navegación es una pila de pantallas en `App`,
 atada al historial del navegador para que el botón de atrás del teléfono vuelva de
 pantalla en vez de salir de la app. La cocinada en curso se guarda en el teléfono a cada
-cambio, así una recarga no cuesta el progreso. Los logros (`src/logros.ts`) y la
-experiencia (`src/xp.ts`) no se almacenan: se recalculan a partir de las cocinadas
+cambio, así una recarga no cuesta el progreso. Los logros (`src/progreso/logros.ts`) y la
+experiencia (`src/progreso/xp.ts`) no se almacenan: se recalculan a partir de las cocinadas
 guardadas. La experiencia premia la precisión contra los tiempos de la receta, no la
 velocidad; el criterio exacto de puntos es provisional.
 
@@ -148,6 +148,6 @@ El índice completo está en [adr/README.md](adr/README.md).
 - **Cuentas de usuario.** La bienvenida ofrece entrar con Google, pero no hay a quién
   preguntarle: hoy se entra sin cuenta y las cocinadas quedan en ese teléfono. El camino
   para agregarlo está escrito en ADR-015.
-- **El criterio de puntos es provisional.** `puntosDe` en `src/xp.ts` premia la precisión
+- **El criterio de puntos es provisional.** `puntosDe` en `src/progreso/xp.ts` premia la precisión
   contra los tiempos de la receta; los números exactos están por acordar con Carlos.
 - **Una sola receta en el catálogo**, con sus dos versiones.

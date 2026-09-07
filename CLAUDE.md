@@ -34,10 +34,24 @@ Es un sitio estático en GitHub Pages (<https://carlos-illobre.github.io/cocinad
 SPA que se baja entera al teléfono, con el catálogo adentro. Las cocinadas viven en el `localStorage` (`cocinadas.historial`,
 `cocinadas.tema`, `cocinadas.cocinando`). Todo el código está en `web/`.
 
-El catálogo **se genera en el build**: `web/src/catalogo/catalogo.ts` lee `data/` y
+El catálogo **se genera en el build**: `web/herramientas/catalogo/catalogo.ts` lee `data/` y
 devuelve el plan de archivos (puro, medido al 100 %); `generar.ts` lo escribe en
 `web/public/api/catalogo/`, que no se versiona. Tocar una receta obliga a
 `pnpm generar:catalogo` en desarrollo, y a volver a publicar en producción.
+
+`web/` se divide por lo que corre en cada lado:
+
+- `src/` es lo que va al navegador. `pantallas/` son las pantallas (una por archivo; la
+  cocina es una carpeta porque son cinco componentes), `componentes/` lo que comparten
+  varias, y el resto son módulos de dominio puros por tema: `cocina/` (modelo, cocinada
+  en curso, sonido), `historial/`, `progreso/` (experiencia y logros), `api.ts` (el
+  cliente del catálogo y sus tipos) y `tema.ts`.
+- `herramientas/` son los scripts de build, que corren en Node: el generador del
+  catálogo y el optimizador de imágenes. Se miden con la misma compuerta que `src/`.
+- `e2e/` son las pruebas de Playwright.
+
+`pnpm lint` corre `tsc` y ESLint (`eslint.config.js`, reglas de tipos estrictas y las de
+hooks de React); es parte del job `pruebas` del CI.
 
 **Las imágenes tienen dos vidas**: los originales en `data/` y `docs/mockups/`, que pueden
 pesar lo que quieran, y las versiones que se publican en `web/assets/`, en WebP y al
@@ -56,7 +70,7 @@ no tiene: están **superados o enmendados**. Leerlos como historia, no como esta
   agregada, una porción y el reloj arranca al abrir el freezer**. El tiempo declarado
   incluye descongelar, lavar y cortar; nunca se esconde tiempo.
 - **Está gamificada, pero premia la precisión, no la velocidad**: los puntos salen de lo
-  cerca que estuvo la cocinada de los tiempos de la receta (`src/xp.ts`, `puntosDe`). El
+  cerca que estuvo la cocinada de los tiempos de la receta (`src/progreso/xp.ts`, `puntosDe`). El
   criterio exacto todavía está por acordar con Carlos.
 - El diseño de las pantallas sale del prototipo de Figma Make, que es la fuente:
   <https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Cocinadas>. Cambia seguido; el código
@@ -98,9 +112,9 @@ terminar**.
   raíz del dominio y da 404 solo en producción. Las rutas relativas funcionan porque la
   app **nunca cambia la URL**: `avanzar` en `App.tsx` hace `pushState(null, '')` sin
   tercer argumento. El día que haya enlaces profundos, esto hay que rehacerlo.
-- **`web/src/catalogo/generar.ts` busca `data/` por una ruta relativa a su propio
+- **`web/herramientas/catalogo/generar.ts` busca `data/` por una ruta relativa a su propio
   archivo.** Si se mueve de carpeta, hay que ajustarla — y lo mismo vale para
-  `src/imagenes/optimizar.ts` y `src/cocina/receta-real.test.ts`.
+  `herramientas/imagenes/optimizar.ts` y `src/cocina/receta-real.test.ts`.
 - **`pnpm optimizar` necesita Chrome o Chromium instalado.** Convierte con el canvas del
   navegador para no agregar una dependencia de imágenes al proyecto.
 - **Se perdieron las cabeceras de seguridad y la CSP** al salir de Caddy: Pages no deja

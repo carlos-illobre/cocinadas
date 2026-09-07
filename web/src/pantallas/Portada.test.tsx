@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { Portada } from './Portada';
-import { fetchDeCatalogo, nunca, recetaDosEtapas, recetaUnaEtapa, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
-import type { Fetch } from './api';
+import { fetchDeCatalogo, nunca, recetaDosEtapas, recetaUnaEtapa, resumenSinFoto, resumenSpaghetti } from '../pruebas/datos';
+import type { Fetch } from '../api';
 
 const nada = () => undefined;
 const ruta = '/recetas/spaghetti-integral-brocoli-camarones';
@@ -194,6 +194,8 @@ describe('Portada', () => {
   });
 
   it('convierte a texto un fallo que no es un Error', async () => {
+    // Se prueba justamente un rechazo que no es un Error, que es lo que la regla prohíbe.
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
     const fetchImpl: Fetch = () => Promise.reject('se cortó');
     render(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="dos-etapas" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
     expect(await screen.findByRole('alert')).toHaveTextContent('se cortó');

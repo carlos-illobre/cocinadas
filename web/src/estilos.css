@@ -302,7 +302,7 @@ h1 {
 
 /*
  * La marca: la olla y la palabra. La palabra es texto en Lobster y no una imagen, así que
- * el nombre del proyecto vive en un solo lugar (src/Logotipo.tsx).
+ * el nombre del proyecto vive en un solo lugar (src/componentes/Logotipo.tsx).
  */
 .logotipo {
   display: inline-flex;

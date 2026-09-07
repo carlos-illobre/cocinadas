@@ -4,8 +4,26 @@ Un solo nivel, con compuerta.
 
 | Nivel | Necesita | Compuerta | Corredor |
 |---|---|---|---|
+| Estáticas | Nada | **Sí**: `tsc` sin errores y ESLint sin avisos | `cd web && pnpm lint` |
 | Unitarias | Nada | **Sí**: 100 % de instrucciones, ramas, funciones y líneas | `tests/utest.sh` |
 | E2E | Chromium de Playwright | No: pasa o no pasa | `cd web && pnpm e2e` |
+
+## Estáticas
+
+`tsc` atrapa los errores de tipos; ESLint atrapa lo que compila y está mal igual. La
+configuración (`web/eslint.config.js`) usa las reglas **con información de tipos** de
+`typescript-eslint` (`strict-type-checked` y `stylistic-type-checked`) más las de hooks de
+React. Lo que eso encuentra y `tsc` no: promesas sin `await`, condiciones que siempre dan lo
+mismo, `setState` sincrónico dentro de un efecto, `any` que se cuelan, hooks fuera de las
+reglas.
+
+Tres reglas están apagadas a propósito, con el motivo en el archivo: `x as string` en vez
+de `x!`, números derecho en las plantillas, y funciones flecha que devuelven `void` en un
+`onClick`. Son decisiones de estilo del proyecto, no relajaciones.
+
+La primera corrida encontró 134 avisos. Descontadas esas tres reglas, quedaron 14 reales;
+el que valía la pena era que `enCurso.ts` casteaba lo leído del `localStorage` y después
+lo trataba como de confianza. Ahora se lee como `unknown` y se comprueba.
 
 ## Unitarias
 
@@ -30,7 +48,7 @@ bash tests/utest.sh
 | web | 292 | 100 / 100 / 100 / 100 |
 
 Hay un solo proyecto, en `web/`. Las pruebas del catálogo, que eran de un servicio, viven
-en `web/src/catalogo/` y entran en la misma compuerta sin configuración aparte: es la razón
+en `web/herramientas/catalogo/` y entran en la misma compuerta: `vite.config.ts` mide `src/**` y `herramientas/**`. Es la razón
 por la que el generador vive dentro de `src/` y no en una carpeta de herramientas.
 
 ### Qué está excluido de la cobertura, y por qué, uno por uno
@@ -44,20 +62,20 @@ Son cuatro, y ninguno decide nada.
 | Archivo | Por qué |
 |---|---|
 | `src/main.tsx` | Raíz de composición: monta `<App/>` en `#raiz`. |
-| `src/catalogo/generar.ts` | Escribe a disco el plan que armó `planificar()`: crea carpetas, escribe JSON y copia fotos. Sin ramas propias. Todo lo que decide qué archivos van y con qué contenido está en `catalogo.ts`, que se mide entero. |
-| `src/imagenes/optimizar.ts` | Maneja el navegador que convierte las imágenes y escribe los archivos. Qué imagen, a qué ancho y con qué nombre lo decide `plan.ts`, que sí se mide. Corre a mano con `pnpm optimizar`, no en el build. |
+| `herramientas/catalogo/generar.ts` | Escribe a disco el plan que armó `planificar()`: crea carpetas, escribe JSON y copia fotos. Sin ramas propias. Todo lo que decide qué archivos van y con qué contenido está en `catalogo.ts`, que se mide entero. |
+| `herramientas/imagenes/optimizar.ts` | Maneja el navegador que convierte las imágenes y escribe los archivos. Qué imagen, a qué ancho y con qué nombre lo decide `plan.ts`, que sí se mide. Corre a mano con `pnpm optimizar`, no en el build. |
 | `src/pruebas/**`, `src/**/*.test.*` | Utilidades de las pruebas y las pruebas mismas. |
 
 Los dos primeros siguen la misma regla y por eso son el ejemplo de qué se excluye y qué
 no: **la decisión se mide, la llamada al sistema externo no**.
 
-Lo que sí se mide, y con qué: la generación del catálogo (`src/catalogo/catalogo.ts`,
+Lo que sí se mide, y con qué: la generación del catálogo (`herramientas/catalogo/catalogo.ts`,
 sobre un directorio temporal con la misma forma que `data/`: recetas válidas e ignoradas,
 fichas con foto, sin foto, con enlace roto, con enlace fuera del directorio y con enlace a
 algo que no es una imagen; y el plan resultante, que las versiones se escriban por clave y
 por número, que solo se copien las fotos que alguna receta referencia, y que avise cuál
 falta en vez de publicar una receta sin foto), el plan de optimización de imágenes
-(`src/imagenes/plan.ts`: qué se convierte y a qué ancho, incluidas las excepciones de las
+(`herramientas/imagenes/plan.ts`: qué se convierte y a qué ancho, incluidas las excepciones de las
 capas de inicio), el cliente del catálogo (`api.ts`, con un `fetch` inyectado que responde por ruta), las pantallas `Inicio`, `Recetas` y `Portada` (con Testing Library: carga, error, datos con y sin foto, cambio de versión, desmontaje antes de la respuesta) el recorrido completo en `App` (inicio → recetas → portada → cocina → resumen y vuelta), el modelo de la cocinada (`cocina/modelo.ts`: pasos, huecos entre pasos, procesos que corren solos, alarma, pausa entre etapas, resumen y desvíos, todo puro con el reloj inyectado), los avisos sonoros (`cocina/sonido.ts`, con un AudioContext falso que graba cada nota con su frecuencia, su forma de onda y el pico de su envolvente) y el gantt vertical (`gantt` y `frenteGantt`: altos proporcionales al tiempo con un mínimo legible, huecos entre pasos, procesos en la misma escala y el frente que avanza con el cronómetro) y la pantalla `Cocina` con relojes falsos (tic, exceso titilando, sub-pasos, porqué, procesos, carriles, alarma con sonido repetido, fin de etapa y final). Además, `cocina/receta-real.test.ts` importa los dos JSON reales de `data/recetas/` y los cocina enteros con el modelo, exactamente a tiempo: es la prueba de que los datos y la pantalla hablan el mismo idioma. Con las pantallas de la segunda ronda se suman: el almacén de cocinadas (`historial/almacen.ts`: orden, basura guardada, agrupación por receta, y el almacén seguro con uno en memoria y uno que lanza), la mise en place (tildar, destildar, receta vacía), el historial y su gráfico (barras, techo del eje, elección de receta), el perfil con sus números y sus logros (`logros.ts`: cada regla con su caso que la consigue y otro que no, incluida la racha con huecos y con dos cocinadas del mismo día), la barra inferior, la cocinada en curso (`cocina/enCurso.ts`: retomar, descartar la vieja, la de otra receta y cualquier cosa guardada que no se pueda leer) y la navegación con el botón de atrás del teléfono (que vuelve de pantalla, que no cuenta dos veces cuando ya volvió un botón de la pantalla, y que en la primera no hace nada), y en `App` el recorrido completo con guardado, las pestañas y el arranque con datos ya guardados o con un `localStorage` que no existe o lanza. Con las pantallas copiadas del prototipo de Figma (tercera ronda) se suman la experiencia (`xp.ts`: niveles contiguos, progreso dentro del nivel, puntos por precisión) y su barra (`BarraXp`), la lista de recetas con la tarjeta grande, y la portada con los modos con ícono. Con el tema claro/oscuro del prototipo se suman `tema.ts` (leer, guardar, alternar y aplicar) y, en `App`, que el tema se aplique al documento, se guarde y se recuerde al arrancar.
 
 ## E2E

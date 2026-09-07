@@ -24,21 +24,23 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['src/pruebas/setup.ts'],
-    include: ['src/**/*.test.{ts,tsx}'],
+    include: ['src/**/*.test.{ts,tsx}', 'herramientas/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       all: true,
-      include: ['src/**/*.{ts,tsx}'],
+      // `herramientas/` son los scripts de build: corren en Node, no en el navegador,
+      // pero su lógica se mide con la misma compuerta (docs/TESTING.md).
+      include: ['src/**/*.{ts,tsx}', 'herramientas/**/*.ts'],
       // Exclusiones justificadas una por una (docs/TESTING.md):
       //   - main.tsx: raíz de composición; monta <App/> en el DOM y nada más.
-      //   - catalogo/generar.ts: escribe a disco lo que planificar() decidió; sin
+      //   - herramientas/catalogo/generar.ts: escribe a disco lo que planificar() decidió; sin
       //     decisiones propias, y corre en el build y no en el navegador.
-      //   - imagenes/optimizar.ts: maneja el navegador que convierte las imágenes y
+      //   - herramientas/imagenes/optimizar.ts: maneja el navegador que convierte las imágenes y
       //     escribe los archivos. Qué convertir y a cuánto lo decide plan.ts, que sí se
       //     mide. Corre a mano con `pnpm optimizar`, no en el build.
       //   - pruebas/**: utilidades de las propias pruebas.
       //   - *.test.*: las pruebas no se miden a sí mismas.
-      exclude: ['src/main.tsx', 'src/catalogo/generar.ts', 'src/imagenes/optimizar.ts', 'src/pruebas/**', 'src/**/*.test.{ts,tsx}'],
+      exclude: ['src/main.tsx', 'herramientas/catalogo/generar.ts', 'herramientas/imagenes/optimizar.ts', 'src/pruebas/**', '**/*.test.{ts,tsx}'],
       reporter: ['text', 'json-summary', 'html'],
       thresholds: {
         lines: 100,

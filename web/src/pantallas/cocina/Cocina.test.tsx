@@ -1,11 +1,11 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Receta } from './api';
-import type { Avisador } from './cocina/sonido';
+import type { Receta } from '../../api';
+import type { Avisador } from '../../cocina/sonido';
 import { Cocina } from './Cocina';
-import { recetaDosEtapas, recetaUnaEtapa } from './pruebas/datos';
-import type { Almacen } from './historial/almacen';
-import { CLAVE_EN_CURSO } from './cocina/enCurso';
+import { recetaDosEtapas, recetaUnaEtapa } from '../../pruebas/datos';
+import type { Almacen } from '../../historial/almacen';
+import { CLAVE_EN_CURSO } from '../../cocina/enCurso';
 
 const T0 = 1_000_000;
 
@@ -455,9 +455,9 @@ describe('Cocina · final', () => {
       criticos: 3,
       criticosATiempo: 2,
     });
-    expect(guardada['fecha']).toBe(new Date(T0 + 519 * 1000).toISOString());
-    expect((guardada['pasos'] as unknown[]).length).toBe(8);
-    expect((guardada['etapas'] as unknown[]).length).toBe(2);
+    expect(guardada.fecha).toBe(new Date(T0 + 519 * 1000).toISOString());
+    expect((guardada.pasos as unknown[]).length).toBe(8);
+    expect((guardada.etapas as unknown[]).length).toBe(2);
     expect(screen.getByText('✓ Guardada en este teléfono. Se ve en Progreso.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Guardar esta cocinada' })).not.toBeInTheDocument();
 

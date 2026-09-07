@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { BASE_CATALOGO, listarRecetas, minutos, versionesOrdenadas, type Fetch, type RecetaResumen } from './api';
-import { BarraXp } from './BarraXp';
+import { BASE_CATALOGO, listarRecetas, minutos, versionesOrdenadas, type Fetch, type RecetaResumen } from '../api';
+import { BarraXp } from '../componentes/BarraXp';
 
 export interface PropiedadesRecetas {
   readonly fetchImpl: Fetch;
@@ -91,7 +91,7 @@ function TarjetaReceta({ resumen, alElegir }: { readonly resumen: RecetaResumen;
             <span aria-hidden="true">🍽</span> {resumen.porciones} porc
           </span>
           <span className="chip">
-            <span aria-hidden="true">🔥</span> {resumen.nutricion['kcal']} kcal
+            <span aria-hidden="true">🔥</span> {resumen.nutricion.kcal} kcal
           </span>
         </span>
       </span>
