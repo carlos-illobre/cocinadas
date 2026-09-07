@@ -1424,6 +1424,7 @@ h1 {
 .alarma .next span { font-family: var(--display); font-weight: 700; font-size: 30px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 .alarma .ft { padding: 0 26px calc(30px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; }
 .alarma .sec { text-align: center; font-size: 16px; color: rgba(255, 255, 255, 0.85); margin: 0; }
+.alarma .siguiente { text-align: center; font-family: var(--display); font-weight: 700; font-size: 18px; color: #fff; margin: 0 0 2px; text-wrap: balance; }
 
 .fin-etapa { padding-top: 56px; }
 .fin-etapa .big { margin: 8px 0 10px; }

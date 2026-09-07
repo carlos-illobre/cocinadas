@@ -32,8 +32,10 @@ export function Alarma({ estado, alAtender }: { readonly estado: EstadoCocina; r
         )}
       </div>
       <div className="ft">
+        {/* Lo que sigue va afuera del botón: adentro, con un título largo, se salía. */}
+        {siguiente !== undefined && <p className="siguiente">Seguir con {siguiente.titulo.toLowerCase()}</p>}
         <button type="button" className="btn blanco" onClick={alAtender}>
-          {siguiente === undefined ? 'Atendido' : `Atendido · seguir con ${siguiente.titulo.toLowerCase()}`}
+          Atendido
         </button>
         <p className="sec">Suena y vibra hasta que toques</p>
       </div>
