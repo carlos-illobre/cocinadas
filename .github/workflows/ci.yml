@@ -36,6 +36,9 @@ jobs:
           node-version: ${{ env.VERSION_NODE }}
           cache: pnpm
           cache-dependency-path: web/pnpm-lock.yaml
+      - name: Instalar dependencias
+        working-directory: web
+        run: pnpm install --frozen-lockfile
       - name: Tipos y ESLint
         working-directory: web
         run: pnpm lint
