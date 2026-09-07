@@ -39,7 +39,7 @@ export default defineConfig({
       //   - pruebas/**: utilidades de las propias pruebas.
       //   - *.test.*: las pruebas no se miden a sí mismas.
       exclude: ['src/main.tsx', 'src/catalogo/generar.ts', 'src/imagenes/optimizar.ts', 'src/pruebas/**', 'src/**/*.test.{ts,tsx}'],
-      reporter: ['text', 'json-summary', 'html'],
+      reporter: ['text', 'html'],
       thresholds: {
         lines: 100,
         statements: 100,

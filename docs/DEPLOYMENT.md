@@ -13,7 +13,7 @@ El porqué está en [ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md).
 
 | Job | Cuándo | Qué hace |
 |---|---|---|
-| `pruebas` | cada push y cada PR | `tests/utest.sh` con la compuerta del 100 %, y `validar-receta.py` sobre el catálogo. |
+| `pruebas` | cada push y cada PR | `pnpm test:cov` con la compuerta del 100 %, y `validar-receta.py` sobre el catálogo. |
 | `vulnerabilidades` | cada push y cada PR | Trivy busca CVE y secretos filtrados. **Informa, no reprueba.** |
 | `publicar` | solo en `main`, después de `pruebas` | Compila `web/` y publica en Pages. |
 

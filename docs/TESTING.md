@@ -4,23 +4,17 @@ Un solo nivel, con compuerta.
 
 | Nivel | Necesita | Compuerta | Corredor |
 |---|---|---|---|
-| Unitarias | Nada | **Sí**: 100 % de instrucciones, ramas, funciones y líneas | `tests/utest.sh` |
+| Unitarias | Nada | **Sí**: 100 % de instrucciones, ramas, funciones y líneas | `cd web && pnpm test:cov` |
 | E2E | Chromium de Playwright | No: pasa o no pasa | `cd web && pnpm e2e` |
 
 ## Unitarias
 
-Corren sin levantar nada y **exigen el 100 %** en las cuatro métricas. El umbral vive en
-un solo lugar, los `thresholds` de `web/vite.config.ts`, que hacen fallar `pnpm test:cov`;
-vitest imprime la tabla por archivo con las líneas que quedaron sin cubrir.
-
-`tests/utest.sh` es el envoltorio que usan el CI, el README y CLAUDE.md: corre desde
-cualquier subcarpeta, instala dependencias si faltan y comprueba que
-`coverage/coverage-summary.json` se haya generado en esta corrida. Eso último no es
-repetir la compuerta: es lo que detecta que alguien saque el reporter `json-summary` y la
-deje muda.
+Corren sin levantar nada y **exigen el 100 %** en las cuatro métricas. La compuerta son
+los `thresholds` de `web/vite.config.ts`: si algo baja, `pnpm test:cov` falla y vitest
+imprime la tabla por archivo con las líneas que quedaron sin cubrir.
 
 ```bash
-bash tests/utest.sh
+cd web && pnpm test:cov
 ```
 
 Última corrida (2026-09-06):
@@ -100,6 +94,13 @@ más arriba (ADR-018).
 - `tests/itest.sh` y `tests/integration/` verificaban la paridad de los `.env`, los
   contratos de eventos y el camino de punta a punta con el stack de Docker levantado. Sin
   `.env`, sin eventos y sin stack, no quedaba nada que verificaran.
+- **La carpeta `tests/` entera se fue** después, con el E2E. Existía para orquestar varios
+  proyectos a la vez; con uno solo, `utest.sh` era un envoltorio de `pnpm test:cov` que
+  además comprobaba que se hubiera escrito `coverage-summary.json` «por si alguien saca el
+  reporter». Eso era circular: los `thresholds` de vitest miden sobre sus propios datos, no
+  sobre ese JSON, así que el único que lo leía era el script. Ahora los comandos de prueba
+  viven donde vive el código que prueban, en `web/`, igual que el E2E. Con el script se fue
+  también el reporter `json-summary`, que no lee nadie más.
 - Lo único de ese nivel que sobrevive está **dentro** del pipeline: el job `publicar`
   comprueba que el `index.html` compilado no tenga rutas absolutas, que es el error que
   solo aparecería en producción (ver DEPLOYMENT.md, «Las dos trampas de Pages»).
@@ -133,7 +134,7 @@ En Linux (CI, Docker) no existe el problema.
 
 | Job | Qué hace |
 |---|---|
-| `pruebas` | `tests/utest.sh` con la compuerta del 100 %, y `validar-receta.py` sobre el catálogo. |
+| `pruebas` | `pnpm test:cov` con la compuerta del 100 %, y `validar-receta.py` sobre el catálogo. |
 | `e2e` | El camino feliz sobre el sitio compilado. Job aparte porque baja el navegador (~100 MB): en el mismo, un cambio de una línea de CSS pagaría esa descarga antes de saber si las unitarias pasan. |
 | `vulnerabilidades` | Trivy: CVE y secretos. Avisa, no reprueba. |
 | `publicar` | Solo en `main` y solo si `pruebas` y `e2e` pasaron. Compila, comprueba que el `index.html` no tenga rutas absolutas y publica en Pages. |
