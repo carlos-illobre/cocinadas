@@ -8,7 +8,7 @@ import {
   type PasoHecho } from '../../cocina/modelo';
 import type { Avisador } from '../../cocina/sonido';
 import { logrosNuevos } from '../../progreso/logros';
-import { puntosDe } from '../../progreso/xp';
+import { desgloseDe } from '../../progreso/xp';
 import { confeti } from './confeti';
 
 export function Final({
@@ -49,9 +49,8 @@ export function Final({
     alGuardar(cocinada);
     setGuardada({ ...cocinada, id: 'recien-guardada' });
   };
-  const d = desvio(r.total_previsto_s, r.total_real_s, reloj);
   const nuevos = guardada === null ? [] : logrosNuevos(cocinadas, guardada);
-  const puntos = puntosDe({ total_previsto_s: r.total_previsto_s, total_real_s: r.total_real_s });
+  const x = desgloseDe({ total_previsto_s: r.total_previsto_s, total_real_s: r.total_real_s, pasos: r.etapas.flatMap((e) => e.pasos) });
   return (
     // El confeti va afuera del <main> y no adentro: cubre la ventana entera con
     // `position: fixed`, y un ancestro con `transform` —como la animación de entrada de
@@ -68,33 +67,32 @@ export function Final({
           🏆
         </p>
         <h1 className="sum-titulo">¡Receta completada!</h1>
-        <p className="eyebrow">Plato listo · {estado.receta.version.titulo}</p>
-        <div className="big">
-          {reloj(r.total_real_s)}
-          <small>totales</small>
+        <p className="sum-receta">{estado.receta.nombre}</p>
+        <div className="resultados">
+          <Tarjeta icono="⏱" etiqueta="Tiempo total" valor={reloj(r.total_real_s)} nota={`objetivo: ${reloj(r.total_previsto_s)}`} tono={x.enTiempo ? 'verde' : 'coral'} />
+          <Tarjeta icono="⚡" etiqueta="XP ganado" valor={`+${x.total}`} nota="puntos de experiencia" tono="dorado" />
+          <Tarjeta icono="✅" etiqueta="Pasos en tiempo" valor={`${x.pasosEnTiempo}/${x.pasos}`} nota={`${x.precision}% de precisión`} tono="verde" />
+          <Tarjeta icono={x.enTiempo ? '🌟' : '📈'} etiqueta="Resultado" valor={x.enTiempo ? 'Excelente' : 'Completado'} nota={x.enTiempo ? '¡Dentro del objetivo!' : 'Seguí mejorando'} tono={x.enTiempo ? 'dorado' : 'gris'} />
         </div>
-        <p className="puntos-ganados">
-          <b>+{puntos} XP</b> por lo cerca que estuviste de los tiempos
-        </p>
-        <p className="vs">
-          Previsto {reloj(r.total_previsto_s)} · <b className={d.signo}>{d.texto}</b>
-        </p>
-        <div className="kpis">
-          {r.etapas.map((e) => (
-            <div key={e.nombre} className="kpi">
-              <p className="eyebrow">{e.nombre.replace(/ · .*$/, '')}</p>
-              <b>{reloj(e.real_s)}</b>
-              <small>previsto {reloj(e.previsto_s)}</small>
-            </div>
-          ))}
-          <div className="kpi">
-            <p className="eyebrow">Críticos a tiempo</p>
-            <b>
-              {r.criticosATiempo} / {r.criticos}
-            </b>
-            <small>{r.criticosATiempo === r.criticos ? 'ninguno pasado' : `${r.criticos - r.criticosATiempo} pasados`}</small>
-          </div>
-        </div>
+        <section className="desglose" aria-label="Desglose de XP">
+          <p className="eyebrow">Desglose de XP</p>
+          <p className="fila">
+            <span>Receta completada</span>
+            <b>+{x.completada}</b>
+          </p>
+          <p className={x.bonusEnTiempo > 0 ? 'fila' : 'fila apagada'}>
+            <span>Bonus por tiempo</span>
+            <b>+{x.bonusEnTiempo}</b>
+          </p>
+          <p className={x.pasosATiempo > 0 ? 'fila' : 'fila apagada'}>
+            <span>Pasos a tiempo</span>
+            <b>+{x.pasosATiempo}</b>
+          </p>
+          <p className="fila total">
+            <span>Total</span>
+            <b>+{x.total}</b>
+          </p>
+        </section>
         <section className="rail" aria-label="Paso a paso">
           <p className="eyebrow">
             Paso a paso <span>previsto → real</span>
@@ -150,5 +148,18 @@ export function Final({
         </div>
       </main>
     </>
+  );
+}
+
+function Tarjeta({ icono, etiqueta, valor, nota, tono }: { readonly icono: string; readonly etiqueta: string; readonly valor: string; readonly nota: string; readonly tono: 'verde' | 'coral' | 'dorado' | 'gris' }): React.JSX.Element {
+  return (
+    <div className={`tarjeta-resultado ${tono}`}>
+      <span className="icono" aria-hidden="true">
+        {icono}
+      </span>
+      <p className="eyebrow">{etiqueta}</p>
+      <b>{valor}</b>
+      <small>{nota}</small>
+    </div>
   );
 }

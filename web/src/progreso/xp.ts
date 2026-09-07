@@ -1,10 +1,13 @@
 import type { Cocinada } from '../historial/almacen';
 
 /**
- * La experiencia (XP) y los niveles. Se premia la precisión, no la velocidad: una
- * cocinada suma más puntos cuanto más se parecen sus tiempos a los que estipula la
- * receta. El criterio exacto es provisional y está en `puntosDe`; cambiarlo no toca
- * nada guardado, porque la experiencia se recalcula a partir de las cocinadas.
+ * La experiencia (XP) y los niveles.
+ *
+ * El criterio es el del prototipo de Figma, adoptado con la pantalla de resultados: una
+ * cocinada suma un fijo por completarla, un bonus si el total quedó dentro del margen
+ * del tiempo previsto, y un tanto por cada paso que no se pasó de su tiempo. Sigue
+ * siendo provisional (CLAUDE.md); cambiarlo no toca nada guardado, porque la
+ * experiencia se recalcula a partir de las cocinadas.
  */
 export interface Nivel {
   readonly numero: number;
@@ -33,22 +36,61 @@ export function progresoNivel(xp: number): number {
   return Math.min(100, Math.max(0, Math.round(recorrido * 100)));
 }
 
-export const PUNTOS_MAXIMOS_POR_COCINADA = 100;
+export const PUNTOS_POR_COMPLETAR = 200;
+export const BONUS_EN_TIEMPO = 100;
+export const PUNTOS_POR_PASO_A_TIEMPO = 10;
 
 /**
- * Criterio provisional: 100 puntos por una cocinada clavada en el tiempo previsto, que
- * bajan en proporción al desvío (por arriba o por abajo) hasta 0 cuando el desvío iguala
- * al tiempo previsto. Los pasos críticos a tiempo no suman aparte todavía.
+ * Dentro de este margen del tiempo previsto, por arriba o por abajo, el total se
+ * considera «en tiempo». Es simétrico a propósito: se premia la precisión, no la
+ * velocidad, y terminar en la mitad del tiempo es tan poco preciso como tardar el doble.
  */
-export function puntosDe(cocinada: Pick<Cocinada, 'total_previsto_s' | 'total_real_s'>): number {
-  if (cocinada.total_previsto_s <= 0) {
-    return 0;
+export const MARGEN_EN_TIEMPO = 0.1;
+
+export function enTiempo(c: Pick<Cocinada, 'total_previsto_s' | 'total_real_s'>): boolean {
+  if (c.total_previsto_s <= 0) {
+    return false;
   }
-  const desvio = Math.abs(cocinada.total_real_s - cocinada.total_previsto_s) / cocinada.total_previsto_s;
-  return Math.round(PUNTOS_MAXIMOS_POR_COCINADA * Math.max(0, 1 - desvio));
+  return Math.abs(c.total_real_s - c.total_previsto_s) / c.total_previsto_s <= MARGEN_EN_TIEMPO;
+}
+
+export interface DesgloseXp {
+  readonly completada: number;
+  readonly bonusEnTiempo: number;
+  readonly pasosATiempo: number;
+  readonly total: number;
+  readonly enTiempo: boolean;
+  readonly pasosEnTiempo: number;
+  readonly pasos: number;
+  /** Pasos en tiempo sobre el total, de 0 a 100. */
+  readonly precision: number;
+}
+
+type Puntuable = Pick<Cocinada, 'total_previsto_s' | 'total_real_s' | 'pasos'>;
+
+/** Un paso está a tiempo si no se pasó del suyo: en un paso, ir más rápido no es un error. */
+export function desgloseDe(c: Puntuable): DesgloseXp {
+  const pasosEnTiempo = c.pasos.filter((p) => p.real_s <= p.previsto_s).length;
+  const dentro = enTiempo(c);
+  const bonusEnTiempo = dentro ? BONUS_EN_TIEMPO : 0;
+  const pasosATiempo = pasosEnTiempo * PUNTOS_POR_PASO_A_TIEMPO;
+  return {
+    completada: PUNTOS_POR_COMPLETAR,
+    bonusEnTiempo,
+    pasosATiempo,
+    total: PUNTOS_POR_COMPLETAR + bonusEnTiempo + pasosATiempo,
+    enTiempo: dentro,
+    pasosEnTiempo,
+    pasos: c.pasos.length,
+    precision: c.pasos.length === 0 ? 0 : Math.round((pasosEnTiempo / c.pasos.length) * 100),
+  };
+}
+
+export function puntosDe(c: Puntuable): number {
+  return desgloseDe(c).total;
 }
 
 /** La experiencia total es la suma de todas las cocinadas guardadas. */
-export function experienciaDe(cocinadas: readonly Pick<Cocinada, 'total_previsto_s' | 'total_real_s'>[]): number {
+export function experienciaDe(cocinadas: readonly Puntuable[]): number {
   return cocinadas.reduce((suma, c) => suma + puntosDe(c), 0);
 }
