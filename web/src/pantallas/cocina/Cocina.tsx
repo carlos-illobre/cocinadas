@@ -95,9 +95,12 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
   // final son fases de este mismo componente. Sin esto, el resumen del final aparecía al
   // pie de la línea de tiempo, que es donde uno estaba mirando, con el festejo y el
   // confeti arriba de todo y fuera de la vista.
+  // Y también al cambiar de paso: «Listo» se toca al pie de la tarjeta, ya desplazado, y
+  // el paso siguiente nacía con ese desplazamiento, con la tarjeta metida debajo del
+  // bloque fijo y el borde superior tapado.
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [estado.fase]);
+  }, [estado.fase, estado.etapa, estado.paso]);
 
   const avisosPrevios = useRef(0);
   useEffect(() => {
