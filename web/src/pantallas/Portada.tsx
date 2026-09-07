@@ -99,14 +99,17 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
           <div className="modos" role="tablist" aria-label="Modo de preparación">
             {versiones.map((v, i) => (
               <button key={v.clave} type="button" role="tab" aria-selected={v.clave === version} className={`modo ${i === 0 ? 'facil' : 'dificil'}${v.clave === version ? ' on' : ''}`} onClick={() => alCambiarVersion(v.clave)}>
-                <span className="modo-icono" aria-hidden="true">
-                  {v.icono}
+                {/* El ícono con el cartel de dificultad debajo, en la misma columna. */}
+                <span className="modo-lado">
+                  <span className="modo-icono" aria-hidden="true">
+                    {v.icono}
+                  </span>
+                  <span className="modo-dificultad">{i === 0 ? '¡Fácil!' : '¡Difícil!'}</span>
                 </span>
                 <span className="modo-texto">
                   <span className="modo-nombre">
                     <b>{v.titulo}</b>
                     <span className="modo-tiempo">{minutos(v.tiempo_total_s)}</span>
-                    <span className="modo-dificultad">{i === 0 ? '¡Fácil!' : '¡Difícil!'}</span>
                   </span>
                   <small>{v.resumen}</small>
                 </span>
