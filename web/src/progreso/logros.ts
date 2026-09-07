@@ -1,4 +1,5 @@
 import type { Cocinada } from '../historial/almacen';
+import { enTiempo } from './xp';
 
 /**
  * Los logros, como en el prototipo de Figma pero medidos con lo que la app realmente
@@ -16,15 +17,9 @@ export interface Logro {
   readonly conseguido: boolean;
 }
 
-/** Dentro de este margen del tiempo previsto se considera «en tiempo». */
-export const MARGEN_EN_TIEMPO = 0.1;
-
-function enTiempo(c: Cocinada): boolean {
-  if (c.total_previsto_s <= 0) {
-    return false;
-  }
-  return Math.abs(c.total_real_s - c.total_previsto_s) / c.total_previsto_s <= MARGEN_EN_TIEMPO;
-}
+// La regla de «en tiempo» es la misma que puntúa (xp.ts): un logro y un bonus no
+// pueden discrepar sobre si la cocinada estuvo en tiempo.
+export { MARGEN_EN_TIEMPO } from './xp';
 
 /** El día de la cocinada en la zona del teléfono, como `2026-09-06`. */
 function dia(c: Cocinada): string {

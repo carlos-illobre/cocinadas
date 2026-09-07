@@ -1391,7 +1391,32 @@ h1 {
 .fin-etapa .big { margin: 8px 0 10px; }
 .desvio.mas { color: var(--coral); }
 .desvio.menos { color: var(--green); }
-.sum { padding-top: 32px; padding-bottom: 40px; }
+.sum { padding-top: 32px; padding-bottom: 40px; text-align: center; }
+.sum .rail, .sum .logros-nuevos, .sum .cta { text-align: left; }
+.sum-receta { color: var(--muted); font-size: 16px; margin: 0 0 24px; }
+
+/* Las cuatro tarjetas de resultado del prototipo, en dos columnas, y el desglose de XP. */
+.resultados { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: left; }
+.tarjeta-resultado { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 16px 14px; display: flex; flex-direction: column; gap: 4px; }
+.tarjeta-resultado .icono { font-size: 24px; line-height: 1; margin-bottom: 6px; }
+.tarjeta-resultado .eyebrow { margin: 0; }
+.tarjeta-resultado b { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+.tarjeta-resultado small { font-size: 13.5px; color: var(--muted); }
+.tarjeta-resultado.verde b { color: var(--green); }
+.tarjeta-resultado.coral b { color: var(--coral); }
+.tarjeta-resultado.dorado b { color: var(--gold); }
+.tarjeta-resultado.gris b { color: var(--muted); }
+.desglose { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin: 20px 0 28px; text-align: left; }
+.desglose .fila { display: flex; justify-content: space-between; margin: 0; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 15.5px; }
+.desglose .fila b { color: var(--gold); font-variant-numeric: tabular-nums; }
+.desglose .fila.apagada { color: var(--apagado-texto); }
+.desglose .fila.apagada b { color: var(--apagado-texto); }
+.desglose .fila.total { border-bottom: 0; padding-top: 12px; font-family: var(--display); font-weight: 800; font-size: 17px; }
+
+/* La tarjeta del paso cuando ya no queda ninguno: el remate en verde del prototipo. */
+.now.completada { text-align: center; padding: 28px 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.now.completada .tilde { font-size: 52px; line-height: 1; margin: 0; }
+.now.completada h2 { font-family: var(--display); font-weight: 800; font-size: 24px; color: var(--green); margin: 0 0 6px; }
 
 /*
  * El remate del prototipo: el trofeo grande que rebota y el título. Lo que había acá era

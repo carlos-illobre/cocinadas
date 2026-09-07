@@ -11,7 +11,7 @@ import { expect, test } from '@playwright/test';
  * de una pantalla a la otra—.
  *
  * Se cocina lo más rápido que se pueda tocar, sin esperar los tiempos de la receta: el
- * resultado son 0 XP, y está bien. Lo que se comprueba es que el recorrido llegue hasta
+ * total queda fuera del margen y no hay bonus, y está bien. Lo que se comprueba es que el recorrido llegue hasta
  * el final, no que puntúe; el puntaje ya lo miden `src/xp.test.ts` y `App.test.tsx`.
  */
 test('de la portada a la primera cocinada guardada', async ({ page }) => {
@@ -77,8 +77,14 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
     }
   });
 
+  await test.step('la tarjeta «Receta completada», y el festejo recién al tocar el botón', async () => {
+    await expect(page.getByRole('heading', { level: 1, name: 'Receta completa' })).toBeVisible();
+    await expect(page.locator('.confeti')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Ver resultados 🏆' }).click();
+  });
+
   await test.step('la pantalla de victoria festeja y guarda', async () => {
-    await expect(page.getByText(/^Plato listo · /)).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: '¡Receta completada!' })).toBeVisible();
     // Arriba de todo: se llega desde el pie de una línea de tiempo larga, y todas las
     // pantallas viven en el mismo documento, así que el desplazamiento no se reinicia solo.
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
@@ -93,7 +99,7 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
     const caja = await confeti.boundingBox();
     expect(caja).toEqual(expect.objectContaining(page.viewportSize() ?? {}));
     expect(caja?.y).toBe(0);
-    await expect(page.getByText(/XP por lo cerca que estuviste/)).toBeVisible();
+    await expect(page.getByLabel('Desglose de XP')).toContainText('Total');
 
     await page.getByRole('button', { name: 'Guardar esta cocinada' }).click();
     await expect(page.getByText('Guardada en este teléfono', { exact: false })).toBeVisible();

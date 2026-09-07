@@ -105,7 +105,8 @@ describe('el recorrido de la app', () => {
     for (let i = 0; i < 3; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Empezar Etapa 2' }));
     for (let i = 0; i < 5; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
-    expect(screen.getByText('Plato listo · Mise en place primero')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Ver resultados 🏆' }));
+    expect(screen.getByRole('heading', { level: 1, name: '¡Receta completada!' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
     const guardadas = JSON.parse(almacen.datos.get(CLAVE_HISTORIAL) ?? '[]') as { id: string; plato: string }[];
@@ -118,9 +119,10 @@ describe('el recorrido de la app', () => {
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Spaghetti integral');
     expect(crearAvisador).toHaveBeenCalledTimes(1);
 
-    // Con el reloj quieto la cocinada dura 0 s contra 21 min previstos: suma 0 puntos.
+    // Con el reloj quieto la cocinada dura 0 s contra 21 min previstos: fuera del margen,
+    // sin bonus; 200 por completarla y 10 por cada uno de los 8 pasos, que no se pasaron.
     fireEvent.click(screen.getByRole('button', { name: 'Recetas' }));
-    expect(document.querySelector('.xp-puntos')).toHaveTextContent('0 XP');
+    expect(document.querySelector('.xp-puntos')).toHaveTextContent('280 XP');
   });
 
   it('el tema se aplica al documento, se guarda y se puede volver', () => {
@@ -262,8 +264,8 @@ describe('el recorrido de la app', () => {
     const cocinada = { id: 'x', plato: 'p', nombre: 'Plato p', version: { clave: 'c', titulo: 'T' }, fecha: '2026-09-05T10:00:00Z', total_previsto_s: 100, total_real_s: 90, etapas: [], pasos: [], criticos: 0, criticosATiempo: 0 };
     montar({ almacen: memoria({ [CLAVE_HISTORIAL]: JSON.stringify([cocinada]) }) });
     fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
-    // 90 s contra 100 s previstos: 90 puntos.
-    expect(document.querySelector('.xp-puntos')).toHaveTextContent('90 XP');
+    // 90 s contra 100 s previstos, dentro del margen: 200 por completar y 100 de bonus.
+    expect(document.querySelector('.xp-puntos')).toHaveTextContent('300 XP');
     fireEvent.click(screen.getByRole('button', { name: 'Perfil' }));
     expect(screen.getByText('Suman 1:30 de cocina', { exact: false })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Progreso' }));
@@ -298,6 +300,7 @@ describe('el recorrido de la app', () => {
       for (let i = 0; i < 3; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
       fireEvent.click(screen.getByRole('button', { name: 'Empezar Etapa 2' }));
       for (let i = 0; i < 5; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'Ver resultados 🏆' }));
       fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
       // Se guardó con el almacén y el id del navegador: aparece en Progreso.
       fireEvent.click(screen.getByRole('button', { name: 'Ver el progreso' }));

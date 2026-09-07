@@ -411,6 +411,8 @@ describe('Cocina · fin de etapa y etapa crítica', () => {
   });
 });
 
+const verResultados = () => fireEvent.click(screen.getByRole('button', { name: 'Ver resultados 🏆' }));
+
 describe('Cocina · final', () => {
   it('al terminar la última etapa muestra el resumen con totales, etapas, críticos y el paso a paso', () => {
     const c = armar();
@@ -427,17 +429,19 @@ describe('Cocina · final', () => {
     c.pasar(30);
     c.listo(); // Mantecar, crítico −0:30 → fin
 
+    verResultados();
     expect(screen.getByRole('heading', { level: 1, name: '¡Receta completada!' })).toBeInTheDocument();
-    expect(screen.getByText('Plato listo · Mise en place primero')).toBeInTheDocument();
-    expect(screen.getByText('8:39', { selector: '.big' })).toBeInTheDocument();
-    expect(screen.getByText('−12:21')).toHaveClass('menos');
-    const kpis = document.querySelectorAll('.kpi');
-    expect(kpis).toHaveLength(3);
-    expect(kpis[0]).toHaveTextContent('Etapa 1');
-    expect(kpis[0]).toHaveTextContent('5:04');
-    expect(kpis[1]).toHaveTextContent('3:35');
-    expect(kpis[2]).toHaveTextContent('2 / 3');
-    expect(kpis[2]).toHaveTextContent('1 pasados');
+    expect(screen.getByText('Spaghetti integral con brócoli, champiñones y camarones al limón')).toHaveClass('sum-receta');
+    // 8:39 contra 21:00 previstos: muy por debajo del margen, así que no hay bonus y el
+    // resultado es «Completado», no «Excelente».
+    const tarjetas = document.querySelectorAll('.tarjeta-resultado');
+    expect(tarjetas[0]).toHaveTextContent('Tiempo total8:39objetivo: 21:00');
+    expect(tarjetas[0]).toHaveClass('coral');
+    expect(tarjetas[3]).toHaveTextContent('ResultadoCompletadoSeguí mejorando');
+    expect(screen.getByLabelText('Desglose de XP').querySelector('.fila.apagada')).toHaveTextContent('Bonus por tiempo+0');
+    // El paso a paso sigue: cada etapa con su tiempo y cada paso con su desvío.
+    expect(screen.getByText('5:04', { selector: '.stg span' })).toBeInTheDocument();
+    expect(screen.getByText('3:35', { selector: '.stg span' })).toBeInTheDocument();
     const filas = document.querySelectorAll('.sum .row');
     expect(filas).toHaveLength(8);
     expect(filas[3]?.querySelector('.d')).toHaveTextContent('0:00');
@@ -459,6 +463,11 @@ describe('Cocina · final', () => {
     });
     expect(guardada.fecha).toBe(new Date(T0 + 519 * 1000).toISOString());
     expect((guardada.pasos as unknown[]).length).toBe(8);
+    // Las tarjetas y el desglose cuentan los mismos pasos a tiempo que lo que se guardó.
+    const aTiempo = (guardada.pasos as { previsto_s: number; real_s: number }[]).filter((p) => p.real_s <= p.previsto_s).length;
+    expect(tarjetas[2]).toHaveTextContent(`Pasos en tiempo${aTiempo}/8${Math.round((aTiempo / 8) * 100)}% de precisión`);
+    expect(tarjetas[1]).toHaveTextContent(`XP ganado+${200 + aTiempo * 10}`);
+    expect(screen.getByLabelText('Desglose de XP')).toHaveTextContent(`Pasos a tiempo+${aTiempo * 10}`);
     expect((guardada.etapas as unknown[]).length).toBe(2);
     expect(screen.getByText('✓ Guardada en este teléfono. Se ve en Progreso.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Guardar esta cocinada' })).not.toBeInTheDocument();
@@ -467,16 +476,44 @@ describe('Cocina · final', () => {
     expect(c.alTerminar).toHaveBeenCalledTimes(1);
   });
 
-  it('el plato terminado se festeja: confeti, sonido y los puntos de la cocinada', () => {
+  it('al terminar el último paso, la tarjeta se vuelve «Receta completada» y el festejo espera al botón', () => {
     const c = armar(recetaUnaEtapa);
     c.listo();
     c.listo();
     c.listo();
 
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Receta completa');
+    expect(screen.getByLabelText('Receta completada')).toHaveTextContent('¡Receta completada!');
+    expect(c.avisador.festejo).not.toHaveBeenCalled();
+    expect(document.querySelectorAll('.confeti i')).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver resultados 🏆' }));
     expect(c.avisador.festejo).toHaveBeenCalledTimes(1);
     expect(document.querySelectorAll('.confeti i')).toHaveLength(40);
-    // Cocinada en 0 s contra 960 previstos: el desvío se come todos los puntos.
-    expect(screen.getByText('+0 XP', { exact: false })).toBeInTheDocument();
+  });
+
+  it('los resultados: las cuatro tarjetas y el desglose de XP', () => {
+    const c = armar(recetaUnaEtapa);
+    c.listo();
+    c.listo();
+    c.listo();
+    verResultados();
+
+    // Cocinada en 0 s contra 960 previstos: fuera del margen, sin bonus; los tres pasos
+    // no se pasaron del suyo, así que suman 30.
+    const tarjetas = document.querySelectorAll('.tarjeta-resultado');
+    expect(tarjetas).toHaveLength(4);
+    expect(tarjetas[0]).toHaveTextContent('Tiempo total0:00objetivo: 16:00');
+    expect(tarjetas[0]).toHaveClass('coral');
+    expect(tarjetas[1]).toHaveTextContent('XP ganado+230');
+    expect(tarjetas[2]).toHaveTextContent('Pasos en tiempo3/3100% de precisión');
+    expect(tarjetas[3]).toHaveTextContent('ResultadoCompletadoSeguí mejorando');
+    const desglose = screen.getByLabelText('Desglose de XP');
+    expect(desglose).toHaveTextContent('Receta completada+200');
+    expect(desglose).toHaveTextContent('Bonus por tiempo+0');
+    expect(desglose.querySelector('.fila.apagada')).toHaveTextContent('Bonus por tiempo');
+    expect(desglose).toHaveTextContent('Pasos a tiempo+30');
+    expect(desglose).toHaveTextContent('Total+230');
     expect(screen.queryByLabelText('Logros conseguidos')).not.toBeInTheDocument();
   });
 
@@ -486,6 +523,7 @@ describe('Cocina · final', () => {
     c.listo();
     c.listo();
 
+    verResultados();
     fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
 
     const logros = screen.getByLabelText('Logros conseguidos');
@@ -502,6 +540,7 @@ describe('Cocina · final', () => {
     c.listo();
     c.listo();
 
+    verResultados();
     fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
 
     const logros = screen.getByLabelText('Logros conseguidos');
@@ -548,19 +587,40 @@ describe('Cocina · final', () => {
     c.listo();
     c.listo();
     c.listo();
+    verResultados();
     fireEvent.click(screen.getByRole('button', { name: 'Salir sin guardar' }));
     expect(c.alGuardar).not.toHaveBeenCalled();
     expect(c.alTerminar).toHaveBeenCalledTimes(1);
   });
 
-  it('con todos los críticos a tiempo lo dice, y con el total pasado marca el exceso', () => {
+  it('con todos los pasos pasados de tiempo, «Pasos a tiempo» queda apagado y en 0', () => {
+    const c = armar(recetaUnaEtapa);
+    for (let i = 0; i < 3; i += 1) {
+      c.pasar(1000);
+      c.listo();
+    }
+    verResultados();
+    const desglose = screen.getByLabelText('Desglose de XP');
+    expect(desglose.querySelectorAll('.fila.apagada')).toHaveLength(2);
+    expect(desglose).toHaveTextContent('Pasos a tiempo+0');
+    expect(document.querySelectorAll('.tarjeta-resultado')[2]).toHaveTextContent('Pasos en tiempo0/30% de precisión');
+  });
+
+  it('con el total dentro del margen hay bonus y el resultado es «Excelente»', () => {
     const c = armar(recetaUnaEtapa);
     c.pasar(1000);
     c.listo();
     c.listo();
     c.listo();
-    expect(screen.getByText('+0:40')).toHaveClass('mas');
-    expect(screen.getByText('ninguno pasado')).toBeInTheDocument();
-    expect(screen.getByText('0 / 0')).toBeInTheDocument();
+    verResultados();
+    // 1000 s contra 960 previstos: 4 % por arriba, dentro del ±10 %.
+    const tarjetas = document.querySelectorAll('.tarjeta-resultado');
+    expect(tarjetas[0]).toHaveTextContent('Tiempo total16:40objetivo: 16:00');
+    expect(tarjetas[0]).toHaveClass('verde');
+    expect(tarjetas[3]).toHaveTextContent('ResultadoExcelente¡Dentro del objetivo!');
+    expect(tarjetas[3]).toHaveClass('dorado');
+    const desglose = screen.getByLabelText('Desglose de XP');
+    expect(desglose).toHaveTextContent('Bonus por tiempo+100');
+    expect(desglose.querySelector('.fila.apagada')?.textContent ?? '').not.toContain('Bonus');
   });
 });

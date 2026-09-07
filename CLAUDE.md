@@ -69,9 +69,11 @@ no tiene: están **superados o enmendados**. Leerlos como historia, no como esta
 - Las recetas son POE: las cuatro restricciones fijas son **cero desperdicio, sin sal
   agregada, una porción y el reloj arranca al abrir el freezer**. El tiempo declarado
   incluye descongelar, lavar y cortar; nunca se esconde tiempo.
-- **Está gamificada, pero premia la precisión, no la velocidad**: los puntos salen de lo
-  cerca que estuvo la cocinada de los tiempos de la receta (`src/progreso/xp.ts`, `puntosDe`). El
-  criterio exacto todavía está por acordar con Carlos.
+- **Está gamificada, pero premia la precisión, no la velocidad.** El criterio es el del
+  prototipo de Figma, adoptado con su pantalla de resultados (`src/progreso/xp.ts`,
+  `desgloseDe`): 200 por completar, 100 de bonus si el total quedó a ±10 % del previsto
+  —simétrico a propósito: ir más rápido no es más preciso—, y 10 por cada paso que no
+  se pasó del suyo. Sigue siendo provisional hasta que Carlos lo confirme.
 - El diseño de las pantallas sale del prototipo de Figma Make, que es la fuente:
   <https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Cocinadas>. Cambia seguido; el código
   fuente se lee desde el bundle de su preview, no desde el conector de Figma.

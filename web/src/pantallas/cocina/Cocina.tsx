@@ -54,6 +54,10 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
   const [estado, setEstado] = useState<EstadoCocina>(() => leerEnCurso(almacen, receta, ahora()) ?? empezar(receta, ahora()));
   const [reloj_ms, setReloj] = useState(() => ahora());
   const [mostrarPorQue, setMostrarPorQue] = useState(false);
+  // Al terminar el último paso no se salta a los resultados: la tarjeta del paso se vuelve
+  // «Receta completada» con un botón, como en el prototipo, y el festejo —confeti y
+  // sonido— arranca recién al tocarlo.
+  const [verResultados, setVerResultados] = useState(false);
 
   // El tic: redibuja y deja que el modelo detecte vencimientos.
   useEffect(() => {
@@ -118,7 +122,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
   if (estado.fase === 'fin-etapa') {
     return <FinDeEtapa estado={estado} alSeguir={accion(empezarEtapa)} />;
   }
-  if (estado.fase === 'fin') {
+  if (estado.fase === 'fin' && verResultados) {
     return <Final estado={estado} alVolver={alTerminar} alGuardar={alGuardar} cocinadas={cocinadas} avisador={avisador} fecha={() => new Date(ahora()).toISOString()} />;
   }
 
@@ -147,9 +151,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
             ‹ Volver
           </button>
           <p className="eyebrow">{etapa.nombre}</p>
-          <h1>
-            Paso {estado.paso + 1} de {etapa.pasos.length}
-          </h1>
+          <h1>{estado.fase === 'fin' ? 'Receta completa' : `Paso ${estado.paso + 1} de ${etapa.pasos.length}`}</h1>
         </div>
         <div className="clock">
           {reloj(transcurridoEtapa)}
@@ -157,7 +159,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
         </div>
       </header>
       <div className="stagebar" aria-hidden="true">
-        <i style={{ width: `${Math.min(100, (transcurridoEtapa / etapa.duracion_s) * 100)}%` }} />
+        <i style={{ width: `${estado.fase === 'fin' ? 100 : Math.min(100, (transcurridoEtapa / etapa.duracion_s) * 100)}%` }} />
       </div>
 
       {procesos.length > 0 && (
@@ -169,93 +171,112 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
         </section>
       )}
 
-      <section className={critica ? 'now hot' : 'now'} aria-labelledby="titulo-paso">
-        <div className="hd">
-          <span className="eyebrow">{esperaPrevia > 0 ? 'Todavía no · empieza en' : paso.espera ? 'Espera · preparate' : 'Ahora · con las manos'}</span>
-          <span className="plan">
-            {reloj(paso.inicio_s)} → {reloj(paso.inicio_s + paso.duracion_s)}
-          </span>
-        </div>
-        <div className="ttl">
-          {fotoPaso !== null && <img className="ph" src={fotoPaso} alt="" />}
-          <h2 id="titulo-paso">{paso.titulo}</h2>
-        </div>
-
-        {esperaPrevia > 0 ? (
-          <div className="big">
-            {reloj(esperaPrevia)}
-            <small>para empezar este paso</small>
+      {estado.fase === 'fin' ? (
+        <section className="now completada" aria-label="Receta completada">
+          <p className="tilde" aria-hidden="true">
+            ✅
+          </p>
+          <h2>¡Receta completada!</h2>
+          <button
+            type="button"
+            className="btn verde"
+            onClick={() => {
+              setVerResultados(true);
+            }}
+          >
+            Ver resultados 🏆
+          </button>
+        </section>
+      ) : (
+        <section className={critica ? 'now hot' : 'now'} aria-labelledby="titulo-paso">
+          <div className="hd">
+            <span className="eyebrow">{esperaPrevia > 0 ? 'Todavía no · empieza en' : paso.espera ? 'Espera · preparate' : 'Ahora · con las manos'}</span>
+            <span className="plan">
+              {reloj(paso.inicio_s)} → {reloj(paso.inicio_s + paso.duracion_s)}
+            </span>
           </div>
-        ) : paso.espera && vence !== null ? (
-          <div className="big">
-            {reloj(vence)}
-            <small>para que venza lo que corre</small>
+          <div className="ttl">
+            {fotoPaso !== null && <img className="ph" src={fotoPaso} alt="" />}
+            <h2 id="titulo-paso">{paso.titulo}</h2>
           </div>
-        ) : (
-          <div className="big">
-            {reloj(progreso.transcurrido_s)}
-            {progreso.exceso_s > 0 ? (
-              <span className="over">+{reloj(progreso.exceso_s)}</span>
-            ) : (
-              <small className="meta">
-                de <b>{reloj(progreso.previsto_s)}</b> previstos
-              </small>
+  
+          {esperaPrevia > 0 ? (
+            <div className="big">
+              {reloj(esperaPrevia)}
+              <small>para empezar este paso</small>
+            </div>
+          ) : paso.espera && vence !== null ? (
+            <div className="big">
+              {reloj(vence)}
+              <small>para que venza lo que corre</small>
+            </div>
+          ) : (
+            <div className="big">
+              {reloj(progreso.transcurrido_s)}
+              {progreso.exceso_s > 0 ? (
+                <span className="over">+{reloj(progreso.exceso_s)}</span>
+              ) : (
+                <small className="meta">
+                  de <b>{reloj(progreso.previsto_s)}</b> previstos
+                </small>
+              )}
+            </div>
+          )}
+  
+          <div className="track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progreso.previsto_pct)}>
+            <i style={{ width: `${progreso.previsto_pct}%` }} />
+            {progreso.exceso_s > 0 && (
+              <>
+                <span className="ov" style={{ width: `${progreso.exceso_pct}%` }} />
+                <span className="mk" data-t={reloj(progreso.previsto_s)} style={{ left: `${progreso.previsto_pct}%` }} />
+              </>
             )}
           </div>
-        )}
-
-        <div className="track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progreso.previsto_pct)}>
-          <i style={{ width: `${progreso.previsto_pct}%` }} />
           {progreso.exceso_s > 0 && (
-            <>
-              <span className="ov" style={{ width: `${progreso.exceso_pct}%` }} />
-              <span className="mk" data-t={reloj(progreso.previsto_s)} style={{ left: `${progreso.previsto_pct}%` }} />
-            </>
+            <p className={critica ? 'over-note' : 'over-note ok'}>
+              {critica ? `Pasado ${reloj(progreso.exceso_s)}: ${paso.por_que.texto}` : '✓ Sin apuro: en esta etapa pasarse no cambia el plato'}
+            </p>
           )}
-        </div>
-        {progreso.exceso_s > 0 && (
-          <p className={critica ? 'over-note' : 'over-note ok'}>
-            {critica ? `Pasado ${reloj(progreso.exceso_s)}: ${paso.por_que.texto}` : '✓ Sin apuro: en esta etapa pasarse no cambia el plato'}
-          </p>
-        )}
-
-        <ul className="steps">
-          {paso.acciones.map((accionTexto, i) => {
-            const hecho = estado.subpasos.includes(i);
-            return (
-              <li key={accionTexto} className={hecho ? 'ok' : ''}>
-                <button type="button" aria-pressed={hecho} onClick={() => setEstado((e) => tildar(e, i))}>
-                  {accionTexto}
-                </button>
+  
+          <ul className="steps">
+            {paso.acciones.map((accionTexto, i) => {
+              const hecho = estado.subpasos.includes(i);
+              return (
+                <li key={accionTexto} className={hecho ? 'ok' : ''}>
+                  <button type="button" aria-pressed={hecho} onClick={() => setEstado((e) => tildar(e, i))}>
+                    {accionTexto}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+  
+          {/* Qué cuida este paso —sabor, desperdicio, seguridad—, como en el prototipo: a la
+              vista siempre; el texto largo que lo explica sigue detrás del «?». */}
+          <ul className="chips etiquetas" aria-label="Qué cuida este paso">
+            {paso.por_que.etiquetas.map((e) => (
+              <li key={e} className="chip">
+                {e}
               </li>
-            );
-          })}
-        </ul>
-
-        {/* Qué cuida este paso —sabor, desperdicio, seguridad—, como en el prototipo: a la
-            vista siempre; el texto largo que lo explica sigue detrás del «?». */}
-        <ul className="chips etiquetas" aria-label="Qué cuida este paso">
-          {paso.por_que.etiquetas.map((e) => (
-            <li key={e} className="chip">
-              {e}
-            </li>
-          ))}
-        </ul>
-
-        {mostrarPorQue && <p className="por-que">{paso.por_que.texto}</p>}
-
-        <div className="actions">
-          <button type="button" className={critica ? 'btn hot' : 'btn primary'} onClick={accion(listo, true)}>
-            {esperaPrevia > 0 ? 'Ya lo hice ✓' : paso.espera ? 'Seguir ✓' : 'Listo, siguiente ✓'}
-          </button>
-          <button type="button" className="btn ghost" aria-label="Reiniciar el paso" title="Reiniciar el paso" onClick={accion(reiniciarPaso)}>
-            ↺
-          </button>
-          <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => setMostrarPorQue((v) => !v)}>
-            ?
-          </button>
-        </div>
-      </section>
+            ))}
+          </ul>
+  
+          {mostrarPorQue && <p className="por-que">{paso.por_que.texto}</p>}
+  
+          <div className="actions">
+            <button type="button" className={critica ? 'btn hot' : 'btn primary'} onClick={accion(listo, true)}>
+              {esperaPrevia > 0 ? 'Ya lo hice ✓' : paso.espera ? 'Seguir ✓' : 'Listo, siguiente ✓'}
+            </button>
+            <button type="button" className="btn ghost" aria-label="Reiniciar el paso" title="Reiniciar el paso" onClick={accion(reiniciarPaso)}>
+              ↺
+            </button>
+            <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => setMostrarPorQue((v) => !v)}>
+              ?
+            </button>
+          </div>
+        </section>
+  
+      )}
 
       <Riel estado={estado} ahora={reloj_ms} />
     </main>
