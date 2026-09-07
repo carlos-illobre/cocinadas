@@ -41,7 +41,7 @@ test('los avisos suenan al confirmar un paso y al terminar la cocinada', async (
         osc.start = new Proxy(osc.start, {
           apply: (destino, esto, args: [number?]) => {
             window.__notas.push({ frecuencia: osc.frequency.value, tipo: osc.type });
-            return Reflect.apply(destino, esto, args);
+            Reflect.apply(destino, esto, args);
           },
         });
         return osc;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { reloj } from './api';
-import { fechaCorta, progresoPorReceta, type Cocinada, type ProgresoReceta } from './historial/almacen';
+import { reloj } from '../api';
+import { fechaCorta, progresoPorReceta, type Cocinada, type ProgresoReceta } from '../historial/almacen';
 
 export interface PropiedadesHistorial {
   readonly cocinadas: readonly Cocinada[];

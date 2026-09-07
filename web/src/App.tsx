@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { versionesOrdenadas, type Fetch, type Receta, type RecetaResumen } from './api';
-import { BarraInferior, type Pestana } from './BarraInferior';
+import { versionPorOmision, type Fetch, type Receta, type RecetaResumen } from './api';
+import { BarraInferior, type Pestana } from './componentes/BarraInferior';
 import { borrarEnCurso, recetaEnCurso } from './cocina/enCurso';
 import { avisadorDelNavegador, SIN_AVISADOR, type Avisador } from './cocina/sonido';
-import { Cocina } from './Cocina';
+import { Cocina } from './pantallas/cocina/Cocina';
 import { almacenSeguro, guardarCocinada, listarCocinadas, type Almacen, type Cocinada } from './historial/almacen';
-import { Historial } from './Historial';
-import { Inicio } from './Inicio';
-import { MiseEnPlace } from './MiseEnPlace';
-import { Perfil } from './Perfil';
-import { Portada } from './Portada';
-import { Recetas } from './Recetas';
+import { Historial } from './pantallas/Historial';
+import { Inicio } from './pantallas/Inicio';
+import { MiseEnPlace } from './pantallas/MiseEnPlace';
+import { Perfil } from './pantallas/Perfil';
+import { Portada } from './pantallas/Portada';
+import { Recetas } from './pantallas/Recetas';
 import { aplicarTema, elOtro, guardarTema, leerTema, type Tema } from './tema';
-import { experienciaDe } from './xp';
+import { experienciaDe } from './progreso/xp';
 import './estilos.css';
 
 export interface PropiedadesApp {
@@ -198,10 +198,4 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
     case 'perfil':
       return conBarra('perfil', <Perfil cocinadas={cocinadas} xp={experiencia} tema={tema} alCambiarTema={cambiarTema} version={VERSION_APP} />);
   }
-}
-
-/** La versión más lenta es la que la receta recomienda para cocinar con calma. */
-export function versionPorOmision(resumen: RecetaResumen): string {
-  const primera = versionesOrdenadas(resumen)[0];
-  return primera === undefined ? '1' : primera.clave;
 }

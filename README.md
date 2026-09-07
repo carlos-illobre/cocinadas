@@ -42,10 +42,10 @@ cd web && pnpm build && pnpm preview
 ## Cómo se prueba
 
 ```bash
-cd web && pnpm test:cov
+cd web && pnpm lint && pnpm test:cov
 ```
 
-Unitarias con **compuerta del 100 %** en instrucciones, ramas, funciones y líneas.
+`tsc` y ESLint sin avisos, y unitarias con **compuerta del 100 %** en instrucciones, ramas, funciones y líneas.
 
 ```bash
 cd web && pnpm exec playwright install chromium && pnpm e2e

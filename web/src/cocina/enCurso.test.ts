@@ -71,6 +71,19 @@ describe('la cocinada en curso', () => {
     expect(recetaEnCurso(almacen, T0 + MAXIMA_ANTIGUEDAD_MS + 1)).toBeNull();
   });
 
+  it.each([
+    ['sin marca de tiempo', { estado: { receta: recetaDosEtapas } }],
+    ['con el estado que no es un objeto', { guardadoEn_ms: T0, estado: 'cocinando' }],
+    ['con una receta que no es un objeto', { guardadoEn_ms: T0, estado: { receta: 'pasta' } }],
+    ['con una receta sin plato', { guardadoEn_ms: T0, estado: { receta: { version: { clave: 'x' } } } }],
+    ['con una receta sin modo', { guardadoEn_ms: T0, estado: { receta: { plato: 'pasta', version: 'x' } } }],
+    ['con un modo sin clave', { guardadoEn_ms: T0, estado: { receta: { plato: 'pasta', version: {} } } }],
+  ])('un guardado %s se descarta entero: no se castea, se comprueba', (_caso, guardado) => {
+    const almacen = memoria({ [CLAVE_EN_CURSO]: JSON.stringify(guardado) });
+    expect(recetaEnCurso(almacen, T0)).toBeNull();
+    expect(leerEnCurso(almacen, recetaDosEtapas, T0)).toBeNull();
+  });
+
   it('un guardado sin receta no ofrece ninguna', () => {
     const almacen = memoria();
     almacen.setItem(CLAVE_EN_CURSO, JSON.stringify({ guardadoEn_ms: T0, estado: {} }));

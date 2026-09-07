@@ -1,12 +1,12 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { App, versionPorOmision } from './App';
+import { App } from './App';
 import type { Fetch } from './api';
 import type { Avisador } from './cocina/sonido';
 import { CLAVE_HISTORIAL, type Almacen } from './historial/almacen';
 import { CLAVE_TEMA } from './tema';
 import { CLAVE_EN_CURSO } from './cocina/enCurso';
-import { fetchDeCatalogo, nunca, recetaDosEtapas, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
+import { fetchDeCatalogo, nunca, recetaDosEtapas, resumenSpaghetti } from './pruebas/datos';
 
 const ruta = '/recetas/spaghetti-integral-brocoli-camarones';
 
@@ -45,17 +45,6 @@ async function hastaLaCocina(): Promise<void> {
   fireEvent.click(await screen.findByRole('button', { name: 'Comenzar · 21 min →' }));
   tildarTodoYCocinar();
 }
-
-describe('versionPorOmision', () => {
-  it('elige la versión más lenta', () => {
-    expect(versionPorOmision(resumenSpaghetti)).toBe('dos-etapas');
-    expect(versionPorOmision(resumenSinFoto)).toBe('linea-de-tiempo');
-  });
-
-  it('cae en «1» si el resumen no trae versiones', () => {
-    expect(versionPorOmision({ ...resumenSinFoto, versiones: [] })).toBe('1');
-  });
-});
 
 describe('el recorrido de la app', () => {
   it('arranca en la pantalla de inicio sin consultar nada, sin barra y sin crear el avisador', () => {

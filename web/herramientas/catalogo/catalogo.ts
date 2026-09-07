@@ -155,7 +155,7 @@ export function leerRecetas(directorioRecetas: string, avisar: (mensaje: string)
       const ruta = join(carpeta, archivo);
       const json = JSON.parse(readFileSync(ruta, 'utf8')) as RecetaJson;
       if (json.esquema !== 1 || json.plato !== entrada) {
-        avisar(`se ignora ${ruta}: esquema ${String(json.esquema)} o plato ${String(json.plato)} distinto de la carpeta`);
+        avisar(`se ignora ${ruta}: esquema ${String(json.esquema)} o plato ${json.plato} distinto de la carpeta`);
         continue;
       }
       recetas.push(json);

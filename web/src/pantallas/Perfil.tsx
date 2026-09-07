@@ -1,8 +1,8 @@
-import { reloj } from './api';
-import type { Cocinada } from './historial/almacen';
-import { logros } from './logros';
-import type { Tema } from './tema';
-import { nivelDe, progresoNivel } from './xp';
+import { reloj } from '../api';
+import type { Cocinada } from '../historial/almacen';
+import { logros } from '../progreso/logros';
+import type { Tema } from '../tema';
+import { nivelDe, progresoNivel } from '../progreso/xp';
 
 export interface PropiedadesPerfil {
   readonly cocinadas: readonly Cocinada[];
