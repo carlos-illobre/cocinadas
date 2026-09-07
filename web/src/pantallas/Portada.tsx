@@ -96,9 +96,11 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
               La receta se puede cocinar de más de una manera. Tocá la que quieras usar: cambia el orden de los pasos y el tiempo total, no el plato ni las cantidades. Podés cambiarla hasta que empieces a cocinar.
             </p>
           )}
+          {/* Las versiones vienen de la más lenta a la más rápida: la lenta es la fácil —se cocina
+              con calma, una cosa por vez— y las demás, la difícil. Verde y rojo, con su cartel. */}
           <div className="modos" role="tablist" aria-label="Modo de preparación">
-            {versiones.map((v) => (
-              <button key={v.clave} type="button" role="tab" aria-selected={v.clave === version} className={v.clave === version ? 'modo on' : 'modo'} onClick={() => alCambiarVersion(v.clave)}>
+            {versiones.map((v, i) => (
+              <button key={v.clave} type="button" role="tab" aria-selected={v.clave === version} className={`modo ${i === 0 ? 'facil' : 'dificil'}${v.clave === version ? ' on' : ''}`} onClick={() => alCambiarVersion(v.clave)}>
                 <span className="modo-icono" aria-hidden="true">
                   {v.icono}
                 </span>
@@ -106,6 +108,7 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
                   <span className="modo-nombre">
                     <b>{v.titulo}</b>
                     <span className="modo-tiempo">{minutos(v.tiempo_total_s)}</span>
+                    <span className="modo-dificultad">{i === 0 ? '¡Fácil!' : '¡Difícil!'}</span>
                   </span>
                   <small>{v.resumen}</small>
                 </span>
