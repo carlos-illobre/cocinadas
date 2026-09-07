@@ -70,7 +70,7 @@ test('los avisos suenan al confirmar un paso y al terminar la cocinada', async (
   });
 
   await test.step('el arpegio del plato listo', async () => {
-    const siguiente = page.getByRole('button', { name: /^(Listo, siguiente|Seguir|Ya lo hice|Empezar) / });
+    const siguiente = page.getByRole('button', { name: /^(Listo, siguiente|Listo \(con demora\)|Seguir|Ya lo hice|Empezar) / });
     for (let i = 0; i < 30 && (await siguiente.count()) > 0; i++) {
       await siguiente.first().click();
     }

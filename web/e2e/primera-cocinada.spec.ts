@@ -71,7 +71,7 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
     // «Seguir» en una espera, «Ya lo hice» si todavía no le llegó el turno— y entre
     // etapas se cruza la pantalla de cierre, que dice «Empezar <etapa>». El tope es una
     // red de seguridad para que un cambio en la receta no deje la prueba colgada.
-    const siguiente = page.getByRole('button', { name: /^(Listo, siguiente|Seguir|Ya lo hice|Empezar) / });
+    const siguiente = page.getByRole('button', { name: /^(Listo, siguiente|Listo \(con demora\)|Seguir|Ya lo hice|Empezar) / });
     for (let i = 0; i < 30 && (await siguiente.count()) > 0; i++) {
       await siguiente.first().click();
     }

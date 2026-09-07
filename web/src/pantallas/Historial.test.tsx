@@ -77,23 +77,35 @@ describe('Historial', () => {
 });
 
 describe('Grafico', () => {
-  it('dibuja una barra por intento, verde dentro del objetivo y coral pasado, con el eje en minutos redondos', () => {
-    const [p] = progresoPorReceta([cocinada('1', '2026-09-01T10:00:00Z', 1400), cocinada('2', '2026-09-03T10:00:00Z', 1200)]);
+  it('un punto por intento, unidos por una línea, con el objetivo como línea del medio y una escala simétrica', () => {
+    const p = progresoPorReceta([cocinada('a', '2026-09-01T10:00:00', 1400), cocinada('b', '2026-09-02T10:00:00', 1200)])[0];
     const { container } = render(<Grafico progreso={p as NonNullable<typeof p>} />);
 
-    const barras = container.querySelectorAll('.grafico-barra');
-    expect(barras).toHaveLength(2);
-    expect(barras[0]).toHaveClass('pasado');
-    expect(barras[1]).not.toHaveClass('pasado');
-    // Techo de 25 min (máximo 23:20 redondeado a múltiplo de 5), marcas en 0, 13 y 25.
+    const puntos = container.querySelectorAll('.grafico-punto');
+    expect(puntos).toHaveLength(2);
+    // 1400 contra 1260 previstos es un 11 %: lejos. 1200 es un 5 %: cerca.
+    expect(puntos[0]).toHaveClass('lejos');
+    expect(puntos[1]).not.toHaveClass('lejos');
+    expect(container.querySelectorAll('.grafico-linea')).toHaveLength(1);
+    expect(container.querySelectorAll('.grafico-objetivo')).toHaveLength(1);
+
+    // La escala: el desvío mayor es 140 s; con el 25 % de aire son 175 a cada lado del objetivo.
     const ejes = [...container.querySelectorAll('.grafico-eje')].map((e) => e.textContent);
-    expect(ejes).toEqual(expect.arrayContaining(['0 min', '13 min', '25 min', 'objetivo', '1', '2']));
+    expect(ejes).toEqual(expect.arrayContaining(['23:55', '21:00', '18:05', 'objetivo', '1', '2']));
     expect([...container.querySelectorAll('.grafico-valor')].map((e) => e.textContent)).toEqual(['23:20', '20:00']);
+
+    // El objetivo queda exactamente en el medio del alto útil, y el punto pasado por arriba.
+    const objetivo = Number(container.querySelector('.grafico-objetivo')?.getAttribute('y1'));
+    const [arriba, abajo] = [puntos[0], puntos[1]].map((c) => Number(c?.getAttribute('cy')));
+    expect(arriba).toBeLessThan(objetivo);
+    expect(abajo).toBeGreaterThan(objetivo);
   });
 
-  it('con tiempos cortos el techo mínimo es 1 min', () => {
-    const [p] = progresoPorReceta([cocinada('1', '2026-09-01T10:00:00Z', 20, 'pasta', { total_previsto_s: 30 })]);
+  it('con un solo intento no hay línea que unir, y la escala tiene un piso para que el objetivo no quede en el borde', () => {
+    const p = progresoPorReceta([cocinada('a', '2026-09-01T10:00:00', 1260)])[0];
     const { container } = render(<Grafico progreso={p as NonNullable<typeof p>} />);
-    expect([...container.querySelectorAll('.grafico-eje')].map((e) => e.textContent)).toEqual(expect.arrayContaining(['0 min', '1 min']));
+    expect(container.querySelectorAll('.grafico-linea')).toHaveLength(0);
+    // Desvío 0: el rango cae al piso, el 10 % del objetivo (126 s).
+    expect([...container.querySelectorAll('.grafico-eje')].map((e) => e.textContent)).toEqual(expect.arrayContaining(['23:06', '21:00', '18:54']));
   });
 });
