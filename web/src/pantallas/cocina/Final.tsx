@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { reloj } from '../../api';
 import type { Cocinada } from '../../historial/almacen';
-import {
-  desvio,
-  resumen,
-  type EstadoCocina,
-  type PasoHecho } from '../../cocina/modelo';
+import type { EstadoCocina } from '../../cocina/modelo';
+import { cocinadaDe, resumen } from '../../cocina/resumen';
+import { FilaHecha } from './FilaHecha';
 import type { Avisador } from '../../cocina/sonido';
 import { logrosNuevos } from '../../progreso/logros';
 import { desgloseDe } from '../../progreso/xp';
@@ -28,18 +26,7 @@ export function Final({
   const r = resumen(estado);
   const [papelitos] = useState(() => confeti(40));
   // La cocinada se arma una sola vez, al llegar: la fecha es la de ese momento.
-  const [cocinada] = useState<Omit<Cocinada, 'id'>>(() => ({
-    plato: estado.receta.plato,
-    nombre: estado.receta.nombre,
-    version: { clave: estado.receta.version.clave, titulo: estado.receta.version.titulo },
-    fecha: fecha(),
-    total_previsto_s: r.total_previsto_s,
-    total_real_s: r.total_real_s,
-    etapas: r.etapas.map((e) => ({ nombre: e.nombre, previsto_s: e.previsto_s, real_s: e.real_s })),
-    pasos: r.etapas.flatMap((e) => e.pasos),
-    criticos: r.criticos,
-    criticosATiempo: r.criticosATiempo,
-  }));
+  const [cocinada] = useState(() => cocinadaDe(estado, fecha()));
   // El id lo pone quien guarda; para los logros alcanza con uno provisorio.
   const guardada: Cocinada = { ...cocinada, id: 'recien-guardada' };
   // Las cocinadas anteriores, congeladas al llegar: contra esas se calcula qué logro es
@@ -85,22 +72,17 @@ export function Final({
         </div>
         <section className="desglose" aria-label="Desglose de XP">
           <p className="eyebrow">Desglose de XP</p>
-          <p className="fila">
-            <span>Receta completada</span>
-            <b>+{x.completada}</b>
-          </p>
-          <p className={x.bonusEnTiempo > 0 ? 'fila' : 'fila apagada'}>
-            <span>Bonus por tiempo</span>
-            <b>+{x.bonusEnTiempo}</b>
-          </p>
-          <p className={x.pasosATiempo > 0 ? 'fila' : 'fila apagada'}>
-            <span>Pasos a tiempo</span>
-            <b>+{x.pasosATiempo}</b>
-          </p>
-          <p className="fila total">
-            <span>Total</span>
-            <b>+{x.total}</b>
-          </p>
+          {[
+            { texto: 'Receta completada', puntos: x.completada, clase: 'fila' },
+            { texto: 'Bonus por tiempo', puntos: x.bonusEnTiempo, clase: x.bonusEnTiempo > 0 ? 'fila' : 'fila apagada' },
+            { texto: 'Pasos a tiempo', puntos: x.pasosATiempo, clase: x.pasosATiempo > 0 ? 'fila' : 'fila apagada' },
+            { texto: 'Total', puntos: x.total, clase: 'fila total' },
+          ].map((fila) => (
+            <p key={fila.texto} className={fila.clase}>
+              <span>{fila.texto}</span>
+              <b>+{fila.puntos}</b>
+            </p>
+          ))}
         </section>
         {/* Guardada y el botón para seguir van arriba del paso a paso: es lo que se busca al
             terminar, y el paso a paso es largo. */}
@@ -120,19 +102,9 @@ export function Final({
                 <p className="stg">
                   {e.nombre} <span>{reloj(e.real_s)}</span>
                 </p>
-                {e.pasos.map((p: PasoHecho) => {
-                  const dp = desvio(p.previsto_s, p.real_s, reloj);
-                  return (
-                    <div key={p.id} className="row done">
-                      <span className="t">{reloj(p.previsto_s)}</span>
-                      <span className="dot">
-                        <i />
-                      </span>
-                      <span className="n">{p.titulo}</span>
-                      <span className={`d ${dp.signo === 'mas' ? 'plus' : dp.signo === 'menos' ? 'minus' : ''}`.trimEnd()}>{dp.texto}</span>
-                    </div>
-                  );
-                })}
+                {e.pasos.map((p) => (
+                  <FilaHecha key={p.id} paso={p} />
+                ))}
               </div>
             ))}
           </div>

@@ -10,7 +10,7 @@ interface Papelito {
   readonly redondo: boolean;
 }
 
-// Los siete del prototipo. El último es el blanco roto del fondo: casi no se ve en tema
+// Siete colores. El último es el blanco roto del fondo: casi no se ve en tema
 // claro y en oscuro es el que más resalta.
 const COLORES_CONFETI = ['#FF6B35', '#FFD166', '#06D6A0', '#4ECDC4', '#FF6B9D', '#C77DFF', '#FAFAF7'];
 

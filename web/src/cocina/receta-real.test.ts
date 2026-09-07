@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { Receta } from '../api';
 import v1 from '../../../data/recetas/spaghetti-integral-brocoli-camarones/spaghetti-integral-brocoli-camarones-v1-linea-de-tiempo.json';
 import v2 from '../../../data/recetas/spaghetti-integral-brocoli-camarones/spaghetti-integral-brocoli-camarones-v2-dos-etapas.json';
-import { ALTO_MINIMO_FILA, atenderAlarma, avanzarReloj, empezar, empezarEtapa, gantt, listo, pasoActual, resumen } from './modelo';
+import { atenderAlarma, avanzarReloj, empezar, empezarEtapa, listo, pasoActual } from './modelo';
+import { ALTO_MINIMO_FILA, gantt } from './gantt';
+import { resumen } from './resumen';
 
 /**
  * La receta real del repositorio, tal como la sirve el catálogo (menos las fotos, que el

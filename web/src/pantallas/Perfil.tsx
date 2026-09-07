@@ -3,7 +3,7 @@ import type { Cocinada } from '../historial/almacen';
 import { logros } from '../progreso/logros';
 import { nivelDe, progresoNivel } from '../progreso/xp';
 
-export interface PropiedadesPerfil {
+interface PropiedadesPerfil {
   readonly cocinadas: readonly Cocinada[];
   readonly xp: number;
   readonly version: string;
@@ -11,13 +11,12 @@ export interface PropiedadesPerfil {
 
 /**
  * El perfil: nivel y experiencia, los números de la cocina, los
- * logros. Todo sale de las cocinadas guardadas; mientras no
- * haya cuentas, no hay nombre ni sesión que cerrar.
+ * logros. Todo sale de las cocinadas guardadas.
  */
 export function Perfil({ cocinadas, xp, version }: PropiedadesPerfil): React.JSX.Element {
   const nivel = nivelDe(xp);
   const progreso = progresoNivel(xp);
-  const minutos = Math.round(cocinadas.reduce((suma, c) => suma + c.total_real_s, 0) / 60);
+  const total_s = cocinadas.reduce((suma, c) => suma + c.total_real_s, 0);
   const todos = logros(cocinadas);
   const conseguidos = todos.filter((l) => l.conseguido).length;
 
@@ -47,7 +46,7 @@ export function Perfil({ cocinadas, xp, version }: PropiedadesPerfil): React.JSX
       <div className="cuerpo">
         <div className="numeros">
           <Numero icono="🍳" valor={String(cocinadas.length)} nombre="Recetas cocinadas" />
-          <Numero icono="⏱" valor={String(minutos)} nombre="Minutos en la cocina" />
+          <Numero icono="⏱" valor={String(Math.round(total_s / 60))} nombre="Minutos en la cocina" />
           <Numero icono="⚡" valor={String(xp)} nombre="Experiencia" clase="dorado" />
           <Numero icono="🏅" valor={`${conseguidos}/${todos.length}`} nombre="Logros" clase="marca" />
         </div>
@@ -70,13 +69,12 @@ export function Perfil({ cocinadas, xp, version }: PropiedadesPerfil): React.JSX
           </ul>
         </section>
 
-
         <section aria-labelledby="titulo-datos">
           <h3 id="titulo-datos" className="titulo-seccion">
             Tus cocinadas
           </h3>
           <p className="lead">
-            {cocinadas.length === 0 ? 'Todavía no hay cocinadas guardadas.' : `Suman ${reloj(cocinadas.reduce((s, c) => s + c.total_real_s, 0))} de cocina, guardadas en este teléfono.`} Con las cuentas de usuario van a sincronizarse con tu perfil.
+            {cocinadas.length === 0 ? 'Todavía no hay cocinadas guardadas.' : `Suman ${reloj(total_s)} de cocina, guardadas en este teléfono.`}
           </p>
           <p className="perfil-version">Cocinadas {version}</p>
         </section>

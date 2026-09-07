@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Logotipo } from '../componentes/Logotipo';
 
-export interface PropiedadesInicio {
+interface PropiedadesInicio {
   /** Entrar sin cuenta: las cocinadas quedan en este teléfono. */
   readonly alEntrar: () => void;
 }
@@ -22,7 +22,7 @@ const CAPAS_ABAJO = [7, 8, 10, 11, 9];
  * lienzo de 1414 × 2000 y ya vienen alineadas entre sí, así que dentro de cada grupo se
  * apilan con el mismo marco y ninguna se deforma. La 1 es el fondo de pizarra, en JPEG;
  * las otras nueve son los vegetales con transparencia, en WebP. Los originales están en
- * `docs/mockups/inicio-capas/`.
+ * `data/inicio-capas/`.
  */
 export function Inicio({ alEntrar }: PropiedadesInicio): React.JSX.Element {
   const [avisoCuentas, setAvisoCuentas] = useState(false);

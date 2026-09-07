@@ -1,26 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { reloj } from '../api';
 import { recetaDosEtapas, recetaUnaEtapa } from '../pruebas/datos';
-import {
-  atenderAlarma,
-  avanzarReloj,
-  ALTO_MINIMO_FILA,
-  frenteGantt,
-  gantt,
-  desvio,
-  empezar,
-  empezarEtapa,
-  esperaPrevia_s,
-  listo,
-  pasoActual,
-  procesosVisibles,
-  progresoPaso,
-  proximoVencimiento_s,
-  resumen,
-  tildar,
-  transcurridoEtapa_s,
-  UMBRAL_ALERTA_S,
-} from './modelo';
+import { atenderAlarma, avanzarReloj, empezar, empezarEtapa, esperaPrevia_s, listo, pasoActual, procesosVisibles, progresoPaso, proximoVencimiento_s, tildar, transcurridoEtapa_s, UMBRAL_ALERTA_S } from './modelo';
+import { ALTO_MINIMO_FILA, frenteGantt, gantt } from './gantt';
+import { desvio, resumen } from './resumen';
 
 const T0 = 1_000_000;
 const s = (n: number) => T0 + n * 1000;

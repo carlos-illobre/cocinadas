@@ -3,7 +3,7 @@ import { cantidadLegible } from '../cantidad';
 import { FotoAmpliable } from '../componentes/FotoAmpliable';
 import { BASE_CATALOGO, urlFoto, type Receta } from '../api';
 
-export interface PropiedadesMiseEnPlace {
+interface PropiedadesMiseEnPlace {
   readonly receta: Receta;
   readonly alVolver: () => void;
   readonly alCocinar: () => void;

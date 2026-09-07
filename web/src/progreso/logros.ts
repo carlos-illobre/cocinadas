@@ -27,18 +27,15 @@ function dia(c: Cocinada): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+/** Días desde 1970 de cada cocinada, únicos y en orden: dos seguidos difieren en 1. */
+function diasCocinados(cocinadas: readonly Cocinada[]): readonly number[] {
+  return [...new Set(cocinadas.map(dia))].sort().map((d) => Math.round(new Date(`${d}T12:00:00Z`).getTime() / 86_400_000));
+}
+
+/** Hay `largo` días seguidos si algún día está a `largo - 1` del que queda `largo - 1` posiciones más adelante. */
 function hayRachaDe(cocinadas: readonly Cocinada[], largo: number): boolean {
-  const dias = [...new Set(cocinadas.map(dia))].sort();
-  let seguidos = 1;
-  for (let i = 1; i < dias.length; i += 1) {
-    const anterior = new Date(`${dias[i - 1] as string}T12:00:00Z`).getTime();
-    const actual = new Date(`${dias[i] as string}T12:00:00Z`).getTime();
-    seguidos = Math.round((actual - anterior) / 86_400_000) === 1 ? seguidos + 1 : 1;
-    if (seguidos >= largo) {
-      return true;
-    }
-  }
-  return dias.length >= largo && seguidos >= largo;
+  const dias = diasCocinados(cocinadas);
+  return dias.some((d, i) => dias[i + largo - 1] === d + largo - 1);
 }
 
 export function logros(cocinadas: readonly Cocinada[]): readonly Logro[] {

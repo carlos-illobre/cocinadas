@@ -1,6 +1,6 @@
 import { nivelDe, progresoNivel } from '../progreso/xp';
 
-export interface PropiedadesBarraXp {
+interface PropiedadesBarraXp {
   readonly xp: number;
 }
 

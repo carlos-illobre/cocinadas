@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { cantidadLegible } from '../cantidad';
 import { FotoAmpliable } from '../componentes/FotoAmpliable';
+import { useCarga } from '../ganchos/useCarga';
 import { BASE_CATALOGO, minutos, obtenerReceta, urlFoto, versionesOrdenadas, type Fetch, type Receta, type RecetaResumen } from '../api';
 
-export interface PropiedadesPortada {
+interface PropiedadesPortada {
   readonly fetchImpl: Fetch;
   readonly resumen: RecetaResumen;
   /** Clave de la versión elegida (`dos-etapas`). */
@@ -13,7 +14,6 @@ export interface PropiedadesPortada {
   readonly alEmpezar: (receta: Receta) => void;
 }
 
-type Carga = { readonly estado: 'cargando' } | { readonly estado: 'error'; readonly detalle: string } | { readonly estado: 'lista'; readonly receta: Receta };
 type Solapa = 'ingredientes' | 'utensilios';
 
 /**
@@ -23,29 +23,9 @@ type Solapa = 'ingredientes' | 'utensilios';
  * están en los datos de la receta, pero no acá: hacían la pantalla larguísima.
  */
 export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolver, alEmpezar }: PropiedadesPortada): React.JSX.Element {
-  const [carga, setCarga] = useState<Carga>({ estado: 'cargando' });
+  const carga = useCarga(useCallback(() => obtenerReceta(fetchImpl, resumen.plato, version), [fetchImpl, resumen.plato, version]));
   const [solapa, setSolapa] = useState<Solapa>('ingredientes');
   const [ayuda, setAyuda] = useState(false);
-
-  // Al cambiar de modo NO se vuelve a «cargando»: la receta anterior sigue a la vista
-  // hasta que llega la nueva, y recién ahí se reemplaza. Volver a «cargando» vaciaba la
-  // pantalla un instante y se veía como un parpadeo. Una respuesta tardía de la versión
-  // anterior no pisa a la nueva porque el efecto se cancela con `vigente`.
-
-  useEffect(() => {
-    let vigente = true;
-    obtenerReceta(fetchImpl, resumen.plato, version).then(
-      (receta) => {
-        if (vigente) setCarga({ estado: 'lista', receta });
-      },
-      (error: unknown) => {
-        if (vigente) setCarga({ estado: 'error', detalle: error instanceof Error ? error.message : String(error) });
-      },
-    );
-    return () => {
-      vigente = false;
-    };
-  }, [fetchImpl, resumen.plato, version]);
 
   const foto = urlFoto(resumen.foto);
   const versiones = versionesOrdenadas(resumen);
@@ -122,11 +102,11 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
         </section>
       )}
 
-      {carga.estado === 'lista' && <Necesario receta={carga.receta} solapa={solapa} alCambiarSolapa={setSolapa} />}
+      {carga.estado === 'lista' && <Necesario receta={carga.datos} solapa={solapa} alCambiarSolapa={setSolapa} />}
 
       {carga.estado === 'lista' && (
         <div className="cta-fija">
-          <button type="button" className="btn primary" onClick={() => alEmpezar(carga.receta)}>
+          <button type="button" className="btn primary" onClick={() => alEmpezar(carga.datos)}>
             Comenzar · {tiempo} →
           </button>
         </div>

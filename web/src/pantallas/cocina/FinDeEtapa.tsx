@@ -1,5 +1,7 @@
 import { reloj } from '../../api';
-import { desvio, etapaActual, type EstadoCocina, type PasoHecho } from '../../cocina/modelo';
+import { etapaActual, type EstadoCocina, type PasoHecho } from '../../cocina/modelo';
+import { desvio } from '../../cocina/resumen';
+import { FilaHecha } from './FilaHecha';
 
 export function FinDeEtapa({ estado, alSeguir }: { readonly estado: EstadoCocina; readonly alSeguir: () => void }): React.JSX.Element {
   const etapa = etapaActual(estado);
@@ -20,19 +22,9 @@ export function FinDeEtapa({ estado, alSeguir }: { readonly estado: EstadoCocina
           Hecho <span>previsto → real</span>
         </p>
         <div className="rows">
-          {(estado.hechos[estado.etapa] as readonly PasoHecho[]).map((p) => {
-            const dp = desvio(p.previsto_s, p.real_s, reloj);
-            return (
-              <div key={p.id} className="row done">
-                <span className="t">{reloj(p.previsto_s)}</span>
-                <span className="dot">
-                  <i />
-                </span>
-                <span className="n">{p.titulo}</span>
-                <span className={`d ${dp.signo === 'mas' ? 'plus' : dp.signo === 'menos' ? 'minus' : ''}`.trimEnd()}>{dp.texto}</span>
-              </div>
-            );
-          })}
+          {(estado.hechos[estado.etapa] as readonly PasoHecho[]).map((p) => (
+            <FilaHecha key={p.id} paso={p} />
+          ))}
         </div>
       </section>
       {siguiente !== undefined && (

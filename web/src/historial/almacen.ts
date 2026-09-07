@@ -32,18 +32,14 @@ export function almacenSeguro(candidato: Almacen | undefined): Almacen {
   };
 }
 
-/**
- * Las cocinadas guardadas en el dispositivo. Es el mismo registro que más adelante se
- * sincroniza con el perfil (servicio `cocinadas`); hasta entonces vive en localStorage
- * bajo una sola clave, como JSON.
- */
-export interface EtapaCocinada {
+/** Las cocinadas guardadas en el teléfono, en localStorage bajo una sola clave, como JSON. */
+interface EtapaCocinada {
   readonly nombre: string;
   readonly previsto_s: number;
   readonly real_s: number;
 }
 
-export interface PasoCocinado {
+interface PasoCocinado {
   readonly id: string;
   readonly titulo: string;
   readonly previsto_s: number;
@@ -72,21 +68,19 @@ function esCocinada(x: unknown): x is Cocinada {
   return typeof x === 'object' && x !== null && typeof (x as Cocinada).id === 'string' && typeof (x as Cocinada).plato === 'string' && typeof (x as Cocinada).total_real_s === 'number';
 }
 
+/** Lo guardado bajo una clave, como JSON; null si no hay nada o no se puede leer. Lo que hay ahí no es de confianza. */
+export function leerJson(almacen: Almacen, clave: string): unknown {
+  try {
+    return JSON.parse(almacen.getItem(clave) ?? 'null') as unknown;
+  } catch {
+    return null;
+  }
+}
+
 /** Lee todas, de la más reciente a la más antigua. Lo que no se pueda leer se ignora, no rompe. */
 export function listarCocinadas(almacen: Almacen): readonly Cocinada[] {
-  const crudo = almacen.getItem(CLAVE_HISTORIAL);
-  if (crudo === null) {
-    return [];
-  }
-  try {
-    const datos: unknown = JSON.parse(crudo);
-    if (!Array.isArray(datos)) {
-      return [];
-    }
-    return datos.filter(esCocinada).sort((a, b) => b.fecha.localeCompare(a.fecha));
-  } catch {
-    return [];
-  }
+  const datos = leerJson(almacen, CLAVE_HISTORIAL);
+  return Array.isArray(datos) ? datos.filter(esCocinada).sort((a, b) => b.fecha.localeCompare(a.fecha)) : [];
 }
 
 export function guardarCocinada(almacen: Almacen, cocinada: Cocinada): readonly Cocinada[] {
@@ -107,11 +101,9 @@ export interface ProgresoReceta {
 
 /** Agrupa por plato; el objetivo es el previsto de la versión del último intento. */
 export function progresoPorReceta(cocinadas: readonly Cocinada[]): readonly ProgresoReceta[] {
-  const porPlato = new Map<string, Cocinada[]>();
-  for (const c of cocinadas) {
-    porPlato.set(c.plato, [...(porPlato.get(c.plato) ?? []), c]);
-  }
-  return [...porPlato.entries()].map(([plato, lista]) => {
+  const platos = [...new Set(cocinadas.map((c) => c.plato))];
+  return platos.map((plato) => {
+    const lista = cocinadas.filter((c) => c.plato === plato);
     const intentos = [...lista].sort((a, b) => a.fecha.localeCompare(b.fecha));
     const tiempos = intentos.map((i) => i.total_real_s);
     const ultimo = intentos[intentos.length - 1] as Cocinada;
