@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Logotipo } from './Logotipo';
+import { Logotipo } from '../componentes/Logotipo';
 
 export interface PropiedadesInicio {
   /** Entrar sin cuenta: las cocinadas quedan en este teléfono. */

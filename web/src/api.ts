@@ -109,6 +109,12 @@ export function versionesOrdenadas(resumen: RecetaResumen): readonly VersionResu
   return [...resumen.versiones].sort((a, b) => b.tiempo_total_s - a.tiempo_total_s);
 }
 
+/** La versión más lenta es la que la receta recomienda para cocinar con calma. */
+export function versionPorOmision(resumen: RecetaResumen): string {
+  const primera = versionesOrdenadas(resumen)[0];
+  return primera === undefined ? '1' : primera.clave;
+}
+
 async function pedir<T>(fetchImpl: Fetch, ruta: string): Promise<T> {
   const respuesta = await fetchImpl(`${BASE_CATALOGO}${ruta}.json`);
   if (!respuesta.ok) {

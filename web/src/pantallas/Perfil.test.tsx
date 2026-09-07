@@ -1,9 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Cocinada } from './historial/almacen';
+import type { Cocinada } from '../historial/almacen';
 import { Perfil } from './Perfil';
-
-const nada = () => undefined;
 
 function cocinada(fecha: string, real: number, extra: Partial<Cocinada> = {}): Cocinada {
   return {

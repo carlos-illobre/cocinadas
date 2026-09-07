@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BASE_CATALOGO, type Receta } from './api';
+import { BASE_CATALOGO, type Receta } from '../api';
 
 export interface PropiedadesMiseEnPlace {
   readonly receta: Receta;

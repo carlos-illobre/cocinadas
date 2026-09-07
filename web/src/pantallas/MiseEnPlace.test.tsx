@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { MiseEnPlace } from './MiseEnPlace';
-import { recetaDosEtapas } from './pruebas/datos';
+import { recetaDosEtapas } from '../pruebas/datos';
 
 const nada = () => undefined;
 

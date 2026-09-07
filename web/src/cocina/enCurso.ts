@@ -41,26 +41,45 @@ export function borrarEnCurso(almacen: Almacen): void {
  */
 export function recetaEnCurso(almacen: Almacen, ahora: number): Receta | null {
   const guardado = leerGuardado(almacen, ahora);
-  return guardado === null ? null : (guardado.estado.receta ?? null);
+  return guardado === null ? null : guardado.estado.receta;
 }
 
-/** Lo guardado, ya validado como objeto y por antigüedad. */
+function esObjeto(x: unknown): x is Record<string, unknown> {
+  return typeof x === 'object' && x !== null;
+}
+
+/**
+ * Lo guardado, validado y filtrado por antigüedad.
+ *
+ * Lo que hay en el `localStorage` no es de confianza: lo pudo escribir otra versión de la
+ * app, o cualquiera con el teléfono en la mano. Por eso se lee como `unknown` y se
+ * comprueba lo que se va a usar —la marca de tiempo, y que el estado tenga una receta
+ * con plato y modo, que es lo que permite saber de qué cocinada es— en vez de castear y
+ * confiar. Lo demás del estado sigue siendo palabra de quien lo guardó.
+ */
 function leerGuardado(almacen: Almacen, ahora: number): Guardado | null {
   const crudo = almacen.getItem(CLAVE_EN_CURSO);
   if (crudo === null || crudo === '') {
     return null;
   }
-  let guardado: Guardado;
+  let datos: unknown;
   try {
-    guardado = JSON.parse(crudo) as Guardado;
+    datos = JSON.parse(crudo);
   } catch {
     return null;
   }
-  if (typeof guardado?.guardadoEn_ms !== 'number' || typeof guardado.estado !== 'object' || guardado.estado === null) {
+  if (!esObjeto(datos) || typeof datos.guardadoEn_ms !== 'number' || !esObjeto(datos.estado)) {
+    return null;
+  }
+  const receta = datos.estado.receta;
+  if (!esObjeto(receta) || typeof receta.plato !== 'string' || !esObjeto(receta.version) || typeof receta.version.clave !== 'string') {
     return null;
   }
   // Pasada la ventana, se descarta: retomarla mostraría tiempos absurdos.
-  return ahora - guardado.guardadoEn_ms > MAXIMA_ANTIGUEDAD_MS ? null : guardado;
+  if (ahora - datos.guardadoEn_ms > MAXIMA_ANTIGUEDAD_MS) {
+    return null;
+  }
+  return { guardadoEn_ms: datos.guardadoEn_ms, estado: datos.estado as unknown as EstadoCocina };
 }
 
 /**
@@ -76,7 +95,7 @@ export function leerEnCurso(almacen: Almacen, receta: Receta, ahora: number): Es
   const estado = guardado.estado;
   // La receta puede haber cambiado con un despliegue nuevo: los índices del estado
   // apuntarían a pasos que ya no son los mismos.
-  if (estado.receta?.plato !== receta.plato || estado.receta.version?.clave !== receta.version.clave) {
+  if (estado.receta.plato !== receta.plato || estado.receta.version.clave !== receta.version.clave) {
     return null;
   }
   return estado;

@@ -1,4 +1,4 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/pruebas"]
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/pruebas", "herramientas/**/*.test.ts", "e2e", "eslint.config.js"]
 }

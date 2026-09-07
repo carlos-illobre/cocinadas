@@ -1,4 +1,4 @@
-import { nivelDe, progresoNivel } from './xp';
+import { nivelDe, progresoNivel } from '../progreso/xp';
 
 export interface PropiedadesBarraXp {
   readonly xp: number;

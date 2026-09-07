@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Cocinada } from './historial/almacen';
+import type { Cocinada } from '../historial/almacen';
 import { logros, logrosNuevos } from './logros';
 
 function cocinada(fecha: string, extra: Partial<Cocinada> = {}): Cocinada {

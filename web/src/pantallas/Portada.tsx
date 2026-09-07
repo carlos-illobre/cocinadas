@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BASE_CATALOGO, minutos, obtenerReceta, urlFoto, versionesOrdenadas, type Fetch, type Receta, type RecetaResumen } from './api';
+import { BASE_CATALOGO, minutos, obtenerReceta, urlFoto, versionesOrdenadas, type Fetch, type Receta, type RecetaResumen } from '../api';
 
 export interface PropiedadesPortada {
   readonly fetchImpl: Fetch;
@@ -25,9 +25,17 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
   const [solapa, setSolapa] = useState<Solapa>('ingredientes');
   const [ayuda, setAyuda] = useState(false);
 
+  // Al cambiar de plato o de modo, la pantalla vuelve a «cargando» en el mismo render y
+  // no en el efecto: así nunca se pinta la receta vieja con el título nuevo, ni siquiera
+  // un fotograma. Es el patrón de React para estado que depende de una prop.
+  const [pedido, setPedido] = useState({ plato: resumen.plato, version });
+  if (pedido.plato !== resumen.plato || pedido.version !== version) {
+    setPedido({ plato: resumen.plato, version });
+    setCarga({ estado: 'cargando' });
+  }
+
   useEffect(() => {
     let vigente = true;
-    setCarga({ estado: 'cargando' });
     obtenerReceta(fetchImpl, resumen.plato, version).then(
       (receta) => {
         if (vigente) setCarga({ estado: 'lista', receta });
@@ -60,8 +68,8 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
       <div className="valores">
         <Valor icono="⏱" valor={tiempo} nombre="Tiempo" />
         <Valor icono="🍽" valor={String(resumen.porciones)} nombre="Porciones" />
-        <Valor icono="🔥" valor={`${resumen.nutricion['kcal']} kcal`} nombre="Calorías" />
-        <Valor icono="💪" valor={`${resumen.nutricion['proteina_g']} g`} nombre="Proteína" />
+        <Valor icono="🔥" valor={`${resumen.nutricion.kcal} kcal`} nombre="Calorías" />
+        <Valor icono="💪" valor={`${resumen.nutricion.proteina_g} g`} nombre="Proteína" />
       </div>
 
       <div className="estado-carga">

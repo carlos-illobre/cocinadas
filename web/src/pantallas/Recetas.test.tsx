@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { Recetas } from './Recetas';
-import { fetchDeCatalogo, nunca, resumenSinFoto, resumenSpaghetti } from './pruebas/datos';
-import type { Fetch } from './api';
+import { fetchDeCatalogo, nunca, resumenSinFoto, resumenSpaghetti } from '../pruebas/datos';
+import type { Fetch } from '../api';
 
 describe('Recetas', () => {
   it('saluda, muestra la experiencia y el estado de carga mientras espera al catálogo', () => {
@@ -66,6 +66,8 @@ describe('Recetas', () => {
   });
 
   it('convierte a texto un fallo que no es un Error', async () => {
+    // Se prueba justamente un rechazo que no es un Error, que es lo que la regla prohíbe.
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
     const fetchImpl: Fetch = () => Promise.reject('se cortó');
     render(<Recetas fetchImpl={fetchImpl} xp={0} alElegir={() => undefined} />);
 
