@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import type { Cocinada } from '../historial/almacen';
 import { Perfil } from './Perfil';
 
@@ -20,10 +20,8 @@ function cocinada(fecha: string, real: number, extra: Partial<Cocinada> = {}): C
   };
 }
 
-function montar(cocinadas: readonly Cocinada[], xp: number, tema: 'claro' | 'oscuro' = 'claro') {
-  const alCambiarTema = vi.fn();
-  render(<Perfil cocinadas={cocinadas} xp={xp} tema={tema} alCambiarTema={alCambiarTema} version="0.3.0" />);
-  return { alCambiarTema };
+function montar(cocinadas: readonly Cocinada[], xp: number) {
+  render(<Perfil cocinadas={cocinadas} xp={xp} version="0.3.0" />);
 }
 
 describe('Perfil', () => {
@@ -62,12 +60,6 @@ describe('Perfil', () => {
     expect(screen.getByText('Suman 50:00 de cocina, guardadas en este teléfono.', { exact: false })).toBeInTheDocument();
   });
 
-  it('el interruptor de tema dice a cuál se cambia y avisa', () => {
-    const { alCambiarTema } = montar([], 0, 'oscuro');
-    const boton = screen.getByRole('button', { name: 'Cambiar a modo claro' });
-    fireEvent.click(boton);
-    expect(alCambiarTema).toHaveBeenCalledTimes(1);
-  });
 
   it('muestra la versión de la app', () => {
     montar([], 0);

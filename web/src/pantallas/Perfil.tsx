@@ -1,29 +1,25 @@
 import { reloj } from '../api';
 import type { Cocinada } from '../historial/almacen';
 import { logros } from '../progreso/logros';
-import type { Tema } from '../tema';
 import { nivelDe, progresoNivel } from '../progreso/xp';
 
 export interface PropiedadesPerfil {
   readonly cocinadas: readonly Cocinada[];
   readonly xp: number;
-  readonly tema: Tema;
-  readonly alCambiarTema: () => void;
   readonly version: string;
 }
 
 /**
  * El perfil del prototipo de Figma: nivel y experiencia, los números de la cocina, los
- * logros y el interruptor de tema. Todo sale de las cocinadas guardadas; mientras no
+ * logros. Todo sale de las cocinadas guardadas; mientras no
  * haya cuentas, no hay nombre ni sesión que cerrar.
  */
-export function Perfil({ cocinadas, xp, tema, alCambiarTema, version }: PropiedadesPerfil): React.JSX.Element {
+export function Perfil({ cocinadas, xp, version }: PropiedadesPerfil): React.JSX.Element {
   const nivel = nivelDe(xp);
   const progreso = progresoNivel(xp);
   const minutos = Math.round(cocinadas.reduce((suma, c) => suma + c.total_real_s, 0) / 60);
   const todos = logros(cocinadas);
   const conseguidos = todos.filter((l) => l.conseguido).length;
-  const oscuro = tema === 'oscuro';
 
   return (
     <main className="pantalla perfil">
@@ -74,17 +70,6 @@ export function Perfil({ cocinadas, xp, tema, alCambiarTema, version }: Propieda
           </ul>
         </section>
 
-        <section aria-labelledby="titulo-tema">
-          <h3 id="titulo-tema" className="titulo-seccion">
-            Tema
-          </h3>
-          <button type="button" className="boton-tema" onClick={alCambiarTema}>
-            <span className="boton-tema-icono" aria-hidden="true">
-              {oscuro ? '☀️' : '🌙'}
-            </span>
-            {oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-          </button>
-        </section>
 
         <section aria-labelledby="titulo-datos">
           <h3 id="titulo-datos" className="titulo-seccion">

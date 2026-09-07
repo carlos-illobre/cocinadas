@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { versionPorOmision, type Fetch, type Receta, type RecetaResumen } from './api';
 import { BarraInferior, type Pestana } from './componentes/BarraInferior';
+import { BotonTema } from './componentes/BotonTema';
 import { borrarEnCurso, recetaEnCurso } from './cocina/enCurso';
 import { avisadorDelNavegador, SIN_AVISADOR, type Avisador } from './cocina/sonido';
 import { Cocina } from './pantallas/cocina/Cocina';
@@ -155,47 +156,57 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
     </>
   );
 
-  switch (pantalla.nombre) {
-    case 'inicio':
-      return (
-        <Inicio
-          alEntrar={() => {
-            setAvisador(crearAvisador());
-            avanzar({ nombre: 'recetas' });
-          }}
-        />
-      );
-    case 'recetas':
-      return conBarra('recetas', <Recetas fetchImpl={fetchImpl} xp={experiencia} alElegir={(resumen) => avanzar({ nombre: 'portada', resumen, version: versionPorOmision(resumen) })} />);
-    case 'portada':
-      return (
-        <Portada
-          fetchImpl={fetchImpl}
-          resumen={pantalla.resumen}
-          version={pantalla.version}
-          alCambiarVersion={(version) => reemplazar({ ...pantalla, version })}
-          alVolver={atras}
-          alEmpezar={(receta) => avanzar({ nombre: 'mise', receta })}
-        />
-      );
-    case 'mise':
-      return <MiseEnPlace receta={pantalla.receta} alVolver={atras} alCocinar={() => avanzar({ nombre: 'cocina', receta: pantalla.receta })} />;
-    case 'cocina':
-      return (
-        <Cocina
-          receta={pantalla.receta}
-          avisador={avisador}
-          {...(ahora === undefined ? {} : { ahora })}
-          alVolver={atras}
-          alTerminar={() => avanzar({ nombre: 'historial' })}
-          cocinadas={cocinadas}
-          almacen={almacen}
-          alGuardar={(cocinada) => setCocinadas(guardarCocinada(almacen, { ...cocinada, id: nuevoId() }))}
-        />
-      );
-    case 'historial':
-      return conBarra('historial', <Historial cocinadas={cocinadas} />);
-    case 'perfil':
-      return conBarra('perfil', <Perfil cocinadas={cocinadas} xp={experiencia} tema={tema} alCambiarTema={cambiarTema} version={VERSION_APP} />);
-  }
+  // Qué pantalla toca. El botón del tema flota sobre todas menos la de entrada.
+  const pantallaActual = (): React.JSX.Element => {
+    switch (pantalla.nombre) {
+      case 'inicio':
+        return (
+          <Inicio
+            alEntrar={() => {
+              setAvisador(crearAvisador());
+              avanzar({ nombre: 'recetas' });
+            }}
+          />
+        );
+      case 'recetas':
+        return conBarra('recetas', <Recetas fetchImpl={fetchImpl} xp={experiencia} alElegir={(resumen) => avanzar({ nombre: 'portada', resumen, version: versionPorOmision(resumen) })} />);
+      case 'portada':
+        return (
+          <Portada
+            fetchImpl={fetchImpl}
+            resumen={pantalla.resumen}
+            version={pantalla.version}
+            alCambiarVersion={(version) => reemplazar({ ...pantalla, version })}
+            alVolver={atras}
+            alEmpezar={(receta) => avanzar({ nombre: 'mise', receta })}
+          />
+        );
+      case 'mise':
+        return <MiseEnPlace receta={pantalla.receta} alVolver={atras} alCocinar={() => avanzar({ nombre: 'cocina', receta: pantalla.receta })} />;
+      case 'cocina':
+        return (
+          <Cocina
+            receta={pantalla.receta}
+            avisador={avisador}
+            {...(ahora === undefined ? {} : { ahora })}
+            alVolver={atras}
+            alTerminar={() => avanzar({ nombre: 'historial' })}
+            cocinadas={cocinadas}
+            almacen={almacen}
+            alGuardar={(cocinada) => setCocinadas(guardarCocinada(almacen, { ...cocinada, id: nuevoId() }))}
+          />
+        );
+      case 'historial':
+        return conBarra('historial', <Historial cocinadas={cocinadas} />);
+      case 'perfil':
+        return conBarra('perfil', <Perfil cocinadas={cocinadas} xp={experiencia} version={VERSION_APP} />);
+    }
+  };
+
+  return (
+    <>
+      {pantalla.nombre !== 'inicio' && <BotonTema tema={tema} alCambiar={cambiarTema} />}
+      {pantallaActual()}
+    </>
+  );
 }
