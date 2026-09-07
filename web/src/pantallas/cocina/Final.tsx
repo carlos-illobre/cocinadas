@@ -102,6 +102,14 @@ export function Final({
             <b>+{x.total}</b>
           </p>
         </section>
+        {/* Guardada y el botón para seguir van arriba del paso a paso: es lo que se busca al
+            terminar, y el paso a paso es largo. */}
+        <div className="cta">
+          <p className="over-note ok">✓ Guardada en este teléfono. Se ve en Progreso.</p>
+          <button type="button" className="btn primary" onClick={alVolver}>
+            Ver el progreso
+          </button>
+        </div>
         <section className="rail" aria-label="Paso a paso">
           <p className="eyebrow">
             Paso a paso <span>previsto → real</span>
@@ -143,12 +151,6 @@ export function Final({
             </ul>
           </section>
         )}
-        <div className="cta">
-          <p className="over-note ok">✓ Guardada en este teléfono. Se ve en Progreso.</p>
-          <button type="button" className="btn primary" onClick={alVolver}>
-            Ver el progreso
-          </button>
-        </div>
       </main>
     </>
   );
