@@ -1466,8 +1466,9 @@ h1 {
 .grafico-objetivo { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 4; }
 .grafico-eje { font-size: 13.5px; fill: var(--muted); font-family: var(--body); }
 .grafico-valor { font-size: 13.5px; fill: var(--ink); font-family: var(--display); font-weight: 700; }
-.grafico-barra { fill: var(--green); }
-.grafico-barra.pasado { fill: var(--coral); }
+.grafico-linea { fill: none; stroke: var(--line-fuerte); stroke-width: 1.5; }
+.grafico-punto { fill: var(--green); stroke: var(--paper); stroke-width: 2; }
+.grafico-punto.lejos { fill: var(--coral); }
 .intentos { list-style: none; margin: 0; padding: 0; }
 .intentos li { display: grid; grid-template-columns: 1fr auto auto; grid-template-areas: 'fecha tiempo desvio' 'version tiempo desvio' 'crit tiempo desvio'; column-gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 16px; }
 .intentos li:first-child { border-top: 0; }
