@@ -272,7 +272,9 @@ interface Papelito {
   readonly redondo: boolean;
 }
 
-const COLORES_CONFETI = ['#FF6B35', '#FFD166', '#06D6A0', '#4ECDC4', '#FF6B9D', '#C77DFF'];
+// Los siete del prototipo. El último es el blanco roto del fondo: casi no se ve en tema
+// claro y en oscuro es el que más resalta.
+const COLORES_CONFETI = ['#FF6B35', '#FFD166', '#06D6A0', '#4ECDC4', '#FF6B9D', '#C77DFF', '#FAFAF7'];
 
 /** Los papelitos del festejo, sorteados una sola vez al llegar a la pantalla. */
 function confeti(cuantos: number): readonly Papelito[] {
@@ -517,6 +519,10 @@ function Final({
         ))}
       </div>
       <main className="pantalla sum">
+        <p className="trofeo" aria-hidden="true">
+          🏆
+        </p>
+        <h1 className="sum-titulo">¡Receta completada!</h1>
         <p className="eyebrow">Plato listo · {estado.receta.version.titulo}</p>
         <div className="big">
           {reloj(r.total_real_s)}

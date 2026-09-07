@@ -145,8 +145,23 @@ body {
   }
 }
 
+/*
+ * Los tamaños de texto salieron del prototipo de Figma, que se dibuja en una pantalla
+ * grande y se mira de cerca. Esta app se lee de parado, a un brazo del teléfono y con las
+ * manos ocupadas: 53 declaraciones estaban entre 10 y 13 px, casi todas en gris.
+ *
+ * Se subieron en dos pasadas, la segunda porque la primera se quedó corta al mirarla en
+ * el teléfono. El resultado: +3 px en todo lo que estaba por debajo de 16, +1 de 16 a 19,
+ * y nada de 20 para arriba, donde ya estaban los títulos y los cronómetros. La escala se
+ * mantiene pareja para no romper el ritmo entre tamaños vecinos.
+ *
+ * Quedaron como estaban los glifos que viven dentro de un círculo (`.proc .ic b`,
+ * `.row .dot i`, `.steps button::before`): ahí el tamaño es el del ✓, no el de un texto
+ * que alguien lea, y agrandarlo desborda el círculo. La etiqueta vertical del gantt sube
+ * poco (9.5→11) porque crece hacia los títulos de los pasos.
+ */
 .eyebrow {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -165,7 +180,7 @@ h1 {
 
 .lead {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15.5px;
   line-height: 1.6;
   margin: 0 0 24px;
 }
@@ -186,7 +201,7 @@ h1 {
 
 .saludo {
   margin: 0 0 2px;
-  font-size: 14px;
+  font-size: 15.5px;
   color: var(--muted);
   font-weight: 600;
 }
@@ -201,7 +216,7 @@ h1 {
 
 .titulo-seccion {
   margin: 0 0 12px;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--ink);
   letter-spacing: 0.03em;
@@ -223,7 +238,7 @@ h1 {
 }
 
 .fila-titulo span {
-  font-size: 12px;
+  font-size: 15px;
   color: var(--muted);
   font-weight: 600;
 }
@@ -245,13 +260,13 @@ h1 {
 }
 
 .xp-nivel {
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted);
   font-weight: 600;
 }
 
 .xp-puntos {
-  font-size: 12px;
+  font-size: 15px;
   color: var(--gold);
   font-weight: 700;
   font-family: var(--mono);
@@ -281,7 +296,7 @@ h1 {
   display: flex;
   justify-content: space-between;
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -409,7 +424,7 @@ h1 {
 .inicio-lema {
   margin: 10px 0 0;
   font-family: var(--poppins);
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 500;
   letter-spacing: 0.01em;
   color: rgba(255, 255, 255, 0.95);
@@ -437,7 +452,7 @@ h1 {
   background: #fff;
   color: #1f1f1f;
   font-family: var(--google);
-  font-size: 15px;
+  font-size: 16.5px;
   font-weight: 500;
   letter-spacing: 0.01em;
   cursor: pointer;
@@ -458,7 +473,7 @@ h1 {
   -webkit-backdrop-filter: blur(6px);
   color: #fff;
   font-family: var(--display);
-  font-size: 15px;
+  font-size: 16.5px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -470,7 +485,7 @@ h1 {
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  font-size: 12.5px;
+  font-size: 15px;
   line-height: 1.45;
   color: rgba(255, 255, 255, 0.92);
 }
@@ -488,7 +503,7 @@ h1 {
   padding: 0;
   color: var(--brand);
   font: inherit;
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -503,7 +518,7 @@ h1 {
   color: var(--coral-deep);
   border-radius: 12px;
   padding: 12px 14px;
-  font-size: 14px;
+  font-size: 15.5px;
 }
 
 .btn {
@@ -512,7 +527,7 @@ h1 {
   border: 0;
   border-radius: 16px;
   font-family: var(--display);
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.02em;
   color: #fff;
@@ -559,7 +574,7 @@ h1 {
 
 .cta-fija .hint {
   text-align: center;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted);
   margin: 0 0 10px;
 }
@@ -573,7 +588,7 @@ h1 {
   place-items: center;
   flex: none;
   color: #fff;
-  font-size: 14px;
+  font-size: 15.5px;
   line-height: 1;
   transition: all 0.2s ease;
 }
@@ -645,7 +660,7 @@ h1 {
 .tarjeta-titulo {
   display: block;
   margin: 0 0 10px;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 800;
   line-height: 1.25;
   text-wrap: balance;
@@ -665,14 +680,14 @@ h1 {
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 20px;
   padding: 4px 10px;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
   font-variant-numeric: tabular-nums;
 }
 
 .chip span {
-  font-size: 11px;
+  font-size: 14px;
 }
 
 /* ---------- detalle de la receta ---------- */
@@ -763,17 +778,17 @@ h1 {
 }
 
 .valor-icono {
-  font-size: 18px;
+  font-size: 19px;
 }
 
 .valor b {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
 .valor small {
-  font-size: 10px;
+  font-size: 13.5px;
   color: var(--muted);
   font-weight: 600;
 }
@@ -807,7 +822,7 @@ h1 {
   background: var(--paper);
   color: var(--muted);
   font: inherit;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 800;
   line-height: 1;
   display: grid;
@@ -832,7 +847,7 @@ h1 {
   border-radius: 12px;
   background: var(--soft);
   color: var(--muted);
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.5;
 }
 
@@ -893,7 +908,7 @@ h1 {
 }
 
 .modo-nombre b {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--ink-2);
 }
@@ -903,7 +918,7 @@ h1 {
 }
 
 .modo-tiempo {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--muted);
   font-family: var(--mono);
@@ -920,7 +935,7 @@ h1 {
 
 .modo-texto small {
   display: block;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted);
   line-height: 1.4;
 }
@@ -949,7 +964,7 @@ h1 {
   border: 0;
   cursor: pointer;
   font: inherit;
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 700;
   background: transparent;
   color: var(--muted);
@@ -980,7 +995,7 @@ h1 {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 15.5px;
 }
 
 .fila-foto {
@@ -1005,7 +1020,7 @@ h1 {
 }
 
 .fila-cantidad {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--brand);
   font-family: var(--mono);
@@ -1044,7 +1059,7 @@ h1 {
 }
 
 .mise-porcentaje {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--gold);
   font-family: var(--mono);
@@ -1129,7 +1144,7 @@ h1 {
 
 .mise-texto b {
   display: block;
-  font-size: 15px;
+  font-size: 16.5px;
   font-weight: 700;
   color: var(--ink-2);
   line-height: 1.3;
@@ -1143,7 +1158,7 @@ h1 {
 
 .mise-texto small {
   display: block;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted);
   margin-top: 2px;
   font-family: var(--mono);
@@ -1189,7 +1204,7 @@ h1 {
   background: none;
   padding: 10px 0 8px;
   font: inherit;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--muted);
   cursor: pointer;
@@ -1225,7 +1240,7 @@ h1 {
 .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .top h1 { font-size: 22px; margin: 0; }
 .clock { text-align: right; font-family: var(--display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; padding-top: 34px; }
-.clock small { display: block; font-family: var(--body); font-weight: 500; font-size: 11px; color: var(--muted); margin-top: 5px; }
+.clock small { display: block; font-family: var(--body); font-weight: 500; font-size: 14px; color: var(--muted); margin-top: 5px; }
 .stagebar { height: 6px; border-radius: 3px; background: var(--soft); position: relative; overflow: hidden; }
 .stagebar i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--green); }
 .critica .stagebar i { background: var(--coral); }
@@ -1233,15 +1248,15 @@ h1 {
 .bg { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
 .proc { display: grid; grid-template-columns: 38px 1fr auto; column-gap: 10px; row-gap: 5px; align-items: center; background: var(--paper); border-radius: 14px; padding: 8px 12px 8px 8px; border: 1px solid var(--line); }
 .proc .ic { width: 38px; height: 38px; position: relative; grid-row: span 2; }
-.proc .ic .ph { width: 38px; height: 38px; font-size: 16px; }
+.proc .ic .ph { width: 38px; height: 38px; font-size: 17px; }
 .proc .ic b { position: absolute; right: -3px; bottom: -3px; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--paper); display: grid; place-items: center; font-size: 9px; color: #fff; font-style: normal; }
 .proc.cold .ic b { background: var(--cold); }
 .proc.hot .ic b { background: var(--coral); }
 .proc.warn .ic b { background: var(--amber); }
-.proc .nm { font-size: 14px; font-weight: 600; line-height: 1.15; }
-.proc .nm small { display: block; font-weight: 500; color: var(--muted); font-size: 11.5px; margin-top: 2px; }
-.proc .tm { font-family: var(--display); font-weight: 600; font-size: 19px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; text-align: right; line-height: 1; }
-.proc .tm small { display: block; font-family: var(--body); font-weight: 500; font-size: 10.5px; color: var(--muted); margin-top: 3px; }
+.proc .nm { font-size: 15.5px; font-weight: 600; line-height: 1.15; }
+.proc .nm small { display: block; font-weight: 500; color: var(--muted); font-size: 14px; margin-top: 2px; }
+.proc .tm { font-family: var(--display); font-weight: 600; font-size: 20px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; text-align: right; line-height: 1; }
+.proc .tm small { display: block; font-family: var(--body); font-weight: 500; font-size: 13.5px; color: var(--muted); margin-top: 3px; }
 .proc .bar { grid-column: 2 / span 2; height: 4px; border-radius: 2px; background: var(--soft); position: relative; overflow: hidden; }
 .proc .bar i { position: absolute; inset: 0 auto 0 0; border-radius: 2px; }
 .proc.cold .bar i { background: var(--cold); }
@@ -1256,12 +1271,12 @@ h1 {
 .now .hd { display: flex; justify-content: space-between; align-items: center; }
 .now .hd .eyebrow { color: var(--green); margin: 0; }
 .now.hot .hd .eyebrow { color: var(--coral); }
-.now .plan { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.now .plan { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .now .ttl { display: flex; align-items: center; gap: 10px; margin: 6px 0 10px; }
 .now .ttl .ph { width: 44px; height: 44px; }
 .now h2 { font-family: var(--display); font-weight: 700; font-size: 21px; letter-spacing: -0.02em; line-height: 1.1; margin: 0; text-wrap: balance; }
 .big { display: flex; align-items: baseline; gap: 8px; font-family: var(--display); font-weight: 700; font-size: 58px; letter-spacing: -0.04em; line-height: 0.95; font-variant-numeric: tabular-nums; }
-.big small { font-family: var(--body); font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.big small { font-family: var(--body); font-size: 16px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
 /*
  * El previsto es la meta de la cocinada: es contra ese número que se miden los puntos.
  * Iba en el gris de nota al pie y en 13px, que en modo oscuro casi no se leía. Ahora el
@@ -1275,12 +1290,12 @@ h1 {
 .now.hot .track i { background: var(--coral); }
 .track .ov { position: absolute; inset: 0 0 0 auto; border-radius: 0 4px 4px 0; background: var(--coral); animation: titilar 1s steps(1) infinite; }
 .track .mk { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); }
-.track .mk::after { content: attr(data-t); position: absolute; top: -15px; left: -14px; font-size: 10px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.over-note { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--coral-deep, #b83e1c); background: var(--coral-soft); border-radius: 10px; padding: 7px 10px; margin: -2px 0 10px; font-weight: 600; }
+.track .mk::after { content: attr(data-t); position: absolute; top: -15px; left: -14px; font-size: 13.5px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.over-note { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--coral-deep, #b83e1c); background: var(--coral-soft); border-radius: 10px; padding: 7px 10px; margin: -2px 0 10px; font-weight: 600; }
 .over-note.ok { color: var(--green); background: var(--green-soft); }
 .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 /* Los subpasos son lo que se lee con las manos ocupadas y el teléfono en la mesada: 15.5px es lo que se alcanza a leer de parado. */
-.steps button { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; width: 100%; border: 0; background: none; padding: 0; text-align: left; font: inherit; font-size: 15.5px; line-height: 1.45; color: inherit; cursor: pointer; }
+.steps button { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; width: 100%; border: 0; background: none; padding: 0; text-align: left; font: inherit; font-size: 17px; line-height: 1.45; color: inherit; cursor: pointer; }
 .steps button::before { content: "✓"; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line-fuerte); background: var(--paper); color: transparent; font-size: 12px; font-weight: 800; line-height: 1; display: grid; place-items: center; margin-top: 1px; transition: background 0.15s ease, border-color 0.15s ease; }
 .steps li.ok button { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
 .steps li.ok button::before { background: var(--green); border-color: var(--green); color: #fff; }
@@ -1290,20 +1305,24 @@ h1 {
  * El «por qué» se abre a propósito, tocando el `?`: es texto que se viene a leer, no una
  * nota al margen. En el gris de nota al pie y a 12.5px no se leía, y menos en modo oscuro.
  */
-.por-que { margin: 12px 0 0; font-size: 14.5px; color: var(--ink); background: var(--soft); border-radius: 10px; padding: 10px 12px; line-height: 1.5; }
-.por-que b { color: var(--brand); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 6px; }
+.por-que { margin: 12px 0 0; font-size: 16px; color: var(--ink); background: var(--soft); border-radius: 10px; padding: 10px 12px; line-height: 1.5; }
+.por-que b { color: var(--brand); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 6px; }
 .actions { display: flex; gap: 10px; margin-top: 14px; }
 .actions .btn { flex: 1; width: auto; height: 54px; padding: 0 16px; }
 .btn.hot { background: var(--coral); color: #fff; }
-.btn.ghost { flex: 0 0 54px; background: var(--soft); color: var(--ink); font-size: 18px; }
-.btn.blanco { background: #fff; color: var(--coral-deep, #b83e1c); height: 62px; font-size: 18px; width: 100%; }
+.btn.ghost { flex: 0 0 54px; background: var(--soft); color: var(--ink); font-size: 19px; }
+.btn.blanco { background: #fff; color: var(--coral-deep, #b83e1c); height: 62px; font-size: 19px; width: 100%; }
 
 .rail { margin-top: 16px; }
 .rail .eyebrow { display: flex; justify-content: space-between; margin-bottom: 8px; }
 .rail .eyebrow span { font-weight: 500; letter-spacing: 0.02em; text-transform: none; }
 .rows { position: relative; }
-.row { display: grid; grid-template-columns: 36px 24px 1fr auto; align-items: center; height: 50px; column-gap: 6px; font-size: 14px; border-radius: 10px; }
-.rows.withlanes .row { grid-template-columns: 36px 24px calc(27px + var(--carriles) * 11px) 1fr auto; }
+/* La primera columna es el reloj y la última el desvío: las dos son números, y con la
+ * tipografía más grande quedaban pegadas al título. */
+.row { display: grid; grid-template-columns: 40px 24px 1fr auto; align-items: center; height: 50px; column-gap: 10px; font-size: 15.5px; border-radius: 10px; }
+/* Los 34px de más son el ancho de la etiqueta vertical del carril, que es texto
+ * rotado: su ancho es su tamaño de letra, así que al agrandarla invadía el título. */
+.rows.withlanes .row { grid-template-columns: 40px 24px calc(34px + var(--carriles) * 11px) 1fr auto; }
 
 /* El gantt: el tiempo baja, cada barra ocupa lo que dura y se pinta al pasar el frente. */
 .gantt { position: absolute; inset: 0; pointer-events: none; }
@@ -1318,7 +1337,7 @@ h1 {
 .gantt .carril.cold i { background: var(--cold); }
 .gantt .carril.hot i { background: var(--coral); }
 
-.row .t { font-variant-numeric: tabular-nums; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.row .t { font-variant-numeric: tabular-nums; font-size: 15px; color: var(--muted); font-weight: 600; }
 /* El hilo de la línea de tiempo pasa por el centro de los puntos y se corta en las puntas. */
 .row .dot { width: 24px; height: 100%; display: grid; place-items: center; position: relative; }
 .row .dot::before { content: ""; position: absolute; top: 0; bottom: 0; width: 2px; background: var(--line-fuerte); }
@@ -1334,10 +1353,10 @@ h1 {
 .row.cur .n { font-weight: 800; }
 .row.wait .n { color: var(--muted); font-style: italic; }
 .row .n { line-height: 1.2; }
-.row .d { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.row .d { font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .row .d.plus { color: var(--coral); }
 .row .d.minus { color: var(--green); }
-.gantt .tag { position: absolute; left: calc(11px * var(--carriles) + 8px); top: 2px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; writing-mode: vertical-rl; line-height: 1; }
+.gantt .tag { position: absolute; left: calc(11px * var(--carriles) + 8px); top: 2px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; writing-mode: vertical-rl; line-height: 1; }
 .carril.cold .tag { color: var(--cold); }
 .carril.hot .tag { color: var(--coral-deep); }
 
@@ -1349,54 +1368,79 @@ h1 {
 @keyframes latido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 .alarma .eyebrow { color: rgba(255, 255, 255, 0.8); }
 .alarma h1 { font-size: 40px; letter-spacing: -0.035em; line-height: 0.98; margin: 0; }
-.alarma .lead { color: rgba(255, 255, 255, 0.92); font-size: 16px; margin: 10px 0 0; }
+.alarma .lead { color: rgba(255, 255, 255, 0.92); font-size: 17px; margin: 10px 0 0; }
 .alarma .next { margin-top: 22px; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 18px; padding: 12px 14px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
 .alarma .next .ph { border-color: rgba(255, 255, 255, 0.5); }
-.alarma .next b { font-family: var(--display); font-size: 18px; font-weight: 700; letter-spacing: -0.02em; display: block; line-height: 1.1; }
-.alarma .next small { display: block; font-size: 12.5px; color: rgba(255, 255, 255, 0.85); margin-top: 3px; }
+.alarma .next b { font-family: var(--display); font-size: 19px; font-weight: 700; letter-spacing: -0.02em; display: block; line-height: 1.1; }
+.alarma .next small { display: block; font-size: 15px; color: rgba(255, 255, 255, 0.85); margin-top: 3px; }
 .alarma .next span { font-family: var(--display); font-weight: 700; font-size: 30px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 .alarma .ft { padding: 0 26px calc(30px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; }
-.alarma .sec { text-align: center; font-size: 13px; color: rgba(255, 255, 255, 0.85); margin: 0; }
+.alarma .sec { text-align: center; font-size: 16px; color: rgba(255, 255, 255, 0.85); margin: 0; }
 
 .fin-etapa { padding-top: 56px; }
 .fin-etapa .big { margin: 8px 0 10px; }
 .desvio.mas { color: var(--coral); }
 .desvio.menos { color: var(--green); }
 .sum { padding-top: 32px; padding-bottom: 40px; }
+
+/*
+ * El remate del prototipo: el trofeo grande que rebota y el título. Lo que había acá era
+ * un `eyebrow` de 12 px y el cronómetro, que se lee como un informe y no como un festejo.
+ * El rebote es el mismo del prototipo: 2s, 6px.
+ */
+.sum .trofeo { font-size: 72px; line-height: 1; margin: 0 0 10px; animation: rebotar 2s ease-in-out infinite; }
+.sum-titulo { font-family: var(--display); font-weight: 800; font-size: 30px; letter-spacing: -0.03em; line-height: 1.05; margin: 0 0 8px; text-wrap: balance; }
+
+@keyframes rebotar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* El trofeo salta; con menos movimiento se queda quieto, pero sigue estando. */
+@media (prefers-reduced-motion: reduce) {
+  .sum .trofeo {
+    animation: none;
+  }
+}
 .sum .big { font-size: 64px; }
-.sum .vs { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+.sum .vs { font-size: 16px; color: var(--muted); margin: 6px 0 0; }
 .sum .vs b.mas { color: var(--coral); }
 .sum .vs b.menos { color: var(--green); }
 .kpis { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .kpi { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; }
-.kpi .eyebrow { font-size: 10px; margin: 0; }
+.kpi .eyebrow { font-size: 13.5px; margin: 0; }
 .kpi b { display: block; font-family: var(--display); font-weight: 700; font-size: 24px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin-top: 3px; }
-.kpi small { font-size: 11.5px; color: var(--muted); }
-.sum .stg { font-family: var(--display); font-weight: 700; font-size: 13px; margin: 8px 0 2px; display: flex; justify-content: space-between; }
+.kpi small { font-size: 14px; color: var(--muted); }
+.sum .stg { font-family: var(--display); font-weight: 700; font-size: 16px; margin: 8px 0 2px; display: flex; justify-content: space-between; }
 .sum .stg span { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--muted); }
 .sum .row { height: 42px; }
 @media (prefers-reduced-motion: reduce) { .proc.warn, .big .over, .track .ov, .alarma .ring { animation: none; } }
 
 /* ---------- historial ---------- */
 .historial { padding-top: 28px; }
-.historial-titulo { font-family: var(--display); font-size: 18px; letter-spacing: -0.02em; margin: 12px 0 8px; text-wrap: balance; }
+.historial-titulo { font-family: var(--display); font-size: 19px; letter-spacing: -0.02em; margin: 12px 0 8px; text-wrap: balance; }
 .grafico { margin: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 12px 10px 8px; }
 .grafico svg { width: 100%; height: auto; display: block; }
-.grafico figcaption { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+.grafico figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; }
 .grafico-guia { stroke: var(--line); stroke-width: 1; }
 .grafico-objetivo { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 4; }
-.grafico-eje { font-size: 10px; fill: var(--muted); font-family: var(--body); }
-.grafico-valor { font-size: 10px; fill: var(--ink); font-family: var(--display); font-weight: 700; }
+.grafico-eje { font-size: 13.5px; fill: var(--muted); font-family: var(--body); }
+.grafico-valor { font-size: 13.5px; fill: var(--ink); font-family: var(--display); font-weight: 700; }
 .grafico-barra { fill: var(--green); }
 .grafico-barra.pasado { fill: var(--coral); }
 .intentos { list-style: none; margin: 0; padding: 0; }
-.intentos li { display: grid; grid-template-columns: 1fr auto auto; grid-template-areas: 'fecha tiempo desvio' 'version tiempo desvio' 'crit tiempo desvio'; column-gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.intentos li { display: grid; grid-template-columns: 1fr auto auto; grid-template-areas: 'fecha tiempo desvio' 'version tiempo desvio' 'crit tiempo desvio'; column-gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 16px; }
 .intentos li:first-child { border-top: 0; }
 .intento-fecha { grid-area: fecha; font-weight: 600; }
-.intento-version { grid-area: version; color: var(--muted); font-size: 12px; }
-.intentos small { grid-area: crit; color: var(--muted); font-size: 11.5px; }
+.intento-version { grid-area: version; color: var(--muted); font-size: 15px; }
+.intentos small { grid-area: crit; color: var(--muted); font-size: 14px; }
 .intento-tiempo { grid-area: tiempo; font-family: var(--display); font-size: 20px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.intentos .d { grid-area: desvio; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.intentos .d { grid-area: desvio; font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .intentos .d.plus { color: var(--coral); }
 .intentos .d.minus { color: var(--green); }
 
@@ -1413,7 +1457,7 @@ h1 {
   background: var(--soft);
   color: var(--ink);
   font: inherit;
-  font-size: 15px;
+  font-size: 16.5px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -1457,7 +1501,7 @@ h1 {
 
 .perfil-nivel {
   margin: 4px 0 0;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--brand);
 }
@@ -1468,7 +1512,7 @@ h1 {
 
 .xp-falta {
   margin: 8px 0 0;
-  font-size: 12px;
+  font-size: 15px;
   color: var(--muted);
   text-align: center;
 }
@@ -1509,7 +1553,7 @@ h1 {
 }
 
 .numero small {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   font-weight: 600;
 }
@@ -1545,13 +1589,13 @@ h1 {
 .logro b {
   display: block;
   margin: 8px 0 4px;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 800;
 }
 
 .logro small {
   display: block;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   line-height: 1.4;
 }
@@ -1559,14 +1603,14 @@ h1 {
 .logro-hecho {
   display: block;
   margin-top: 8px;
-  font-size: 10px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--gold);
 }
 
 .perfil-version {
   margin: 16px 0 0;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -1605,13 +1649,13 @@ h1 {
 
 .puntos-ganados {
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted);
 }
 
 .puntos-ganados b {
   font-family: var(--display);
-  font-size: 17px;
+  font-size: 18px;
   color: var(--gold);
 }
 
@@ -1648,13 +1692,13 @@ h1 {
 
 .logros-nuevos li b {
   grid-area: nombre;
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 800;
 }
 
 .logros-nuevos li small {
   grid-area: texto;
-  font-size: 11.5px;
+  font-size: 14px;
   color: var(--muted);
   line-height: 1.4;
 }
