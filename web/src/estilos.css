@@ -1335,7 +1335,11 @@ h1 {
 .ver-foto { padding: 0; border: 0; background: none; flex-shrink: 0; cursor: pointer; border-radius: 10px; display: block; line-height: 0; }
 .ver-foto:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
 /* La foto ampliada: tapa todo, se cierra tocando en cualquier lado. */
-.foto-ampliada { position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, 0.85); border: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; cursor: pointer; }
+.foto-ampliada { position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, 0.85); border: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; cursor: pointer; animation: aparecer 0.2s ease-out; }
+/* Al abrirse, el fondo aparece en fundido y la foto crece hasta su tamaño: se ve de dónde viene. */
+@keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
+@keyframes acercar { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+.foto-ampliada img, .foto-ampliada b, .foto-ampliada small { animation: acercar 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
 /* A todo el ancho: las fotos publicadas son miniaturas (plan.ts, `miniatura`), así que más grande que esto no hay. */
 .foto-ampliada img { width: 100%; max-width: 380px; max-height: 70vh; border-radius: 16px; object-fit: contain; background: #fff; padding: 12px; box-sizing: border-box; }
 .foto-ampliada b { color: #fff; font-family: var(--display); font-size: 20px; text-align: center; text-wrap: balance; }
@@ -1520,7 +1524,7 @@ h1 {
 .sum .stg { font-family: var(--display); font-weight: 700; font-size: 16px; margin: 8px 0 2px; display: flex; justify-content: space-between; }
 .sum .stg span { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--muted); }
 .sum .row { height: 42px; }
-@media (prefers-reduced-motion: reduce) { .proc.warn, .cronometro .over, .track .ov, .alarma .ring, .alarma, .now.pasado, .now.pasado .cronometro { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .proc.warn, .cronometro .over, .track .ov, .alarma .ring, .alarma, .now.pasado, .now.pasado .cronometro, .foto-ampliada, .foto-ampliada img, .foto-ampliada b, .foto-ampliada small { animation: none; } }
 
 /* ---------- historial ---------- */
 .historial { padding-top: 28px; }
