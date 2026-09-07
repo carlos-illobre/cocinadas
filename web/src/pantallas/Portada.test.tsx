@@ -148,7 +148,9 @@ describe('Portada', () => {
 
     rerender(<Portada fetchImpl={fetchImpl} resumen={resumenSpaghetti} version="linea-de-tiempo" alCambiarVersion={nada} alVolver={nada} alEmpezar={nada} />);
 
-    expect(screen.getByRole('status')).toHaveTextContent('Abriendo la receta…');
+    // Nada de «cargando» en el medio, que era el parpadeo: la anterior queda a la vista
+    // hasta que llega la nueva (acá llega en el mismo tick, por eso no se afirma la anterior).
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(await screen.findByRole('button', { name: 'Comenzar · 16 min →' })).toBeInTheDocument();
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
