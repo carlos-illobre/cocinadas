@@ -49,7 +49,7 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
 
   await test.step('tildar los 25 items de la mise en place', async () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Mise en place' })).toBeVisible();
-    const items = page.locator('.cuerpo button');
+    const items = page.locator('.cuerpo button.mise');
     const total = await items.count();
     expect(total).toBe(25);
 

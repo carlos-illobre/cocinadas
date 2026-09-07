@@ -53,7 +53,7 @@ test('los avisos suenan al confirmar un paso y al terminar la cocinada', async (
   await page.getByRole('button', { name: 'Entrar sin cuenta' }).click();
   await page.getByRole('button', { name: /Spaghetti integral/ }).click();
   await page.getByRole('button', { name: /^Comenzar · / }).click();
-  const items = page.locator('.cuerpo button');
+  const items = page.locator('.cuerpo button.mise');
   for (let i = 0; i < (await items.count()); i++) {
     await items.nth(i).click();
   }

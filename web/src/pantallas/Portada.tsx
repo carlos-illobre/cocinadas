@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FotoAmpliable } from '../componentes/FotoAmpliable';
 import { BASE_CATALOGO, minutos, obtenerReceta, urlFoto, versionesOrdenadas, type Fetch, type Receta, type RecetaResumen } from '../api';
 
 export interface PropiedadesPortada {
@@ -143,14 +144,14 @@ function Valor({ icono, valor, nombre }: { readonly icono: string; readonly valo
   );
 }
 
-/** La foto de la ficha; si no tiene, el ícono de su tipo. */
-function Foto({ foto, icono }: { readonly foto: string | null; readonly icono: string }): React.JSX.Element {
+/** La foto de la ficha, ampliable; si no tiene, el ícono de su tipo. */
+function Foto({ foto, icono, nombre }: { readonly foto: string | null; readonly icono: string; readonly nombre: string }): React.JSX.Element {
   return foto === null ? (
     <span className="fila-foto sin-foto" aria-hidden="true">
       {icono}
     </span>
   ) : (
-    <img className="fila-foto" src={`${BASE_CATALOGO}${foto}`} alt="" loading="lazy" />
+    <FotoAmpliable src={`${BASE_CATALOGO}${foto}`} nombre={nombre} className="fila-foto" />
   );
 }
 
@@ -169,7 +170,7 @@ function Necesario({ receta, solapa, alCambiarSolapa }: { readonly receta: Recet
         <ul className="filas">
           {receta.ingredientes.map((i) => (
             <li key={`${i.id ?? 'sin-id'}-${i.nombre}`} className="fila">
-              <Foto foto={i.foto} icono="🥄" />
+              <Foto foto={i.foto} icono="🥄" nombre={i.nombre} />
               <span className="fila-nombre">{i.nombre}</span>
               <span className="fila-cantidad">{i.cantidad}</span>
             </li>
@@ -179,7 +180,7 @@ function Necesario({ receta, solapa, alCambiarSolapa }: { readonly receta: Recet
         <ul className="filas">
           {receta.utensilios.map((u) => (
             <li key={`${u.id ?? 'sin-id'}-${u.nombre}`} className="fila">
-              <Foto foto={u.foto} icono="🔧" />
+              <Foto foto={u.foto} icono="🔧" nombre={u.nombre} />
               <span className="fila-nombre">{u.nombre}</span>
             </li>
           ))}
