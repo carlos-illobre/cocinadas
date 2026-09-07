@@ -364,7 +364,9 @@ describe('Cocina · fin de etapa y etapa crítica', () => {
     c.pasar(4);
     expect(c.avisador.fuerte).toHaveBeenCalledTimes(3);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Atendido · seguir con esperar el vapor' }));
+    // Lo que sigue va afuera del botón, que dice solo «Atendido».
+    expect(screen.getByText('Seguir con esperar el vapor')).toHaveClass('siguiente');
+    fireEvent.click(screen.getByRole('button', { name: 'Atendido' }));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Mantecar');
     // La pasta sigue; el brócoli ya no.
@@ -412,6 +414,7 @@ describe('Cocina · fin de etapa y etapa crítica', () => {
     expect(proceso.querySelector('.ph-vacio')).toHaveTextContent('·');
     c.pasar(180);
     expect(screen.getByRole('button', { name: 'Atendido' })).toBeInTheDocument();
+    expect(screen.queryByText(/^Seguir con/)).not.toBeInTheDocument();
     expect(screen.queryByText('Esperar el vapor')).not.toBeInTheDocument();
   });
 
