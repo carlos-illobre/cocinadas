@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { flushSync } from 'react-dom';
 
 interface Propiedades {
@@ -28,22 +28,18 @@ function nombreDeTransicion(src: string): string {
  * final. Sin la API, el cambio es directo y queda el fundido del CSS.
  *
  * La grande se baja apenas la chica se ve (la chica es `lazy`: solo las que entran en
- * pantalla), y la ampliación no arranca hasta tenerla decodificada: animar hacia una
- * imagen que todavía no llegó es un parpadeo y un hueco hasta que se descarga.
+ * pantalla), como un `<img hidden>` que se renderiza hasta que carga. La ampliación
+ * arranca al instante con la chica, que ya está, y la grande la reemplaza cuando llegó:
+ * animar hacia una imagen que todavía no llegó era un parpadeo y un hueco hasta que se
+ * descargaba, y esperarla demoraba el toque. Si la descarga falla, queda la chica.
  */
 export function FotoAmpliable({ src, srcGrande, nombre, className }: Propiedades): React.JSX.Element {
   const [abierta, setAbierta] = useState(false);
   const [transicionando, setTransicionando] = useState(false);
   const transicion = nombreDeTransicion(src);
-  const grande = useRef<HTMLImageElement | null>(null);
-
-  const precargar = (): HTMLImageElement | null => {
-    if (srcGrande !== null && srcGrande !== undefined && grande.current === null) {
-      grande.current = new Image();
-      grande.current.src = srcGrande;
-    }
-    return grande.current;
-  };
+  const [pedirGrande, setPedirGrande] = useState(false);
+  const [grandeLista, setGrandeLista] = useState(false);
+  const grande = srcGrande ?? null;
 
   const cambiar = (nuevoEstado: boolean): void => {
     if (typeof document.startViewTransition !== 'function') {
@@ -66,17 +62,9 @@ export function FotoAmpliable({ src, srcGrande, nombre, className }: Propiedades
     });
   };
 
-  // Si la descarga falla, se abre igual: se ve la chica ampliada.
   const abrir = (): void => {
-    const img = precargar();
-    if (img === null) {
-      cambiar(true);
-    } else {
-      void img.decode().then(
-        () => cambiar(true),
-        () => cambiar(true),
-      );
-    }
+    setPedirGrande(true);
+    cambiar(true);
   };
 
   return (
@@ -88,8 +76,9 @@ export function FotoAmpliable({ src, srcGrande, nombre, className }: Propiedades
         onClick={abrir}
       >
         {/* La miniatura lleva el nombre solo en los extremos de la transición en los que ella es la foto: antes de abrir y después de cerrar. */}
-        <img className={className} src={src} alt="" loading="lazy" onLoad={precargar} style={{ viewTransitionName: transicionando && !abierta ? transicion : 'none' }} />
+        <img className={className} src={src} alt="" loading="lazy" onLoad={() => setPedirGrande(true)} style={{ viewTransitionName: transicionando && !abierta ? transicion : 'none' }} />
       </button>
+      {pedirGrande && grande !== null && !grandeLista && <img src={grande} alt="" hidden onLoad={() => setGrandeLista(true)} />}
       {abierta && (
         <button
           type="button"
@@ -99,7 +88,7 @@ export function FotoAmpliable({ src, srcGrande, nombre, className }: Propiedades
             cambiar(false);
           }}
         >
-          <img src={srcGrande ?? src} alt={nombre} style={{ viewTransitionName: transicion }} />
+          <img src={grandeLista && grande !== null ? grande : src} alt={nombre} style={{ viewTransitionName: transicion }} />
           <b>{nombre}</b>
           <small>Tocá para cerrar</small>
         </button>

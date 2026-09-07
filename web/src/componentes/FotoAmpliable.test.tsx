@@ -1,14 +1,10 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FotoAmpliable } from './FotoAmpliable';
 
 describe('FotoAmpliable', () => {
-  // jsdom no decodifica imágenes: cada prueba dice si la grande «llega» o falla.
-  const decode = vi.fn<(this: HTMLImageElement) => Promise<void>>(() => Promise.resolve());
-  beforeEach(() => {
-    decode.mockClear();
-    Object.defineProperty(HTMLImageElement.prototype, 'decode', { value: decode, configurable: true });
-  });
+  /** La grande que se está bajando: un `<img hidden>` que existe hasta que carga. */
+  const grandeOculta = (): HTMLImageElement | null => document.querySelector('img[hidden]');
 
   it('se amplía al tocar la miniatura y se cierra tocando en cualquier lado', () => {
     render(<FotoAmpliable src="api/catalogo/fotos/ingredientes/brocoli.webp" nombre="Brócoli fresco entero" className="ph" />);
@@ -24,45 +20,41 @@ describe('FotoAmpliable', () => {
     expect(screen.queryByRole('button', { name: /Cerrar la foto/ })).not.toBeInTheDocument();
   });
 
-  it('ampliada usa la versión grande si la hay, y no se abre hasta tenerla decodificada', async () => {
+  it('se amplía al instante con la chica, y la grande la reemplaza cuando llega', () => {
     render(<FotoAmpliable src="chica.webp" srcGrande="grande.webp" nombre="Wok" className="ph" />);
-    expect(screen.getByRole('button', { name: 'Ver la foto de Wok' }).querySelector('img')).toHaveAttribute('src', 'chica.webp');
+    expect(grandeOculta()).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Ver la foto de Wok' }));
-    expect(screen.queryByRole('button', { name: /Cerrar la foto/ })).not.toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: 'Cerrar la foto de Wok' })).toContainHTML('src="grande.webp"');
-    expect(decode).toHaveBeenCalledTimes(1);
-    expect((decode.mock.contexts[0] as HTMLImageElement).src).toContain('grande.webp');
+    const ampliada = screen.getByRole('button', { name: 'Cerrar la foto de Wok' });
+    expect(ampliada.querySelector('img')).toHaveAttribute('src', 'chica.webp');
+    expect(grandeOculta()).toHaveAttribute('src', 'grande.webp');
+    fireEvent.load(grandeOculta() as HTMLImageElement);
+    expect(ampliada.querySelector('img')).toHaveAttribute('src', 'grande.webp');
+    expect(grandeOculta()).toBeNull();
   });
 
-  it('baja la grande apenas la chica se ve, una sola vez, así al tocarla ya está en caché', async () => {
+  it('baja la grande apenas la chica se ve, así al tocarla ya está', () => {
     render(<FotoAmpliable src="chica.webp" srcGrande="grande.webp" nombre="Wok" className="ph" />);
     const chica = screen.getByRole('button', { name: 'Ver la foto de Wok' }).querySelector('img') as HTMLImageElement;
     fireEvent.load(chica);
-    fireEvent.load(chica);
+    fireEvent.load(grandeOculta() as HTMLImageElement);
     fireEvent.click(chica);
-    const ampliada = await screen.findByRole('button', { name: 'Cerrar la foto de Wok' });
-    // La misma imagen que se precargó es la que se decodifica: no se pide dos veces.
-    expect((decode.mock.contexts[0] as HTMLImageElement).src).toContain('grande.webp');
-    fireEvent.click(ampliada);
-    fireEvent.click(chica);
-    await screen.findByRole('button', { name: 'Cerrar la foto de Wok' });
-    expect(decode.mock.contexts.every((img) => img === decode.mock.contexts[0])).toBe(true);
+    expect(screen.getByRole('button', { name: 'Cerrar la foto de Wok' }).querySelector('img')).toHaveAttribute('src', 'grande.webp');
   });
 
-  it('si la grande no se puede bajar, se abre igual', async () => {
-    decode.mockImplementation(() => Promise.reject(new Error('sin red')));
+  it('si la grande no llega, la ampliada se queda con la chica', () => {
     render(<FotoAmpliable src="chica.webp" srcGrande="grande.webp" nombre="Wok" className="ph" />);
     fireEvent.click(screen.getByRole('button', { name: 'Ver la foto de Wok' }));
-    expect(await screen.findByRole('button', { name: 'Cerrar la foto de Wok' })).toBeInTheDocument();
+    fireEvent.error(grandeOculta() as HTMLImageElement);
+    expect(screen.getByRole('button', { name: 'Cerrar la foto de Wok' }).querySelector('img')).toHaveAttribute('src', 'chica.webp');
   });
 
-  it('sin la API, la miniatura no lleva nombre de transición: solo lo lleva la grande, que es la única a la vez', async () => {
+  it('sin la API, la miniatura no lleva nombre de transición: solo lo lleva la grande, que es la única a la vez', () => {
     render(<FotoAmpliable src="api/catalogo/fotos/ingredientes/brocoli.webp" srcGrande="grande.webp" nombre="Brócoli" className="ph" />);
     const chica = screen.getByRole('button', { name: 'Ver la foto de Brócoli' }).querySelector('img') as HTMLImageElement;
     // Una miniatura quieta no lleva nombre: si lo llevara, flotaría sobre el fondo en las transiciones de las otras.
     expect(chica.style.viewTransitionName).toBe('none');
     fireEvent.click(chica);
-    const grande = (await screen.findByRole('button', { name: 'Cerrar la foto de Brócoli' })).querySelector('img') as HTMLImageElement;
+    const grande = screen.getByRole('button', { name: 'Cerrar la foto de Brócoli' }).querySelector('img') as HTMLImageElement;
     expect(grande.style.viewTransitionName).toBe('foto-api-catalogo-fotos-ingredientes-brocoli-webp');
     expect(chica.style.viewTransitionName).toBe('none');
   });
