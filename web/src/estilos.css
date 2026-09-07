@@ -1350,7 +1350,12 @@ h1 {
 /* Al abrirse, el fondo aparece en fundido y la foto crece hasta su tamaño: se ve de dónde viene. */
 @keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
 @keyframes acercar { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-.foto-ampliada img, .foto-ampliada b, .foto-ampliada small { animation: acercar 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.foto-ampliada b, .foto-ampliada small { animation: acercar 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+/* Con View Transitions, la miniatura se transforma en la grande (y al revés): ese
+   movimiento lo pone el navegador, así que la foto no lleva animación propia. Los 0,3 s
+   son un poco más que el fundido del fondo, para que la foto llegue última. */
+::view-transition-group(*) { animation-duration: 0.3s; }
+@media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none; } }
 /* A todo el ancho: las fotos publicadas son miniaturas (plan.ts, `miniatura`), así que más grande que esto no hay. */
 .foto-ampliada img { width: 100%; max-width: 380px; max-height: 70vh; border-radius: 16px; object-fit: contain; background: #fff; padding: 12px; box-sizing: border-box; }
 .foto-ampliada b { color: #fff; font-family: var(--display); font-size: 20px; text-align: center; text-wrap: balance; }

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FotoAmpliable } from './FotoAmpliable';
 
 describe('FotoAmpliable', () => {
@@ -22,5 +22,34 @@ describe('FotoAmpliable', () => {
     expect(screen.getByRole('button', { name: 'Ver la foto de Wok' }).querySelector('img')).toHaveAttribute('src', 'chica.webp');
     fireEvent.click(screen.getByRole('button', { name: 'Ver la foto de Wok' }));
     expect(screen.getByRole('button', { name: 'Cerrar la foto de Wok' }).querySelector('img')).toHaveAttribute('src', 'grande.webp');
+  });
+
+  it('la miniatura y la grande comparten el nombre de transición, y solo una lo lleva a la vez', () => {
+    render(<FotoAmpliable src="api/catalogo/fotos/ingredientes/brocoli.webp" srcGrande="grande.webp" nombre="Brócoli" className="ph" />);
+    const chica = screen.getByRole('button', { name: 'Ver la foto de Brócoli' }).querySelector('img') as HTMLImageElement;
+    expect(chica.style.viewTransitionName).toBe('foto-api-catalogo-fotos-ingredientes-brocoli-webp');
+    fireEvent.click(chica);
+    const grande = screen.getByRole('button', { name: 'Cerrar la foto de Brócoli' }).querySelector('img') as HTMLImageElement;
+    expect(grande.style.viewTransitionName).toBe('foto-api-catalogo-fotos-ingredientes-brocoli-webp');
+    expect(chica.style.viewTransitionName).toBe('none');
+  });
+
+  describe('con la View Transitions API', () => {
+    afterEach(() => {
+      Reflect.deleteProperty(document, 'startViewTransition');
+    });
+
+    it('abre y cierra dentro de una transición cuando el navegador la tiene', () => {
+      const startViewTransition = vi.fn((cambio: () => void) => {
+        cambio();
+      });
+      Object.defineProperty(document, 'startViewTransition', { value: startViewTransition, configurable: true });
+      render(<FotoAmpliable src="chica.webp" nombre="Wok" className="ph" />);
+      fireEvent.click(screen.getByRole('button', { name: 'Ver la foto de Wok' }));
+      expect(screen.getByRole('button', { name: 'Cerrar la foto de Wok' })).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Cerrar la foto de Wok' }));
+      expect(screen.queryByRole('button', { name: /Cerrar la foto/ })).not.toBeInTheDocument();
+      expect(startViewTransition).toHaveBeenCalledTimes(2);
+    });
   });
 });
