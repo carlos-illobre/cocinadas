@@ -5,7 +5,7 @@ export interface PropiedadesBarraXp {
 }
 
 /**
- * La tarjeta de experiencia del prototipo de Figma: nivel y nombre, puntos, la barra
+ * La tarjeta de experiencia: nivel y nombre, puntos, la barra
  * dorada del progreso dentro del nivel y sus dos extremos.
  */
 export function BarraXp({ xp }: PropiedadesBarraXp): React.JSX.Element {

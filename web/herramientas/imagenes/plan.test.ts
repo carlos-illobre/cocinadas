@@ -17,18 +17,18 @@ describe('esImagen', () => {
 
 describe('destinoDe', () => {
   const ingredientes = FUENTES.find((f) => f.directorio === 'data/ingredientes') as (typeof FUENTES)[number];
-  const inicio = FUENTES.find((f) => f.directorio === 'docs/mockups/inicio-capas') as (typeof FUENTES)[number];
+  const inicio = FUENTES.find((f) => f.directorio === 'data/inicio-capas') as (typeof FUENTES)[number];
 
   it('espeja la ruta bajo data/ y cambia la extensión', () => {
     expect(destinoDe('data/ingredientes/fotos-envases/brocoli.jpg', ingredientes)).toBe('web/assets/ingredientes/fotos-envases/brocoli.webp');
   });
 
-  it('aplana docs/mockups/inicio-capas en assets/inicio', () => {
-    expect(destinoDe('docs/mockups/inicio-capas/2.png', inicio)).toBe('web/assets/inicio/2.webp');
+  it('aplana data/inicio-capas en assets/inicio', () => {
+    expect(destinoDe('data/inicio-capas/2.png', inicio)).toBe('web/assets/inicio/2.webp');
   });
 
   it('renombra la capa que pasó por quitar-fondo para que la app la pida por su número', () => {
-    expect(destinoDe('docs/mockups/inicio-capas/11-sin-fondo.png', inicio)).toBe('web/assets/inicio/11.webp');
+    expect(destinoDe('data/inicio-capas/11-sin-fondo.png', inicio)).toBe('web/assets/inicio/11.webp');
   });
 });
 
@@ -58,17 +58,17 @@ describe('sobre un árbol de originales', () => {
     mkdirSync(join(raiz, 'data/ingredientes/fotos-envases'), { recursive: true });
     mkdirSync(join(raiz, 'data/utencillos/fotos'), { recursive: true });
     mkdirSync(join(raiz, 'data/recetas/pasta'), { recursive: true });
-    mkdirSync(join(raiz, 'docs/mockups/inicio-capas'), { recursive: true });
+    mkdirSync(join(raiz, 'data/inicio-capas'), { recursive: true });
     escribir('data/ingredientes/fotos-envases/brocoli.jpg');
     escribir('data/ingredientes/README.md');
     escribir('data/utencillos/fotos/wok.png');
     escribir('data/recetas/pasta/pasta.jpg');
     escribir('data/recetas/pasta/pasta.json');
-    escribir('docs/mockups/inicio-capas/1.png');
-    escribir('docs/mockups/inicio-capas/1.svg');
-    escribir('docs/mockups/inicio-capas/11.png');
-    escribir('docs/mockups/inicio-capas/11-sin-fondo.png');
-    escribir('docs/mockups/inicio-capas/composicion-original.jpg');
+    escribir('data/inicio-capas/1.png');
+    escribir('data/inicio-capas/1.svg');
+    escribir('data/inicio-capas/11.png');
+    escribir('data/inicio-capas/11-sin-fondo.png');
+    escribir('data/inicio-capas/composicion-original.jpg');
   });
 
   afterEach(() => {

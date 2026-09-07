@@ -2,7 +2,7 @@ import type { Cocinada } from '../historial/almacen';
 import { enTiempo } from './xp';
 
 /**
- * Los logros, como en el prototipo de Figma pero medidos con lo que la app realmente
+ * Los logros, medidos con lo que la app realmente
  * guarda: se calculan a partir de las cocinadas, no se almacenan. Así no hay un estado
  * paralelo que pueda quedar desincronizado, y cambiar una regla no invalida nada.
  *

@@ -10,7 +10,7 @@
  *
  * Convierte con el canvas de Chrome y no con una librería de imágenes para no agregar una
  * dependencia al proyecto por un comando que se corre a mano cada tanto. Es la misma
- * técnica que ya usaba docs/mockups/inicio-capas/optimizar.mjs, que este script reemplaza.
+ * técnica que ya usaba data/inicio-capas/optimizar.mjs, que este script reemplaza.
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';

@@ -10,7 +10,7 @@ export interface PropiedadesPerfil {
 }
 
 /**
- * El perfil del prototipo de Figma: nivel y experiencia, los números de la cocina, los
+ * El perfil: nivel y experiencia, los números de la cocina, los
  * logros. Todo sale de las cocinadas guardadas; mientras no
  * haya cuentas, no hay nombre ni sesión que cerrar.
  */

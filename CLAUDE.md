@@ -14,9 +14,8 @@ antes de cambiar algo que tenga un ADR, leelo.
 - **Lo visual se verifica con capturas** (Playwright, Pixel 7, los dos temas), no leyendo
   el CSS: dos errores de esta sesión solo aparecieron en una captura. El Chromium del
   contenedor no tiene fuentes de emoji: los □ en las capturas no son un error.
-- El prototipo de Figma es un archivo **Make**: el conector no puede editarlo ni leer su
-  código. El código se lee del bundle publicado en
-  <https://neat-jelly-56883574.figma.site> (`assets/index-*.js` y `.css`).
+- **La interfaz actual es la fuente de verdad del diseño.** No hay prototipo aparte: lo que
+  se ve en la app es lo que hay que conservar.
 
 ## Cómo se escribe acá
 

@@ -10,7 +10,7 @@ export interface PropiedadesMiseEnPlace {
 }
 
 /**
- * La mise en place del prototipo de Figma: cabecera oscura con el progreso, una lista de
+ * La mise en place: cabecera oscura con el progreso, una lista de
  * utensilios y otra de ingredientes para tildar, y el botón de cocinar fijo al pie, que
  * se habilita recién con todo tildado. La receta es un POE: empezar sin el zester en la
  * mano es como se pierde el tiempo crítico.

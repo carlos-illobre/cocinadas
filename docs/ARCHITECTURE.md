@@ -50,7 +50,7 @@ sonido, muestra los puntos ganados y los logros desbloqueados y guarda la cocina
 progreso por receta con gráfico; y perfil con nivel, experiencia, números de la cocina,
 logros e interruptor de tema.
 
-El diseño sale del prototipo de Figma Make de Carlos: naranja de marca, Nunito y Space
+El diseño es el de la propia interfaz, sin prototipo aparte: naranja de marca, Nunito y Space
 Mono, y los dos temas del prototipo (claro sobre marfil y oscuro), que se cambian en
 Ajustes y se guardan en el teléfono.
 
