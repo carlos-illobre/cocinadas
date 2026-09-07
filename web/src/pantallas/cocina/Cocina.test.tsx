@@ -29,7 +29,8 @@ function armar(receta: Receta = recetaDosEtapas, almacen: Almacen & { datos: Map
       vi.advanceTimersByTime(segundos * 1000);
     });
   };
-  const listo = () => fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
+  // «Listo, siguiente» o «Listo (con demora)», según si el paso se pasó de tiempo.
+  const listo = () => fireEvent.click(screen.getByRole('button', { name: /^Listo|Seguir/ }));
   return { ...vista, almacen, avisador, alVolver, alTerminar, alGuardar, pasar, listo };
 }
 
@@ -71,6 +72,10 @@ describe('Cocina · etapa tranquila', () => {
     expect(document.querySelector('.track .ov')).toHaveStyle({ width: '25%' });
     expect(document.querySelector('.track .mk')).toHaveAttribute('data-t', '0:30');
     expect(screen.getByText('✓ Sin apuro: en esta etapa pasarse no cambia el plato')).toHaveClass('ok');
+    // La tarjeta entera late en rojo y el botón lo dice, como en el prototipo.
+    expect(document.querySelector('.now')).toHaveClass('pasado');
+    expect(screen.getByRole('button', { name: 'Listo (con demora) ✓' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Listo, siguiente ✓' })).not.toBeInTheDocument();
   });
 
   it('los sub-pasos se tildan y destildan', () => {

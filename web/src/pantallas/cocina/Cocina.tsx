@@ -188,7 +188,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
           </button>
         </section>
       ) : (
-        <section className={critica ? 'now hot' : 'now'} aria-labelledby="titulo-paso">
+        <section className={`now${critica ? ' hot' : ''}${progreso.exceso_s > 0 ? ' pasado' : ''}`} aria-labelledby="titulo-paso">
           <div className="hd">
             <span className="eyebrow">{esperaPrevia > 0 ? 'Todavía no · empieza en' : paso.espera ? 'Espera · preparate' : 'Ahora · con las manos'}</span>
             <span className="plan">
@@ -265,7 +265,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
   
           <div className="actions">
             <button type="button" className={critica ? 'btn hot' : 'btn primary'} onClick={accion(listo, true)}>
-              {esperaPrevia > 0 ? 'Ya lo hice ✓' : paso.espera ? 'Seguir ✓' : 'Listo, siguiente ✓'}
+              {esperaPrevia > 0 ? 'Ya lo hice ✓' : paso.espera ? 'Seguir ✓' : progreso.exceso_s > 0 ? 'Listo (con demora) ✓' : 'Listo, siguiente ✓'}
             </button>
             <button type="button" className="btn ghost" aria-label="Reiniciar el paso" title="Reiniciar el paso" onClick={accion(reiniciarPaso)}>
               ↺
