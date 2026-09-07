@@ -425,6 +425,7 @@ describe('Cocina · final', () => {
     c.pasar(30);
     c.listo(); // Mantecar, crítico −0:30 → fin
 
+    expect(screen.getByRole('heading', { level: 1, name: '¡Receta completada!' })).toBeInTheDocument();
     expect(screen.getByText('Plato listo · Mise en place primero')).toBeInTheDocument();
     expect(screen.getByText('8:39', { selector: '.big' })).toBeInTheDocument();
     expect(screen.getByText('−12:21')).toHaveClass('menos');

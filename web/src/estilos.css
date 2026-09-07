@@ -1382,6 +1382,31 @@ h1 {
 .desvio.mas { color: var(--coral); }
 .desvio.menos { color: var(--green); }
 .sum { padding-top: 32px; padding-bottom: 40px; }
+
+/*
+ * El remate del prototipo: el trofeo grande que rebota y el título. Lo que había acá era
+ * un `eyebrow` de 12 px y el cronómetro, que se lee como un informe y no como un festejo.
+ * El rebote es el mismo del prototipo: 2s, 6px.
+ */
+.sum .trofeo { font-size: 72px; line-height: 1; margin: 0 0 10px; animation: rebotar 2s ease-in-out infinite; }
+.sum-titulo { font-family: var(--display); font-weight: 800; font-size: 30px; letter-spacing: -0.03em; line-height: 1.05; margin: 0 0 8px; text-wrap: balance; }
+
+@keyframes rebotar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* El trofeo salta; con menos movimiento se queda quieto, pero sigue estando. */
+@media (prefers-reduced-motion: reduce) {
+  .sum .trofeo {
+    animation: none;
+  }
+}
 .sum .big { font-size: 64px; }
 .sum .vs { font-size: 16px; color: var(--muted); margin: 6px 0 0; }
 .sum .vs b.mas { color: var(--coral); }
