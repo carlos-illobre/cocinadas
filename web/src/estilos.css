@@ -1302,7 +1302,14 @@ h1 {
  * queda pegado al tope al hacer scroll. Los márgenes negativos lo llevan hasta los bordes
  * de la pantalla, para que tape lo que pasa por debajo sin dejar un canal a los costados.
  */
-.cocina .fijo { position: sticky; top: 0; z-index: 5; background: var(--ground); margin: -48px -20px 0; padding: 48px 20px 6px; box-shadow: 0 10px 14px -12px rgba(0, 0, 0, 0.35); }
+/*
+ * El margen negativo tiene que ser exactamente el padding superior de `.cocina` (24 px).
+ * Con −48 la posición natural del bloque quedaba 24 px por encima del tope, `sticky` lo
+ * bajaba hasta 0 y pisaba los primeros píxeles de la tarjeta: el borde superior no se veía
+ * ni siquiera sin scroll. El padding de 48 se queda: pegado arriba, deja el reloj de la
+ * cabecera por debajo del botón flotante del tema.
+ */
+.cocina .fijo { position: sticky; top: 0; z-index: 5; background: var(--ground); margin: -24px -20px 0; padding: 48px 20px 6px; box-shadow: 0 10px 14px -12px rgba(0, 0, 0, 0.35); }
 /*
  * En la franja fija los procesos van compactos, como en el prototipo: nombre, cuenta
  * regresiva y barra. Con tres procesos y sus descripciones, lo fijo se comía más de la
