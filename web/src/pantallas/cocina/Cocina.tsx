@@ -232,11 +232,17 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
           })}
         </ul>
 
-        {mostrarPorQue && (
-          <p className="por-que">
-            <b>{paso.por_que.etiquetas.join(' · ')}</b> {paso.por_que.texto}
-          </p>
-        )}
+        {/* Qué cuida este paso —sabor, desperdicio, seguridad—, como en el prototipo: a la
+            vista siempre; el texto largo que lo explica sigue detrás del «?». */}
+        <ul className="chips etiquetas" aria-label="Qué cuida este paso">
+          {paso.por_que.etiquetas.map((e) => (
+            <li key={e} className="chip">
+              {e}
+            </li>
+          ))}
+        </ul>
+
+        {mostrarPorQue && <p className="por-que">{paso.por_que.texto}</p>}
 
         <div className="actions">
           <button type="button" className={critica ? 'btn hot' : 'btn primary'} onClick={accion(listo, true)}>
