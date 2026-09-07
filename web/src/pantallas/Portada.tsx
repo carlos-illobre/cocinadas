@@ -26,14 +26,10 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
   const [solapa, setSolapa] = useState<Solapa>('ingredientes');
   const [ayuda, setAyuda] = useState(false);
 
-  // Al cambiar de plato o de modo, la pantalla vuelve a «cargando» en el mismo render y
-  // no en el efecto: así nunca se pinta la receta vieja con el título nuevo, ni siquiera
-  // un fotograma. Es el patrón de React para estado que depende de una prop.
-  const [pedido, setPedido] = useState({ plato: resumen.plato, version });
-  if (pedido.plato !== resumen.plato || pedido.version !== version) {
-    setPedido({ plato: resumen.plato, version });
-    setCarga({ estado: 'cargando' });
-  }
+  // Al cambiar de modo NO se vuelve a «cargando»: la receta anterior sigue a la vista
+  // hasta que llega la nueva, y recién ahí se reemplaza. Volver a «cargando» vaciaba la
+  // pantalla un instante y se veía como un parpadeo. Una respuesta tardía de la versión
+  // anterior no pisa a la nueva porque el efecto se cancela con `vigente`.
 
   useEffect(() => {
     let vigente = true;
