@@ -66,6 +66,12 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
   await test.step('cocinar los nueve pasos', async () => {
     await expect(page.getByText('Paso 1 de 9')).toBeVisible();
 
+    // Al hacer scroll, la cabecera con las barras sigue arriba, como en el prototipo: la
+    // caja del bloque fijo no se mueve del tope de la ventana.
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(300);
+    expect((await page.locator('.fijo').boundingBox())?.y).toBe(0);
+
     // Se avanza por lo que hay en pantalla y no por una lista escrita a mano: el botón
     // que sigue cambia de nombre según el paso —«Listo, siguiente» en uno normal,
     // «Seguir» en una espera, «Ya lo hice» si todavía no le llegó el turno— y entre

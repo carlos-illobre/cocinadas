@@ -1282,6 +1282,23 @@ h1 {
 @keyframes titilar { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.25; } }
 
 /* La tarjeta del paso activo, como en el prototipo: verde mientras se está en tiempo, roja y latiendo pasado. La etapa crítica se nota en la cabecera y en la alarma, no acá. */
+/*
+ * Lo de arriba de la tarjeta —cabecera, barra de la etapa, procesos que corren solos— se
+ * queda pegado al tope al hacer scroll. Los márgenes negativos lo llevan hasta los bordes
+ * de la pantalla, para que tape lo que pasa por debajo sin dejar un canal a los costados.
+ */
+.cocina .fijo { position: sticky; top: 0; z-index: 5; background: var(--ground); margin: -48px -20px 0; padding: 48px 20px 6px; box-shadow: 0 10px 14px -12px rgba(0, 0, 0, 0.35); }
+/*
+ * En la franja fija los procesos van compactos, como en el prototipo: nombre, cuenta
+ * regresiva y barra. Con tres procesos y sus descripciones, lo fijo se comía más de la
+ * mitad de la pantalla y no dejaba leer los sub-pasos, que es para lo que se hace scroll.
+ */
+.fijo .bg { margin-top: 10px; gap: 6px; }
+.fijo .proc { grid-template-columns: 28px 1fr auto; padding: 6px 12px 6px 8px; row-gap: 4px; }
+.fijo .proc .ic, .fijo .proc .ic .ph { width: 28px; height: 28px; font-size: 14px; }
+.fijo .proc .ic b { width: 14px; height: 14px; font-size: 8px; }
+.fijo .proc .nm small, .fijo .proc .tm small { display: none; }
+.fijo .proc .tm { font-size: 18px; }
 .now { margin-top: 14px; background: var(--now-tinte); border-radius: 22px; padding: 16px 18px; border: 2px solid var(--green); box-shadow: 0 12px 28px -18px rgba(22, 33, 27, 0.35); }
 /*
  * Pasado de tiempo, la tarjeta entera late en rojo, como en el prototipo: es la alarma

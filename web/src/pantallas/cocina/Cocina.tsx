@@ -138,6 +138,9 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
 
   return (
     <main className={critica ? 'pantalla cocina critica' : 'pantalla cocina'}>
+      {/* Cabecera, barra de la etapa y lo que corre solo quedan fijos arriba al hacer scroll,
+          como en el prototipo: mientras se leen los sub-pasos, las barras siguen a la vista. */}
+      <div className="fijo">
       <header className="top">
         <div>
           <button
@@ -170,6 +173,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
           ))}
         </section>
       )}
+      </div>
 
       {estado.fase === 'fin' ? (
         <section className="now completada" aria-label="Receta completada">
