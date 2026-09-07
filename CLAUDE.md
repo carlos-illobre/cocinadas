@@ -1,125 +1,128 @@
 # Cocinadas
 
-Contexto que no se deduce leyendo el código. Lo demás está en el
-[README](README.md), en [docs/](docs/) y en los [ADR](docs/adr/), que son la explicación
-larga de cada decisión: antes de cambiar algo que tenga un ADR, leelo.
+Contexto que no se deduce leyendo el código. Lo demás está en el [README](README.md), en
+[docs/](docs/) y en los [ADR](docs/adr/), que son la explicación larga de cada decisión:
+antes de cambiar algo que tenga un ADR, leelo.
+
+## Cómo trabaja Claude acá
+
+- **Nunca una ruta fuera de la carpeta del proyecto**, ni siquiera como texto dentro de
+  un comando: `/tmp`, `~/.claude`, `../algo`, un `#!/bin/sh`, un literal que empiece con
+  `/`. Todo lo temporal va en `tmp/` (en el `.gitignore`) y se limpia al terminar.
+- **Una rama por pedido.** Carlos sube las ramas y abre los PR; Claude no tiene token.
+  Si un pedido depende de otro sin mergear, la rama se apila sobre esa y se dice el orden.
+- **Lo visual se verifica con capturas** (Playwright, Pixel 7, los dos temas), no leyendo
+  el CSS: dos errores de esta sesión solo aparecieron en una captura. El Chromium del
+  contenedor no tiene fuentes de emoji: los □ en las capturas no son un error.
+- El prototipo de Figma es un archivo **Make**: el conector no puede editarlo ni leer su
+  código. El código se lee del bundle publicado en
+  <https://neat-jelly-56883574.figma.site> (`assets/index-*.js` y `.css`).
 
 ## Cómo se escribe acá
 
-- **Todo en español**: nombres de variables y funciones, comentarios, mensajes de commit,
-  documentación y textos de la app. Con voseo («tocá», «entrá», «verificá»).
-- Los comentarios explican **por qué**, no qué hace la línea de al lado. Si un comentario
-  se puede deducir del código, sobra.
-- Mensajes de commit: qué cambió y por qué, en imperativo y en español.
+- **Todo en español**: código, comentarios, commits, documentación y textos de la app,
+  con voseo («tocá», «entrá»). Las carpetas también: `pantallas/`, `componentes/`.
+- Los comentarios explican **por qué**, no qué. Si se deduce del código, sobra.
+- Commits: qué cambió y por qué, en imperativo.
+- En la documentación **no se escribe lo que no está**: si no aparece, es porque no está.
 
 ## Invariantes que no se negocian
 
-1. **Cobertura del 100 %**, con compuerta. Lo que no se puede probar se extrae a un módulo
-   medible y afuera queda solo la llamada al sistema externo (ver `docs/TESTING.md` para
-   las exclusiones, que son tres y están justificadas).
-2. **Todas las rutas son relativas.** GitHub Pages sirve el sitio en `/<repo>/`, así que
-   una ruta que empiece con `/` da 404 **solo en producción**. `vite.config.ts` tiene
-   `base: './'` y el CI comprueba el `index.html` compilado (ADR-017).
-3. **No se crea nada «para después».** Un servicio, una capa o una pieza de
-   infraestructura se crean cuando tienen algo que hacer hoy. Es la lección de ADR-015:
-   `usuarios` y `cocinadas` vivieron meses sin nada más que `/health`, y cuando se
-   borraron no había nada que rescatar.
-4. **Un ADR viejo nunca se reescribe.** Si una decisión posterior lo cambia, se le agrega
-   una enmienda al final que apunta al nuevo, y se actualiza el estado en el índice. Buena
-   parte de la lista está superada y eso es información, no basura.
+1. **Cobertura del 100 %** en `web/src/**` y `web/herramientas/**`, con compuerta en
+   `vite.config.ts`. Lo que no se puede probar se extrae a un módulo medible y afuera
+   queda solo la llamada al sistema (`docs/TESTING.md`, cuatro exclusiones justificadas).
+2. **`tsc` y ESLint sin avisos** (`pnpm lint`), con las reglas de tipos estrictas. Tres
+   reglas están apagadas a propósito y dicen por qué en `web/eslint.config.js`.
+3. **Todas las rutas son relativas.** Pages sirve en `/cocinadas/`; una ruta con `/`
+   inicial da 404 solo en producción (ADR-017). El CI revisa el `index.html` compilado.
+4. **No se crea nada «para después».** Lección de ADR-015.
+5. **Un ADR viejo nunca se reescribe**: se le agrega una enmienda al final.
 
 ## Cómo está armado
 
-Es un sitio estático en GitHub Pages (<https://carlos-illobre.github.io/cocinadas/>): una
-SPA que se baja entera al teléfono, con el catálogo adentro. Las cocinadas viven en el `localStorage` (`cocinadas.historial`,
-`cocinadas.tema`, `cocinadas.cocinando`). Todo el código está en `web/`.
+Sitio estático en GitHub Pages (<https://carlos-illobre.github.io/cocinadas/>): una SPA
+que se baja entera al teléfono, catálogo incluido. Las cocinadas viven en el
+`localStorage` (`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`).
+**Cada merge a `main` publica solo.**
 
-El catálogo **se genera en el build**: `web/herramientas/catalogo/catalogo.ts` lee `data/` y
-devuelve el plan de archivos (puro, medido al 100 %); `generar.ts` lo escribe en
-`web/public/api/catalogo/`, que no se versiona. Tocar una receta obliga a
-`pnpm generar:catalogo` en desarrollo, y a volver a publicar en producción.
+`web/` se divide por dónde corre cada cosa:
 
-`web/` se divide por lo que corre en cada lado:
+- `src/` va al navegador: `pantallas/` (una por archivo; la cocina es una carpeta de
+  siete), `componentes/` (lo compartido, incluido `Recuperacion`, el límite de error),
+  y dominio puro por tema: `cocina/` (modelo, cocinada en curso, sonido), `historial/`,
+  `progreso/` (experiencia y logros), `api.ts` (cliente del catálogo y tipos), `tema.ts`.
+- `herramientas/` corre en Node: el generador del catálogo y el optimizador de imágenes.
+- `e2e/` son las pruebas de Playwright: el camino feliz entero contra `pnpm build`, y
+  los sonidos (ADR-018). Sin compuerta de cobertura, a propósito.
 
-- `src/` es lo que va al navegador. `pantallas/` son las pantallas (una por archivo; la
-  cocina es una carpeta porque son cinco componentes), `componentes/` lo que comparten
-  varias, y el resto son módulos de dominio puros por tema: `cocina/` (modelo, cocinada
-  en curso, sonido), `historial/`, `progreso/` (experiencia y logros), `api.ts` (el
-  cliente del catálogo y sus tipos) y `tema.ts`.
-- `herramientas/` son los scripts de build, que corren en Node: el generador del
-  catálogo y el optimizador de imágenes. Se miden con la misma compuerta que `src/`.
-- `e2e/` son las pruebas de Playwright.
+El catálogo **se genera en el build**: `herramientas/catalogo/catalogo.ts` lee `data/` y
+decide (puro); `generar.ts` escribe en `web/public/api/catalogo/`, que no se versiona.
+Las imágenes tienen dos vidas: originales en `data/` y `docs/mockups/`, y las versiones
+publicadas en `web/assets/` (WebP, al tamaño que se muestran), que se regeneran con
+`pnpm optimizar`. Si falta una, el build corta y dice cuál.
 
-`pnpm lint` corre `tsc` y ESLint (`eslint.config.js`, reglas de tipos estrictas y las de
-hooks de React); es parte del job `pruebas` del CI.
-
-**Las imágenes tienen dos vidas**: los originales en `data/` y `docs/mockups/`, que pueden
-pesar lo que quieran, y las versiones que se publican en `web/assets/`, en WebP y al
-tamaño al que se muestran. Se versionan y se regeneran con `pnpm optimizar`. Si agregás
-una foto y no corrés ese comando, **el build corta** y te dice cuál falta.
-
-El porqué de todo esto —y **qué hace falta el día que las cocinadas tengan que salir del
-celular**— está en los ADR **015** y **017**. Los ADR 001 a 016 describen microservicios,
-PostgreSQL, NATS, JWT, Docker, Caddy y un despliegue en Oracle que el proyecto tuvo y ya
-no tiene: están **superados o enmendados**. Leerlos como historia, no como estado actual.
+La CSP va como `<meta>` inyectado por `vite.config.ts` **solo en el build**
+(`docs/SECURITY.md`). El historial de por qué esto fue microservicios y dejó de serlo:
+ADR-015 y ADR-017; los ADR 001 a 016 son historia.
 
 ## El producto
 
-- Es una app **solo para celular**. Guía una receta como una línea de tiempo viva.
-- Las recetas son POE: las cuatro restricciones fijas son **cero desperdicio, sin sal
-  agregada, una porción y el reloj arranca al abrir el freezer**. El tiempo declarado
-  incluye descongelar, lavar y cortar; nunca se esconde tiempo.
-- **Está gamificada, pero premia la precisión, no la velocidad.** El criterio es el del
-  prototipo de Figma, adoptado con su pantalla de resultados (`src/progreso/xp.ts`,
-  `desgloseDe`): 200 por completar, 100 de bonus si el total quedó a ±10 % del previsto
-  —simétrico a propósito: ir más rápido no es más preciso—, y 10 por cada paso que no
-  se pasó del suyo. Sigue siendo provisional hasta que Carlos lo confirme.
-- El diseño de las pantallas sale del prototipo de Figma Make, que es la fuente:
-  <https://www.figma.com/make/ktWkl4C92atKONL5GR4Gn5/Cocinadas>. Cambia seguido; el código
-  fuente se lee desde el bundle de su preview, no desde el conector de Figma.
-- Del prototipo se dejaron afuera a propósito: login por nombre, dificultad, y los
-  cronómetros por paso independientes.
+- App **solo para celular**, que guía una receta como una línea de tiempo viva. Se lee de
+  parado, a un brazo del teléfono: **la tipografía chica ya se subió dos veces** (+3 px
+  sobre el original); nada informativo por debajo de 13,5 px.
+- Las recetas son POE: cero desperdicio, sin sal agregada, una porción, y el reloj arranca
+  al abrir el freezer. El tiempo declarado incluye descongelar, lavar y cortar.
+- **Gamificada, premiando la precisión y no la velocidad.** Criterio (del prototipo,
+  `src/progreso/xp.ts`, `desgloseDe`): 200 por completar, 100 de bonus si el total quedó
+  a ±10 % del previsto —simétrico a propósito—, 10 por cada paso que no se pasó del suyo.
+  Provisional hasta que Carlos lo confirme. El logro «en tiempo» usa la misma regla.
+- **Al terminar el último paso no se salta a los resultados**: la tarjeta se vuelve
+  «Receta completada» con un botón, y el confeti y el sonido arrancan al tocarlo.
+- El gráfico de progreso es **puntos contra la línea del objetivo**, con escala simétrica:
+  la distancia a la línea es el desempeño.
+- Del prototipo se dejaron afuera a propósito: login por nombre, dificultad, cronómetros
+  por paso independientes, el guardado automático (acá es explícito) y, por ahora, el
+  cartel modal «Logro desbloqueado» y los sub-pasos numerados.
 
 ## Los datos son contenido, no código
 
-`data/recetas/`, `data/ingredientes/` y `data/utencillos/` son el catálogo. Cada versión de
-una receta es un HTML imprimible, un PDF y un **JSON que es lo que la app usa**
-(`data/recetas/esquema-receta.md`). Los tres tienen que decir lo mismo; si se corrige uno,
-se corrigen los otros. `python data/recetas/validar-receta.py` lo comprueba.
-
-Las recetas las genera la skill `receta-poe-fitness`, que vive fuera del repositorio.
+`data/recetas/`, `data/ingredientes/` y `data/utencillos/` son el catálogo. Cada versión
+de una receta es un HTML imprimible, un PDF y un **JSON que es lo que la app usa**
+(`data/recetas/esquema-receta.md`); los tres tienen que decir lo mismo.
+`python data/recetas/validar-receta.py` lo comprueba. Las recetas las genera la skill
+`receta-poe-fitness`, que vive fuera del repositorio.
 
 ## Comandos
 
 ```bash
+cd web && pnpm lint                          # tsc + ESLint
 cd web && pnpm test:cov                      # unitarias, con la compuerta del 100 %
-cd web && pnpm e2e                           # el camino feliz en un navegador (ADR-018)
+cd web && pnpm e2e                           # Playwright contra el build (una vez: pnpm exec playwright install chromium)
 cd web && pnpm dev                           # la app en http://localhost:5173
 cd web && pnpm generar:catalogo              # tras tocar una receta o una ficha
-cd web && pnpm optimizar                     # tras agregar o cambiar una imagen
+cd web && pnpm optimizar                     # tras agregar o cambiar una imagen (necesita Chrome/Chromium)
 cd web && pnpm build && pnpm preview         # exactamente lo que se publica
 python3 data/recetas/validar-receta.py       # el catálogo del repositorio es válido
 ```
 
-Para trabajo temporal usar `tmp/` en la raíz, que está en el `.gitignore`, y **limpiarla al
-terminar**.
-
 ## Trampas conocidas
 
+- **Pages cachea 10 minutos** (`max-age=600`, no se puede cambiar). Para ver un cambio ya:
+  abrir la URL con `?x=1` (otro número cada vez). El acceso directo instalado se actualiza
+  solo: no hay service worker; solo si cambia el manifest hay que reinstalarlo.
+- **Un ancestro con `transform` es el bloque contenedor de sus hijos `position: fixed`.**
+  La animación de entrada de `.pantalla` no deja `transform` puesto (sin fill-mode) y el
+  confeti es hermano del `<main>`, no hijo. El E2E mide que el confeti cubra la ventana.
+- **Todas las pantallas viven en el mismo documento**: el desplazamiento no se reinicia
+  solo. `App` lo hace al cambiar de pantalla y `Cocina` al cambiar de fase.
+- **`prefers-reduced-motion`** apaga la animación de entrada y el rebote del trofeo; el
+  confeti se oculta entero. Si «no se ven las animaciones», mirar eso y el ahorro de
+  batería antes que el código.
+- **En WSL, el `pnpm` de Windows puede pisar al de Linux** en el PATH y fallar con
+  «Invalid argument». Usar el de nvm: `PATH="$HOME/.nvm/versions/node/<v>/bin:$PATH"`.
 - **En Windows**, la carpeta del proyecto se llama `recetas` en minúscula aunque el
-  explorador la muestre capitalizada. Instalar dependencias desde la ruta con otra
-  capitalización deja los enlaces de pnpm apuntando a otro lado y React se carga dos
-  veces, con un error que no dice la causa.
-- **Nada de rutas absolutas.** Pages sirve en `/cocinadas/`, así que `/logo.png` busca la
-  raíz del dominio y da 404 solo en producción. Las rutas relativas funcionan porque la
-  app **nunca cambia la URL**: `avanzar` en `App.tsx` hace `pushState(null, '')` sin
-  tercer argumento. El día que haya enlaces profundos, esto hay que rehacerlo.
-- **`web/herramientas/catalogo/generar.ts` busca `data/` por una ruta relativa a su propio
-  archivo.** Si se mueve de carpeta, hay que ajustarla — y lo mismo vale para
-  `herramientas/imagenes/optimizar.ts` y `src/cocina/receta-real.test.ts`.
-- **`pnpm optimizar` necesita Chrome o Chromium instalado.** Convierte con el canvas del
-  navegador para no agregar una dependencia de imágenes al proyecto.
-- **Se perdieron las cabeceras de seguridad y la CSP** al salir de Caddy: Pages no deja
-  definirlas. Recuperar la CSP con `<meta http-equiv>` está pendiente (`docs/SECURITY.md`).
-- **Cada merge a `main` publica solo.** Lo único configurado en GitHub es
-  Settings → Pages → Source: GitHub Actions.
+  explorador la capitalice; instalar desde otra capitalización carga React dos veces.
+- **`generar.ts`, `optimizar.ts` y `receta-real.test.ts` encuentran `data/` por una ruta
+  relativa a su propio archivo.** Si se mueven de carpeta, hay que ajustarla.
+- Lo que sigue **abierto** en seguridad está en `docs/SECURITY.md`: Google Fonts como
+  único tercero, y las acciones del CI ancladas por etiqueta y no por SHA.
