@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
 interface Propiedades {
@@ -26,11 +26,24 @@ function nombreDeTransicion(src: string): string {
  * captura en su propio grupo y se dibuja por encima del fundido de la pantalla, así que
  * si todas las miniaturas lo llevaran, todas flotarían sobre el fondo oscurecido hasta el
  * final. Sin la API, el cambio es directo y queda el fundido del CSS.
+ *
+ * La grande se baja apenas la chica se ve (la chica es `lazy`: solo las que entran en
+ * pantalla), y la ampliación no arranca hasta tenerla decodificada: animar hacia una
+ * imagen que todavía no llegó es un parpadeo y un hueco hasta que se descarga.
  */
 export function FotoAmpliable({ src, srcGrande, nombre, className }: Propiedades): React.JSX.Element {
   const [abierta, setAbierta] = useState(false);
   const [transicionando, setTransicionando] = useState(false);
   const transicion = nombreDeTransicion(src);
+  const grande = useRef<HTMLImageElement | null>(null);
+
+  const precargar = (): HTMLImageElement | null => {
+    if (srcGrande !== null && srcGrande !== undefined && grande.current === null) {
+      grande.current = new Image();
+      grande.current.src = srcGrande;
+    }
+    return grande.current;
+  };
 
   const cambiar = (nuevoEstado: boolean): void => {
     if (typeof document.startViewTransition !== 'function') {
@@ -53,18 +66,29 @@ export function FotoAmpliable({ src, srcGrande, nombre, className }: Propiedades
     });
   };
 
+  // Si la descarga falla, se abre igual: se ve la chica ampliada.
+  const abrir = (): void => {
+    const img = precargar();
+    if (img === null) {
+      cambiar(true);
+    } else {
+      void img.decode().then(
+        () => cambiar(true),
+        () => cambiar(true),
+      );
+    }
+  };
+
   return (
     <>
       <button
         type="button"
         className="ver-foto"
         aria-label={`Ver la foto de ${nombre}`}
-        onClick={() => {
-          cambiar(true);
-        }}
+        onClick={abrir}
       >
         {/* La miniatura lleva el nombre solo en los extremos de la transición en los que ella es la foto: antes de abrir y después de cerrar. */}
-        <img className={className} src={src} alt="" loading="lazy" style={{ viewTransitionName: transicionando && !abierta ? transicion : 'none' }} />
+        <img className={className} src={src} alt="" loading="lazy" onLoad={precargar} style={{ viewTransitionName: transicionando && !abierta ? transicion : 'none' }} />
       </button>
       {abierta && (
         <button
