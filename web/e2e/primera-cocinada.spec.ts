@@ -70,7 +70,9 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
     // caja del bloque fijo no se mueve del tope de la ventana.
     await page.mouse.wheel(0, 600);
     await page.waitForTimeout(300);
-    expect((await page.locator('.fijo').boundingBox())?.y).toBe(0);
+    // Redondeado: el runner del CI deja el bloque a una fracción de píxel del tope, por el
+    // redondeo del scroll. Lo que importa es que no se haya ido con el contenido.
+    expect(Math.round((await page.locator('.fijo').boundingBox())?.y ?? -1)).toBe(0);
 
     // Se avanza por lo que hay en pantalla y no por una lista escrita a mano: el botón
     // que sigue cambia de nombre según el paso —«Listo, siguiente» en uno normal,
