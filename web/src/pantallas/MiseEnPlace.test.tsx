@@ -20,14 +20,16 @@ describe('MiseEnPlace', () => {
     expect(screen.getByRole('heading', { level: 3, name: /Ingredientes/ })).toBeInTheDocument();
 
     const items = screen.getAllByRole('button', { pressed: false });
+    // La foto vive al costado del botón de tildar, en el mismo ítem de la lista.
+    const filas = screen.getAllByRole('listitem');
     expect(items).toHaveLength(6);
     expect(items[0]).toHaveTextContent('Wok Eternity 30 cm con su tapa');
     expect(items[0]?.querySelector('small')).toBeNull();
-    expect(items[0]?.querySelector('img')).toHaveAttribute('src', 'api/catalogo/fotos/utensilios/wok-eternity-copper-30cm.jpg');
-    expect(items[1]?.querySelector('.mise-sin-foto')).toHaveTextContent('🔧');
+    expect(filas[0]?.querySelector('img')).toHaveAttribute('src', 'api/catalogo/fotos/utensilios/wok-eternity-copper-30cm.jpg');
+    expect(filas[1]?.querySelector('.mise-sin-foto')).toHaveTextContent('🔧');
     expect(items[3]?.querySelector('small')).toHaveTextContent('½ pieza');
-    expect(items[3]?.querySelector('img')).toHaveAttribute('src', 'api/catalogo/fotos/ingredientes/brocoli-entero.jpg');
-    expect(items[4]?.querySelector('.mise-sin-foto')).toHaveTextContent('🥄');
+    expect(filas[3]?.querySelector('img')).toHaveAttribute('src', 'api/catalogo/fotos/ingredientes/brocoli-entero.jpg');
+    expect(filas[4]?.querySelector('.mise-sin-foto')).toHaveTextContent('🥄');
 
     expect(screen.getByText('Marcá todos los items para continuar')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Faltan 6 items' })).toBeDisabled();
@@ -35,7 +37,8 @@ describe('MiseEnPlace', () => {
 
   it('tildar y destildar actualiza el progreso y el porcentaje', () => {
     render(<MiseEnPlace receta={recetaDosEtapas} alVolver={nada} alCocinar={nada} />);
-    const wok = screen.getByRole('button', { name: /Wok Eternity/ });
+    // Anclado al inicio: «Ver la foto de Wok…» es otro botón.
+    const wok = screen.getByRole('button', { name: /^Wok Eternity/ });
 
     fireEvent.click(wok);
     expect(wok).toHaveAttribute('aria-pressed', 'true');

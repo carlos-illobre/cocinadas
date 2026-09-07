@@ -1134,7 +1134,9 @@ h1 {
   transition: opacity 0.2s ease;
 }
 
-.mise.ok .mise-foto {
+.mise-item { display: flex; align-items: center; gap: 12px; }
+.mise-item .mise { flex: 1; min-width: 0; }
+.mise-item.ok .mise-foto {
   opacity: 0.5;
 }
 
@@ -1145,7 +1147,7 @@ h1 {
   background: var(--soft);
 }
 
-.mise.ok .mise-sin-foto {
+.mise-item.ok .mise-sin-foto {
   background: rgba(6, 214, 160, 0.15);
   opacity: 1;
 }
@@ -1327,8 +1329,8 @@ h1 {
 .now .ttl { align-items: flex-start; }
 .now .ttl h2 { flex: 1; min-width: 0; }
 .now .ttl .ph { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
-.now .ttl .ver-foto { padding: 0; border: 0; background: none; flex-shrink: 0; cursor: pointer; border-radius: 10px; }
-.now .ttl .ver-foto:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.ver-foto { padding: 0; border: 0; background: none; flex-shrink: 0; cursor: pointer; border-radius: 10px; display: block; line-height: 0; }
+.ver-foto:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
 /* La foto ampliada: tapa todo, se cierra tocando en cualquier lado. */
 .foto-ampliada { position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, 0.85); border: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; cursor: pointer; }
 /* A todo el ancho: las fotos publicadas son miniaturas (plan.ts, `miniatura`), así que más grande que esto no hay. */

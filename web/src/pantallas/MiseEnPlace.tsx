@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FotoAmpliable } from '../componentes/FotoAmpliable';
 import { BASE_CATALOGO, type Receta } from '../api';
 
 export interface PropiedadesMiseEnPlace {
@@ -86,15 +87,17 @@ function Lista({ titulo, icono, items, tildados, alternar }: { readonly titulo: 
         {items.map((x) => {
           const hecho = tildados.has(x.clave);
           return (
-            <li key={x.clave}>
+            <li key={x.clave} className={hecho ? 'mise-item ok' : 'mise-item'}>
+              {/* La foto va al costado del botón de tildar y no adentro: es un botón ella
+                  también (se amplía al tocarla), y un botón no puede contener otro. */}
+              {x.foto === null ? (
+                <span className="mise-foto mise-sin-foto" aria-hidden="true">
+                  {x.icono}
+                </span>
+              ) : (
+                <FotoAmpliable src={`${BASE_CATALOGO}${x.foto}`} nombre={x.nombre} className="mise-foto" />
+              )}
               <button type="button" className={hecho ? 'mise ok' : 'mise'} aria-pressed={hecho} onClick={() => alternar(x.clave)}>
-                {x.foto === null ? (
-                  <span className="mise-foto mise-sin-foto" aria-hidden="true">
-                    {x.icono}
-                  </span>
-                ) : (
-                  <img className="mise-foto" src={`${BASE_CATALOGO}${x.foto}`} alt="" />
-                )}
                 <span className="mise-texto">
                   <b>{x.nombre}</b>
                   {x.detalle !== null && <small>{x.detalle}</small>}
