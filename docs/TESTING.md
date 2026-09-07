@@ -81,7 +81,14 @@ funcione, no medir líneas. Por eso tampoco espera los tiempos de la receta —c
 rápido que se pueda tocar y termina con 0 XP—; el puntaje lo miden `xp.test.ts` y
 `App.test.tsx` en un segundo y con todos los casos de borde.
 
-El porqué de que sea uno solo, y de Playwright en vez de Cypress, está en el
+El segundo, `sonidos.spec.ts`, es la excepción a «uno solo» y tiene su motivo: los avisos
+sonoros son lo único de la app que depende de una política del navegador —no se puede
+sonar hasta que hubo un gesto del usuario—, y eso en jsdom no existe. `sonido.test.ts`
+comprueba cada nota con un AudioContext falso; esta comprueba que la cadena llegue de
+verdad a la Web Audio API, instrumentando `AudioContext` antes de que cargue la app y
+contando osciladores. Comprobado que sirve: sacando la llamada a `festejo()`, falla.
+
+El porqué de que sean pocos, y de Playwright en vez de Cypress, está en el
 [ADR-018](adr/ADR-018-un-e2e-de-camino-feliz-con-playwright.md).
 
 ## Lo que ya no está
