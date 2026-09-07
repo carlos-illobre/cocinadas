@@ -1,9 +1,44 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
+
+/**
+ * La política de contenido, como `<meta>` porque GitHub Pages no deja poner cabeceras
+ * (docs/SECURITY.md). Solo en el build: en desarrollo `@vitejs/plugin-react` inyecta un
+ * script en línea para el refresco en caliente y `script-src 'self'` lo bloquearía.
+ *
+ * Lo que abre, y por qué:
+ * - `style-src-attr 'unsafe-inline'`: React pone los anchos de las barras y los papelitos
+ *   del confeti como `style=` en el elemento. Los `<style>` en línea siguen prohibidos.
+ * - `fonts.googleapis.com` / `fonts.gstatic.com`: las fuentes se cargan de Google hasta que
+ *   la app sea instalable sin conexión (index.html).
+ * `frame-ancestors` no va porque en `<meta>` se ignora.
+ */
+function politicaDeContenido(): Plugin {
+  const politica = [
+    "default-src 'none'",
+    "script-src 'self'",
+    "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'",
+    "style-src-elem 'self' https://fonts.googleapis.com",
+    "style-src-attr 'unsafe-inline'",
+    'font-src https://fonts.gstatic.com',
+    "img-src 'self'",
+    "connect-src 'self'",
+    "manifest-src 'self'",
+    "base-uri 'none'",
+    "form-action 'none'",
+    "object-src 'none'",
+    'upgrade-insecure-requests',
+  ].join('; ');
+  return {
+    name: 'cocinadas:csp',
+    apply: 'build',
+    transformIndexHtml: () => [{ tag: 'meta', attrs: { 'http-equiv': 'Content-Security-Policy', content: politica }, injectTo: 'head-prepend' }],
+  };
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), politicaDeContenido()],
   // Rutas relativas en todo lo que emite el build. GitHub Pages sirve el sitio de un
   // repositorio en `/<repo>/` y no en la raíz, así que con rutas absolutas el navegador
   // pediría `/logo.png` en vez de `/cocinadas/logo.png`. Con `./` el mismo bundle sirve
