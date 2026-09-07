@@ -75,7 +75,7 @@ ADR-015 y ADR-017; los ADR 001 a 016 son historia.
 - **Gamificada, premiando la precisión y no la velocidad.** Criterio (del prototipo,
   `src/progreso/xp.ts`, `desgloseDe`): 200 por completar, 100 de bonus si el total quedó
   a ±10 % del previsto —simétrico a propósito—, 10 por cada paso que no se pasó del suyo.
-  Provisional hasta que Carlos lo confirme. El logro «en tiempo» usa la misma regla.
+  Confirmado por Carlos el 2026-09-07. El logro «en tiempo» usa la misma regla.
 - **Al terminar el último paso no se salta a los resultados**: la tarjeta se vuelve
   «Receta completada» con un botón, y el confeti y el sonido arrancan al tocarlo.
 - El gráfico de progreso es **puntos contra la línea del objetivo**, con escala simétrica:
