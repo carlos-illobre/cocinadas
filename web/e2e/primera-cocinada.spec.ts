@@ -15,7 +15,16 @@ import { expect, test } from '@playwright/test';
  * el final, no que puntúe; el puntaje ya lo miden `src/xp.test.ts` y `App.test.tsx`.
  */
 test('de la portada a la primera cocinada guardada', async ({ page }) => {
+  // La política de contenido se inyecta solo en el build (vite.config.ts). Si bloqueara
+  // algo que la app necesita, el navegador lo dice en la consola con «Content Security
+  // Policy» y acá se junta; al final tiene que estar vacío.
+  const bloqueos: string[] = [];
+  page.on('console', (m) => {
+    if (m.text().includes('Content Security Policy')) bloqueos.push(m.text());
+  });
+
   await page.goto('.');
+  await expect(page.locator('meta[http-equiv="Content-Security-Policy"]')).toHaveCount(1);
 
   await test.step('entrar sin cuenta', async () => {
     await expect(page.getByText('Tu receta, al punto justo')).toBeVisible();
@@ -102,4 +111,6 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
     await page.getByRole('button', { name: 'Progreso' }).click();
     await expect(page.getByRole('heading', { level: 2, name: /Spaghetti integral/ })).toBeVisible();
   });
+
+  expect(bloqueos).toEqual([]);
 });

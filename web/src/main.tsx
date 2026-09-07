@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { Recuperacion } from './componentes/Recuperacion';
 
 /**
  * Raíz de composición. Excluida de la cobertura (docs/TESTING.md): monta la aplicación
@@ -13,6 +14,8 @@ if (raiz === null) {
 
 createRoot(raiz).render(
   <StrictMode>
-    <App />
+    <Recuperacion>
+      <App />
+    </Recuperacion>
   </StrictMode>,
 );
