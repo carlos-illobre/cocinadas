@@ -1382,8 +1382,9 @@ h1 {
  */
 .por-que { margin: 12px 0 0; font-size: 16px; color: var(--ink); background: var(--soft); border-radius: 10px; padding: 10px 12px; line-height: 1.5; }
 .por-que b { color: var(--brand); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 6px; }
-.ayuda-paso { display: flex; justify-content: flex-end; margin-top: 14px; }
-.ayuda-paso .btn.ghost { width: 54px; height: 44px; padding: 0; }
+.etiquetas-fila { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.etiquetas-fila .etiquetas { flex: 1; margin: 0; }
+.etiquetas-fila .btn.ghost { width: 48px; height: 40px; padding: 0; flex: none; }
 .actions { display: flex; gap: 10px; margin-top: 10px; }
 .actions .btn { flex: 1; width: auto; height: 54px; padding: 0 16px; }
 .actions .btn.ghost { flex: 0 0 54px; padding: 0; }

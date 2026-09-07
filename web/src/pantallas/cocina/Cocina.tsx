@@ -267,24 +267,24 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
   
           {/* Qué cuida este paso —sabor, desperdicio, seguridad—, como en el prototipo: a la
               vista siempre; el texto largo que lo explica sigue detrás del «?». */}
-          <ul className="chips etiquetas" aria-label="Qué cuida este paso">
-            {paso.por_que.etiquetas.map((e) => (
-              <li key={e} className="chip">
-                {e}
-              </li>
-            ))}
-          </ul>
+          {/* Las etiquetas y el «?» que las explica, en la misma fila: el «?» a la derecha. */}
+          <div className="etiquetas-fila">
+            <ul className="chips etiquetas" aria-label="Qué cuida este paso">
+              {paso.por_que.etiquetas.map((e) => (
+                <li key={e} className="chip">
+                  {e}
+                </li>
+              ))}
+            </ul>
+              <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => setMostrarPorQue((v) => !v)}>
+              ?
+            </button>
+          </div>
   
           {mostrarPorQue && <p className="por-que">{paso.por_que.texto}</p>}
   
           {/* El orden del prototipo: reiniciar chico a la izquierda y «Listo» grande; el «?» es
               nuestro y va al final. */}
-          {/* El «?» en su propia fila, arriba: así «Listo» se queda con todo el ancho de abajo. */}
-          <div className="ayuda-paso">
-            <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => setMostrarPorQue((v) => !v)}>
-              ?
-            </button>
-          </div>
           <div className="actions">
             <button type="button" className="btn ghost" aria-label="Reiniciar el paso" title="Reiniciar el paso" onClick={accion(reiniciarPaso)}>
               ↺
