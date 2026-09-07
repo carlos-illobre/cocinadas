@@ -59,11 +59,12 @@ export function Riel({ estado, ahora }: { readonly estado: EstadoCocina; readonl
               <span className="dot">
                 <i />
               </span>
-              <span />
               <span className="n">{p.titulo}</span>
               <span className={d === null ? 'd' : `d ${d.signo === 'mas' ? 'plus' : d.signo === 'menos' ? 'minus' : ''}`.trimEnd()}>
                 {d === null ? reloj(p.duracion_s) : d.texto}
               </span>
+              {/* La columna vacía donde se dibuja el gantt, a la derecha del todo. */}
+              <span />
             </div>
           );
         })}
