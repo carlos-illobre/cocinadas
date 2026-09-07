@@ -10,3 +10,7 @@ afterEach(() => {
 // la app lo llama al cambiar de pantalla o de fase. Un doble mudo; las pruebas que
 // necesitan comprobar la llamada lo espían igual.
 window.scrollTo = vi.fn();
+
+// jsdom no decodifica imágenes; en el navegador `decode()` existe siempre. Las pruebas de
+// `FotoAmpliable` lo redefinen para decir si la grande llega o falla.
+Object.defineProperty(HTMLImageElement.prototype, 'decode', { value: () => Promise.resolve(), configurable: true, writable: true });
