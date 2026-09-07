@@ -474,8 +474,7 @@ describe('Cocina · final', () => {
     expect(filas[7]?.querySelector('.d')).toHaveClass('minus');
 
     // Guardar: manda la cocinada completa y cambia los botones.
-    expect(screen.getByRole('button', { name: 'Salir sin guardar' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
+    // Se guarda sola al llegar, una sola vez, sin botón.
     expect(c.alGuardar).toHaveBeenCalledTimes(1);
     const guardada = c.alGuardar.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(guardada).toMatchObject({
@@ -495,7 +494,7 @@ describe('Cocina · final', () => {
     expect(screen.getByLabelText('Desglose de XP')).toHaveTextContent(`Pasos a tiempo+${aTiempo * 10}`);
     expect((guardada.etapas as unknown[]).length).toBe(2);
     expect(screen.getByText('✓ Guardada en este teléfono. Se ve en Progreso.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Guardar esta cocinada' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Guardar|Salir/ })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Ver el progreso' }));
     expect(c.alTerminar).toHaveBeenCalledTimes(1);
@@ -539,7 +538,8 @@ describe('Cocina · final', () => {
     expect(desglose.querySelector('.fila.apagada')).toHaveTextContent('Bonus por tiempo');
     expect(desglose).toHaveTextContent('Pasos a tiempo+30');
     expect(desglose).toHaveTextContent('Total+230');
-    expect(screen.queryByLabelText('Logros conseguidos')).not.toBeInTheDocument();
+    // Como se guarda al llegar, el primer logro ya está.
+    expect(screen.getByLabelText('Logros conseguidos')).toHaveTextContent('Primera receta');
   });
 
   it('al guardar muestra los logros que desbloqueó esa cocinada', () => {
@@ -549,7 +549,6 @@ describe('Cocina · final', () => {
     c.listo();
 
     verResultados();
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
 
     const logros = screen.getByLabelText('Logros conseguidos');
     expect(logros).toHaveTextContent('Primera receta');
@@ -566,7 +565,6 @@ describe('Cocina · final', () => {
     c.listo();
 
     verResultados();
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
 
     const logros = screen.getByLabelText('Logros conseguidos');
     expect(logros.querySelectorAll('li')).toHaveLength(2);
@@ -607,14 +605,15 @@ describe('Cocina · final', () => {
     expect(c.almacen.datos.get(CLAVE_EN_CURSO)).toBe('');
   });
 
-  it('se puede salir sin guardar', () => {
+  it('se guarda sola al llegar y solo queda ver el progreso', () => {
     const c = armar(recetaUnaEtapa);
     c.listo();
     c.listo();
     c.listo();
     verResultados();
-    fireEvent.click(screen.getByRole('button', { name: 'Salir sin guardar' }));
-    expect(c.alGuardar).not.toHaveBeenCalled();
+    // Ya no hay forma de salir sin guardar: al llegar ya se guardó.
+    expect(c.alGuardar).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Ver el progreso' }));
     expect(c.alTerminar).toHaveBeenCalledTimes(1);
   });
 

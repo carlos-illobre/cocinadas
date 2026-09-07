@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { reloj } from '../../api';
 import type { Cocinada } from '../../historial/almacen';
 import {
@@ -26,30 +26,39 @@ export function Final({
   readonly fecha: () => string;
 }): React.JSX.Element {
   const r = resumen(estado);
-  const [guardada, setGuardada] = useState<Cocinada | null>(null);
   const [papelitos] = useState(() => confeti(40));
+  // La cocinada se arma una sola vez, al llegar: la fecha es la de ese momento.
+  const [cocinada] = useState<Omit<Cocinada, 'id'>>(() => ({
+    plato: estado.receta.plato,
+    nombre: estado.receta.nombre,
+    version: { clave: estado.receta.version.clave, titulo: estado.receta.version.titulo },
+    fecha: fecha(),
+    total_previsto_s: r.total_previsto_s,
+    total_real_s: r.total_real_s,
+    etapas: r.etapas.map((e) => ({ nombre: e.nombre, previsto_s: e.previsto_s, real_s: e.real_s })),
+    pasos: r.etapas.flatMap((e) => e.pasos),
+    criticos: r.criticos,
+    criticosATiempo: r.criticosATiempo,
+  }));
+  // El id lo pone quien guarda; para los logros alcanza con uno provisorio.
+  const guardada: Cocinada = { ...cocinada, id: 'recien-guardada' };
+  // Las cocinadas anteriores, congeladas al llegar: contra esas se calcula qué logro es
+  // nuevo. Si se leyera la prop, al guardar esta ya estaría adentro y no sería «nueva».
+  const [previas] = useState(cocinadas);
 
-  // El festejo suena una sola vez, al llegar.
+  // Se guarda siempre, sola, al llegar. Una sola vez: `alGuardar` cambia de identidad en
+  // cada render de App, y sin la guarda el efecto la guardaría de nuevo con otro id.
+  const yaGuardada = useRef(false);
   useEffect(() => {
-    avisador.festejo();
-  }, [avisador]);
-
-  const guardar = () => {
-    const cocinada: Omit<Cocinada, 'id'> = {
-      plato: estado.receta.plato,
-      nombre: estado.receta.nombre,
-      version: { clave: estado.receta.version.clave, titulo: estado.receta.version.titulo },
-      fecha: fecha(),
-      total_previsto_s: r.total_previsto_s,
-      total_real_s: r.total_real_s,
-      etapas: r.etapas.map((e) => ({ nombre: e.nombre, previsto_s: e.previsto_s, real_s: e.real_s })),
-      pasos: r.etapas.flatMap((e) => e.pasos),
-      criticos: r.criticos,
-      criticosATiempo: r.criticosATiempo };
+    if (yaGuardada.current) {
+      return;
+    }
+    yaGuardada.current = true;
     alGuardar(cocinada);
-    setGuardada({ ...cocinada, id: 'recien-guardada' });
-  };
-  const nuevos = guardada === null ? [] : logrosNuevos(cocinadas, guardada);
+    avisador.festejo();
+  }, [alGuardar, avisador, cocinada]);
+
+  const nuevos = logrosNuevos(previas, guardada);
   const x = desgloseDe({ total_previsto_s: r.total_previsto_s, total_real_s: r.total_real_s, pasos: r.etapas.flatMap((e) => e.pasos) });
   return (
     // El confeti va afuera del <main> y no adentro: cubre la ventana entera con
@@ -93,6 +102,14 @@ export function Final({
             <b>+{x.total}</b>
           </p>
         </section>
+        {/* Guardada y el botón para seguir van arriba del paso a paso: es lo que se busca al
+            terminar, y el paso a paso es largo. */}
+        <div className="cta">
+          <p className="over-note ok">✓ Guardada en este teléfono. Se ve en Progreso.</p>
+          <button type="button" className="btn primary" onClick={alVolver}>
+            Ver el progreso
+          </button>
+        </div>
         <section className="rail" aria-label="Paso a paso">
           <p className="eyebrow">
             Paso a paso <span>previsto → real</span>
@@ -134,18 +151,6 @@ export function Final({
             </ul>
           </section>
         )}
-        <div className="cta">
-          {guardada !== null ? (
-            <p className="over-note ok">✓ Guardada en este teléfono. Se ve en Progreso.</p>
-          ) : (
-            <button type="button" className="btn primary" onClick={guardar}>
-              Guardar esta cocinada
-            </button>
-          )}
-          <button type="button" className={guardada !== null ? 'btn primary' : 'btn ghost ancho'} onClick={alVolver}>
-            {guardada !== null ? 'Ver el progreso' : 'Salir sin guardar'}
-          </button>
-        </div>
       </main>
     </>
   );
