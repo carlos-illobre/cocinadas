@@ -74,7 +74,8 @@ test('los avisos suenan al confirmar un paso y al terminar la cocinada', async (
     for (let i = 0; i < 30 && (await siguiente.count()) > 0; i++) {
       await siguiente.first().click();
     }
-    await expect(page.getByText(/^Plato listo · /)).toBeVisible();
+    await page.getByRole('button', { name: 'Ver resultados 🏆' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: '¡Receta completada!' })).toBeVisible();
 
     // Do, mi, sol, do: las últimas cuatro notas son el festejo, después del toque del
     // último paso.
