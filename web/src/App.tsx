@@ -101,6 +101,15 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
     return () => window.removeEventListener('popstate', atrasDelTelefono);
   }, [almacen]);
 
+  // Cada pantalla arranca arriba. Todas viven en el mismo documento —la app nunca cambia
+  // de página— así que sin esto el navegador conserva el desplazamiento: al terminar la
+  // cocinada, que se juega al pie de una línea de tiempo larga, la pantalla de victoria
+  // aparecía ya desplazada hasta abajo, con el festejo y el confeti arriba de todo, fuera
+  // de la vista.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pantalla.nombre]);
+
   // El navegador solo deja sonar después de un gesto. Al retomar una cocinada no se pasa
   // por «Entrar», así que el avisador se crea con el primer toque, sea el que sea: sin
   // esto, una cocinada retomada se queda sin alarmas.

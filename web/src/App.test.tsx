@@ -252,6 +252,23 @@ describe('el recorrido de la app', () => {
     await screen.findByRole('button', { name: /Spaghetti/ });
   });
 
+  it('cada pantalla arranca arriba', () => {
+    // Todas viven en el mismo documento, así que el desplazamiento no se reinicia solo.
+    // Se nota al terminar la cocinada: el resumen aparecía al pie de la línea de tiempo,
+    // con el festejo fuera de la vista.
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    montar();
+    scrollTo.mockClear();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar sin cuenta' }));
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+
+    scrollTo.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'Progreso' }));
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+    scrollTo.mockRestore();
+  });
+
   it('arranca con las cocinadas ya guardadas en el teléfono y su experiencia', () => {
     const cocinada = { id: 'x', plato: 'p', nombre: 'Plato p', version: { clave: 'c', titulo: 'T' }, fecha: '2026-09-05T10:00:00Z', total_previsto_s: 100, total_real_s: 90, etapas: [], pasos: [], criticos: 0, criticosATiempo: 0 };
     montar({ almacen: memoria({ [CLAVE_HISTORIAL]: JSON.stringify([cocinada]) }) });

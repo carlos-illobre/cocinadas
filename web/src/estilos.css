@@ -117,8 +117,14 @@ body {
    *
    * Va en la clase que comparten todas las pantallas y no en cada una: la animación se
    * dispara al montar, y App cambia de componente en cada navegación.
+   *
+   * Sin `both`, a propósito: ese modo deja aplicado el `transform` del último fotograma
+   * para siempre, y un elemento con `transform` pasa a ser el bloque contenedor de sus
+   * descendientes `position: fixed`. Con `both` el confeti del final —que es `fixed` e
+   * `inset: 0`— quedaba anclado a la pantalla en vez de a la ventana y caía fuera de lo
+   * visible. Sin fill-mode el `transform` existe solo mientras dura la animación.
    */
-  animation: entrar-pantalla 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: entrar-pantalla 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes entrar-pantalla {

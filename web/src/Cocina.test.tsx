@@ -267,6 +267,19 @@ describe('Cocina · fin de etapa y etapa crítica', () => {
     expect(screen.getByText('0:00', { selector: '.clock' })).toBeInTheDocument();
   });
 
+  it('cada cambio de fase vuelve arriba de la pantalla', () => {
+    // Alarma, fin de etapa y final son fases de este mismo componente, no pantallas de
+    // App: sin esto el resumen aparece al pie de la línea de tiempo, donde uno venía
+    // mirando, y el festejo queda fuera de la vista.
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const c = armar();
+    scrollTo.mockClear();
+
+    terminarEtapa1(c);
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+    scrollTo.mockRestore();
+  });
+
   it('una etapa terminada justo a tiempo lo dice, y pasada de tiempo también', () => {
     const c = armar(recetaUnaEtapa);
     // Una sola etapa: no hay pausa, así que se prueba con la de dos etapas y tiempos exactos.
