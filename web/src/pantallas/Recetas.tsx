@@ -1,38 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { BASE_CATALOGO, listarRecetas, minutos, versionesOrdenadas, type Fetch, type RecetaResumen } from '../api';
 import { BarraXp } from '../componentes/BarraXp';
+import { useCarga } from '../ganchos/useCarga';
 
-export interface PropiedadesRecetas {
+interface PropiedadesRecetas {
   readonly fetchImpl: Fetch;
   /** La experiencia acumulada, para la barra de nivel de la cabecera. */
   readonly xp: number;
   readonly alElegir: (receta: RecetaResumen) => void;
 }
 
-type Carga = { readonly estado: 'cargando' } | { readonly estado: 'error'; readonly detalle: string } | { readonly estado: 'lista'; readonly recetas: readonly RecetaResumen[] };
-
 /**
- * La pantalla de inicio: cabecera oscura con el saludo y la
- * barra de experiencia, y una tarjeta grande por plato, con su foto a sangre y los
+ * Las recetas: cabecera oscura con el saludo y la barra de experiencia, y una tarjeta grande por plato, con su foto a sangre y los
  * datos en chips sobre la foto. Tocar la tarjeta abre la receta.
  */
 export function Recetas({ fetchImpl, xp, alElegir }: PropiedadesRecetas): React.JSX.Element {
-  const [carga, setCarga] = useState<Carga>({ estado: 'cargando' });
-
-  useEffect(() => {
-    let vigente = true;
-    listarRecetas(fetchImpl).then(
-      (recetas) => {
-        if (vigente) setCarga({ estado: 'lista', recetas });
-      },
-      (error: unknown) => {
-        if (vigente) setCarga({ estado: 'error', detalle: error instanceof Error ? error.message : String(error) });
-      },
-    );
-    return () => {
-      vigente = false;
-    };
-  }, [fetchImpl]);
+  const carga = useCarga(useCallback(() => listarRecetas(fetchImpl), [fetchImpl]));
 
   return (
     <main className="pantalla inicio-recetas">
@@ -45,7 +28,7 @@ export function Recetas({ fetchImpl, xp, alElegir }: PropiedadesRecetas): React.
       <div className="cuerpo">
         <div className="fila-titulo">
           <h2>Recetas</h2>
-          {carga.estado === 'lista' && <span>{carga.recetas.length === 1 ? '1 disponible' : `${carga.recetas.length} disponibles`}</span>}
+          {carga.estado === 'lista' && <span>{carga.datos.length === 1 ? '1 disponible' : `${carga.datos.length} disponibles`}</span>}
         </div>
 
         {carga.estado === 'cargando' && <p role="status">Buscando recetas…</p>}
@@ -56,7 +39,7 @@ export function Recetas({ fetchImpl, xp, alElegir }: PropiedadesRecetas): React.
         )}
         {carga.estado === 'lista' && (
           <ul className="lista-recetas">
-            {carga.recetas.map((r) => (
+            {carga.datos.map((r) => (
               <li key={r.plato}>
                 <TarjetaReceta resumen={r} alElegir={() => alElegir(r)} />
               </li>

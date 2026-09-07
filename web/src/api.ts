@@ -19,7 +19,7 @@ export type Fetch = (url: string) => Promise<{ readonly ok: boolean; readonly st
  */
 export const BASE_CATALOGO = 'api/catalogo';
 
-export interface VersionResumen {
+interface VersionResumen {
   readonly numero: number;
   readonly clave: string;
   readonly titulo: string;
@@ -40,7 +40,7 @@ export interface RecetaResumen {
   readonly versiones: readonly VersionResumen[];
 }
 
-export interface Ingrediente {
+interface Ingrediente {
   readonly id: string | null;
   readonly nombre: string;
   readonly cantidad: string;
@@ -50,7 +50,7 @@ export interface Ingrediente {
   readonly foto_grande: string | null;
 }
 
-export interface Utensilio {
+interface Utensilio {
   readonly id: string | null;
   readonly nombre: string;
   readonly uso: string;

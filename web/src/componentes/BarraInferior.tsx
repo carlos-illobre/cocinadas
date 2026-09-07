@@ -1,10 +1,11 @@
 export type Pestana = 'recetas' | 'historial' | 'perfil';
 
-export interface PropiedadesBarra {
+interface PropiedadesBarra {
   readonly activa: Pestana;
   readonly alElegir: (pestana: Pestana) => void;
 }
 
+/** Las tres pestañas, con su ícono. */
 const PESTANAS: readonly { readonly valor: Pestana; readonly nombre: string; readonly icono: string }[] = [
   { valor: 'recetas', nombre: 'Recetas', icono: '\u{1F3E0}' },
   { valor: 'historial', nombre: 'Progreso', icono: '\u{1F4CA}' },

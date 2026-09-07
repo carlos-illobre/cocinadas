@@ -62,53 +62,67 @@ function nota(ctx: ContextoAudio, frecuencia: number, desde_s: number, duracion_
   osc.stop(t0 + duracion_s + 0.02);
 }
 
+interface Nota {
+  readonly frecuencia: number;
+  readonly desde_s: number;
+  readonly duracion_s: number;
+  readonly volumen: number;
+  readonly tipo: string;
+}
+
+interface Aviso {
+  readonly notas: readonly Nota[];
+  readonly vibracion: number | readonly number[] | null;
+}
+
+/** Cada aviso son sus notas y su vibración; el resto es tocarlas. */
+const AVISOS: Readonly<Record<keyof Avisador, Aviso>> = {
+  toque: { notas: [{ frecuencia: 660, desde_s: 0, duracion_s: 0.07, volumen: 0.18, tipo: 'sine' }], vibracion: null },
+  suave: {
+    notas: [
+      { frecuencia: 880, desde_s: 0, duracion_s: 0.12, volumen: 0.3, tipo: 'sine' },
+      { frecuencia: 1175, desde_s: 0.13, duracion_s: 0.16, volumen: 0.3, tipo: 'sine' },
+    ],
+    vibracion: 120,
+  },
+  // Dos tonos que se alternan, como un despertador: se oyen sobre el ruido de la cocina.
+  fuerte: {
+    notas: [988, 1319, 988, 1319].map((frecuencia, i) => ({ frecuencia, desde_s: i * 0.2, duracion_s: 0.16, volumen: 0.55, tipo: 'triangle' })),
+    vibracion: [300, 120, 300, 120, 300],
+  },
+  // Do, mi, sol, do: sube y cierra arriba, que es como suena un festejo.
+  festejo: {
+    notas: [523, 659, 784, 1047].map((frecuencia, i) => ({ frecuencia, desde_s: i * 0.11, duracion_s: i === 3 ? 0.5 : 0.14, volumen: 0.35, tipo: 'sine' })),
+    vibracion: [80, 60, 80, 60, 200],
+  },
+};
+
 /**
- * Crea el avisador. Si el navegador no tiene AudioContext (o falla al crearlo), devuelve
+ * Crea el avisador. Si el navegador no tiene AudioContext (o falla al crearlo), queda
  * uno mudo: la app sigue funcionando con las alertas visuales y la vibración.
  */
 export function crearAvisador(
   Contexto: (new () => ContextoAudio) | undefined,
   vibrar: ((patron: number | readonly number[]) => unknown) | undefined,
 ): Avisador {
-  if (Contexto === undefined) {
-    return {
-      toque: () => undefined,
-      suave: () => vibrar?.(120),
-      fuerte: () => vibrar?.([300, 120, 300, 120, 300]),
-      festejo: () => vibrar?.([80, 60, 80, 60, 200]),
-    };
-  }
-  const ctx = new Contexto();
-  const despertar = (): void => {
-    if (ctx.state === 'suspended') {
-      void ctx.resume();
+  const ctx = Contexto === undefined ? null : new Contexto();
+  const tocar = ({ notas, vibracion }: Aviso): void => {
+    if (ctx !== null) {
+      // El contexto arranca suspendido hasta un gesto; se reanuda al primer aviso.
+      if (ctx.state === 'suspended') {
+        void ctx.resume();
+      }
+      notas.forEach((n) => nota(ctx, n.frecuencia, n.desde_s, n.duracion_s, n.volumen, n.tipo));
+    }
+    if (vibracion !== null) {
+      vibrar?.(vibracion);
     }
   };
   return {
-    toque() {
-      despertar();
-      nota(ctx, 660, 0, 0.07, 0.18, 'sine');
-    },
-    suave() {
-      despertar();
-      nota(ctx, 880, 0, 0.12, 0.3, 'sine');
-      nota(ctx, 1175, 0.13, 0.16, 0.3, 'sine');
-      vibrar?.(120);
-    },
-    fuerte() {
-      // Dos tonos que se alternan, como un despertador: se oyen sobre el ruido de la cocina.
-      despertar();
-      for (let i = 0; i < 4; i += 1) {
-        nota(ctx, i % 2 === 0 ? 988 : 1319, i * 0.2, 0.16, 0.55, 'triangle');
-      }
-      vibrar?.([300, 120, 300, 120, 300]);
-    },
-    festejo() {
-      // Do, mi, sol, do: sube y cierra arriba, que es como suena un festejo.
-      despertar();
-      [523, 659, 784, 1047].forEach((f, i) => nota(ctx, f, i * 0.11, i === 3 ? 0.5 : 0.14, 0.35, 'sine'));
-      vibrar?.([80, 60, 80, 60, 200]);
-    },
+    toque: () => tocar(AVISOS.toque),
+    suave: () => tocar(AVISOS.suave),
+    fuerte: () => tocar(AVISOS.fuerte),
+    festejo: () => tocar(AVISOS.festejo),
   };
 }
 

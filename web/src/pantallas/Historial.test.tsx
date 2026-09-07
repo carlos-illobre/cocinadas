@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { Grafico, Historial } from './Historial';
+import { Grafico } from './Grafico';
+import { Historial } from './Historial';
 import { progresoPorReceta, type Cocinada } from '../historial/almacen';
 
 function cocinada(id: string, fecha: string, real: number, plato = 'pasta', extra: Partial<Cocinada> = {}): Cocinada {

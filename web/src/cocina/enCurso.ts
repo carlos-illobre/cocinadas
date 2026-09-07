@@ -1,5 +1,5 @@
 import type { Receta } from '../api';
-import type { Almacen } from '../historial/almacen';
+import { leerJson, type Almacen } from '../historial/almacen';
 import type { EstadoCocina } from './modelo';
 
 /**
@@ -58,16 +58,7 @@ function esObjeto(x: unknown): x is Record<string, unknown> {
  * confiar. Lo demás del estado sigue siendo palabra de quien lo guardó.
  */
 function leerGuardado(almacen: Almacen, ahora: number): Guardado | null {
-  const crudo = almacen.getItem(CLAVE_EN_CURSO);
-  if (crudo === null || crudo === '') {
-    return null;
-  }
-  let datos: unknown;
-  try {
-    datos = JSON.parse(crudo);
-  } catch {
-    return null;
-  }
+  const datos = leerJson(almacen, CLAVE_EN_CURSO);
   if (!esObjeto(datos) || typeof datos.guardadoEn_ms !== 'number' || !esObjeto(datos.estado)) {
     return null;
   }

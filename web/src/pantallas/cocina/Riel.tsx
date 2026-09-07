@@ -1,17 +1,9 @@
 import { reloj } from '../../api';
-import {
-  desvio,
-  etapaActual,
-  frenteGantt,
-  gantt,
-  type EstadoCocina,
-  type FilaGantt,
-  type PasoHecho } from '../../cocina/modelo';
+import { etapaActual, type EstadoCocina, type PasoHecho } from '../../cocina/modelo';
+import { CLASE_DESVIO, desvio } from '../../cocina/resumen';
+import { frenteGantt, gantt, type FilaGantt } from '../../cocina/gantt';
 
 /** La línea de tiempo de la etapa, con sus carriles. */
-
-
-
 export function Riel({ estado, ahora }: { readonly estado: EstadoCocina; readonly ahora: number }): React.JSX.Element {
   const etapa = etapaActual(estado);
   const hechos = estado.hechos[estado.etapa] as readonly PasoHecho[];
@@ -60,9 +52,7 @@ export function Riel({ estado, ahora }: { readonly estado: EstadoCocina; readonl
                 <i />
               </span>
               <span className="n">{p.titulo}</span>
-              <span className={d === null ? 'd' : `d ${d.signo === 'mas' ? 'plus' : d.signo === 'menos' ? 'minus' : ''}`.trimEnd()}>
-                {d === null ? reloj(p.duracion_s) : d.texto}
-              </span>
+              <span className={d === null ? 'd' : `d ${CLASE_DESVIO[d.signo]}`.trimEnd()}>{d === null ? reloj(p.duracion_s) : d.texto}</span>
               {/* La columna vacía donde se dibuja el gantt, a la derecha del todo. */}
               <span />
             </div>

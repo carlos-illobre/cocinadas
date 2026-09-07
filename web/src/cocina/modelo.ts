@@ -14,7 +14,7 @@ export interface PasoHecho {
   readonly critico: boolean;
 }
 
-export interface ProcesoEnCurso {
+interface ProcesoEnCurso {
   readonly proceso: Proceso;
   readonly inicio_ms: number;
   readonly duracion_s: number;
@@ -22,7 +22,7 @@ export interface ProcesoEnCurso {
   readonly avisado: boolean;
 }
 
-export type Fase = 'cocinando' | 'alarma' | 'fin-etapa' | 'fin';
+type Fase = 'cocinando' | 'alarma' | 'fin-etapa' | 'fin';
 
 export interface EstadoCocina {
   readonly receta: Receta;
@@ -131,7 +131,7 @@ export function empezarEtapa(estado: EstadoCocina, ahora: number): EstadoCocina 
   return { ...estado, fase: 'cocinando', etapa: estado.etapa + 1, paso: 0, inicioEtapa_ms: ahora, inicioPaso_ms: ahora, subpasos: [] };
 }
 
-export function vencimiento_ms(p: ProcesoEnCurso): number {
+function vencimiento_ms(p: ProcesoEnCurso): number {
   return p.inicio_ms + p.duracion_s * 1000;
 }
 
@@ -234,127 +234,4 @@ export function esperaPrevia_s(estado: EstadoCocina, ahora: number): number {
 
 export function transcurridoEtapa_s(estado: EstadoCocina, ahora: number): number {
   return segundos(estado.inicioEtapa_ms, ahora);
-}
-
-/** Una fila del gantt: un paso, con su lugar y su alto en píxeles. */
-export interface FilaGantt {
-  readonly paso: Paso;
-  readonly top: number;
-  readonly alto: number;
-  /**
-   * Alto de la barra de manos dentro de la fila. Es menor que `alto` cuando la receta
-   * deja un hueco entre este paso y el siguiente: ese hueco es tiempo de la etapa en el
-   * que las manos están libres.
-   */
-  readonly altoBarra: number;
-}
-
-/** Un proceso dibujado como barra paralela, en el mismo eje de tiempo que las filas. */
-export interface CarrilGantt {
-  readonly proceso: Proceso;
-  readonly top: number;
-  readonly alto: number;
-}
-
-export interface Gantt {
-  readonly filas: readonly FilaGantt[];
-  readonly carriles: readonly CarrilGantt[];
-  readonly alto: number;
-}
-
-/** Un paso corto igual tiene que dejar leer su título: por debajo de esto no se achica. */
-export const ALTO_MINIMO_FILA = 46;
-export const PIXELES_POR_SEGUNDO = 0.62;
-
-/**
- * El gantt de la etapa, en vertical: el tiempo corre hacia abajo, cada paso es una barra
- * de manos y cada proceso una barra paralela. La escala es proporcional al tiempo salvo
- * en los pasos muy cortos, que se estiran hasta el mínimo legible; por eso los procesos
- * se ubican con la misma regla que las filas y no con una regla lineal aparte.
- */
-export function gantt(etapa: Etapa): Gantt {
-  let top = 0;
-  const filas = etapa.pasos.map((paso, i) => {
-    const siguiente = etapa.pasos[i + 1];
-    const hasta_s = siguiente === undefined ? paso.inicio_s + paso.duracion_s : siguiente.inicio_s;
-    const abarca_s = Math.max(1, hasta_s - paso.inicio_s);
-    const alto = Math.max(ALTO_MINIMO_FILA, Math.round(abarca_s * PIXELES_POR_SEGUNDO));
-    const fila = { paso, top, alto, altoBarra: Math.max(12, Math.round((alto * paso.duracion_s) / abarca_s)) };
-    top += alto;
-    return fila;
-  });
-
-  const primera = filas[0];
-  const ultima = filas[filas.length - 1];
-  /** Un segundo de la etapa, llevado a píxeles con la misma escala que las filas. */
-  const y = (s: number): number => {
-    if (primera === undefined || ultima === undefined) {
-      return 0;
-    }
-    for (let i = 0; i < filas.length; i += 1) {
-      const f = filas[i] as FilaGantt;
-      const siguiente = etapa.pasos[i + 1];
-      const hasta_s = siguiente === undefined ? f.paso.inicio_s + f.paso.duracion_s : siguiente.inicio_s;
-      if (s <= hasta_s) {
-        const abarca_s = Math.max(1, hasta_s - f.paso.inicio_s);
-        return f.top + Math.max(0, Math.min(1, (s - f.paso.inicio_s) / abarca_s)) * f.alto;
-      }
-    }
-    return ultima.top + ultima.alto;
-  };
-
-  const carriles = etapa.procesos.map((proceso) => {
-    const top = y(proceso.inicio_s);
-    return { proceso, top, alto: Math.max(12, y(proceso.fin_s) - top) };
-  });
-
-  return { filas, carriles, alto: top };
-}
-
-/**
- * Hasta dónde llegó la cocinada dentro del gantt, en píxeles. Es lo que se pinta de
- * verde: todo lo de arriba está hecho y el paso actual va llenándose con su cronómetro.
- */
-export function frenteGantt(estado: EstadoCocina, ahora: number, g: Gantt): number {
-  const fila = g.filas[estado.paso];
-  if (fila === undefined) {
-    return g.alto;
-  }
-  const p = progresoPaso(estado, ahora);
-  const avance = p.previsto_s === 0 ? 1 : Math.min(1, p.transcurrido_s / p.previsto_s);
-  return fila.top + avance * fila.altoBarra;
-}
-
-export interface Resumen {
-  readonly total_previsto_s: number;
-  readonly total_real_s: number;
-  readonly etapas: readonly { readonly nombre: string; readonly previsto_s: number; readonly real_s: number; readonly pasos: readonly PasoHecho[] }[];
-  readonly criticos: number;
-  readonly criticosATiempo: number;
-}
-
-export function resumen(estado: EstadoCocina): Resumen {
-  const etapas = estado.receta.etapas.map((e, i) => ({
-    nombre: e.nombre,
-    previsto_s: e.duracion_s,
-    real_s: estado.etapasReales_s[i] ?? 0,
-    pasos: estado.hechos[i] as readonly PasoHecho[],
-  }));
-  const pasos = etapas.flatMap((e) => e.pasos);
-  const criticos = pasos.filter((p) => p.critico);
-  return {
-    total_previsto_s: estado.receta.tiempo_total_s,
-    total_real_s: etapas.reduce((t, e) => t + e.real_s, 0),
-    etapas,
-    criticos: criticos.length,
-    criticosATiempo: criticos.filter((p) => p.real_s <= p.previsto_s).length,
-  };
-}
-
-/** «+0:12», «−0:06» o «0:00», para las columnas de desvío. */
-export function desvio(previsto_s: number, real_s: number, reloj: (s: number) => string): { readonly texto: string; readonly signo: 'mas' | 'menos' | 'igual' } {
-  const d = real_s - previsto_s;
-  if (d > 0) return { texto: `+${reloj(d)}`, signo: 'mas' };
-  if (d < 0) return { texto: `−${reloj(-d)}`, signo: 'menos' };
-  return { texto: reloj(0), signo: 'igual' };
 }

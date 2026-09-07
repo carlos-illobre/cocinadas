@@ -3,7 +3,7 @@ import type { Cocinada } from '../historial/almacen';
 /**
  * La experiencia (XP) y los niveles.
  *
- * El criterio, adoptado con la pantalla de resultados: una
+ * El criterio: una
  * cocinada suma un fijo por completarla, un bonus si el total quedó dentro del margen
  * del tiempo previsto, y un tanto por cada paso que no se pasó de su tiempo. Está
  * confirmado por Carlos (CLAUDE.md); cambiarlo no tocaría nada guardado, porque la
@@ -36,9 +36,9 @@ export function progresoNivel(xp: number): number {
   return Math.min(100, Math.max(0, Math.round(recorrido * 100)));
 }
 
-export const PUNTOS_POR_COMPLETAR = 200;
-export const BONUS_EN_TIEMPO = 100;
-export const PUNTOS_POR_PASO_A_TIEMPO = 10;
+const PUNTOS_POR_COMPLETAR = 200;
+const BONUS_EN_TIEMPO = 100;
+const PUNTOS_POR_PASO_A_TIEMPO = 10;
 
 /**
  * Dentro de este margen del tiempo previsto, por arriba o por abajo, el total se
@@ -54,7 +54,7 @@ export function enTiempo(c: Pick<Cocinada, 'total_previsto_s' | 'total_real_s'>)
   return Math.abs(c.total_real_s - c.total_previsto_s) / c.total_previsto_s <= MARGEN_EN_TIEMPO;
 }
 
-export interface DesgloseXp {
+interface DesgloseXp {
   readonly completada: number;
   readonly bonusEnTiempo: number;
   readonly pasosATiempo: number;
