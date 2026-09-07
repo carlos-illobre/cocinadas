@@ -188,40 +188,44 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
           </button>
         </section>
       ) : (
-        <section className={critica ? 'now hot' : 'now'} aria-labelledby="titulo-paso">
+        <section className={progreso.exceso_s > 0 ? 'now pasado' : 'now'} aria-labelledby="titulo-paso">
           <div className="hd">
             <span className="eyebrow">{esperaPrevia > 0 ? 'Todavía no · empieza en' : paso.espera ? 'Espera · preparate' : 'Ahora · con las manos'}</span>
             <span className="plan">
               {reloj(paso.inicio_s)} → {reloj(paso.inicio_s + paso.duracion_s)}
             </span>
           </div>
+          {/* La cajita del cronómetro a la derecha del título, como en el prototipo: verde
+              mientras se está en tiempo, roja y latiendo pasado. Debajo del número va la
+              meta —el previsto— y no «transcurrido»: es contra eso que se mide. */}
           <div className="ttl">
             {fotoPaso !== null && <img className="ph" src={fotoPaso} alt="" />}
             <h2 id="titulo-paso">{paso.titulo}</h2>
-          </div>
-  
-          {esperaPrevia > 0 ? (
-            <div className="big">
-              {reloj(esperaPrevia)}
-              <small>para empezar este paso</small>
-            </div>
-          ) : paso.espera && vence !== null ? (
-            <div className="big">
-              {reloj(vence)}
-              <small>para que venza lo que corre</small>
-            </div>
-          ) : (
-            <div className="big">
-              {reloj(progreso.transcurrido_s)}
-              {progreso.exceso_s > 0 ? (
-                <span className="over">+{reloj(progreso.exceso_s)}</span>
+            <div className="cronometro">
+              {esperaPrevia > 0 ? (
+                <>
+                  <b>{reloj(esperaPrevia)}</b>
+                  <small>para empezar este paso</small>
+                </>
+              ) : paso.espera && vence !== null ? (
+                <>
+                  <b>{reloj(vence)}</b>
+                  <small>para que venza lo que corre</small>
+                </>
               ) : (
-                <small className="meta">
-                  de <b>{reloj(progreso.previsto_s)}</b> previstos
-                </small>
+                <>
+                  <b>{reloj(progreso.transcurrido_s)}</b>
+                  {progreso.exceso_s > 0 ? (
+                    <span className="over">+{reloj(progreso.exceso_s)}</span>
+                  ) : (
+                    <small>
+                      de <strong>{reloj(progreso.previsto_s)}</strong> previstos
+                    </small>
+                  )}
+                </>
               )}
             </div>
-          )}
+          </div>
   
           <div className="track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progreso.previsto_pct)}>
             <i style={{ width: `${progreso.previsto_pct}%` }} />
@@ -263,12 +267,14 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
   
           {mostrarPorQue && <p className="por-que">{paso.por_que.texto}</p>}
   
+          {/* El orden del prototipo: reiniciar chico a la izquierda y «Listo» grande; el «?» es
+              nuestro y va al final. */}
           <div className="actions">
-            <button type="button" className={critica ? 'btn hot' : 'btn primary'} onClick={accion(listo, true)}>
-              {esperaPrevia > 0 ? 'Ya lo hice ✓' : paso.espera ? 'Seguir ✓' : 'Listo, siguiente ✓'}
-            </button>
             <button type="button" className="btn ghost" aria-label="Reiniciar el paso" title="Reiniciar el paso" onClick={accion(reiniciarPaso)}>
               ↺
+            </button>
+            <button type="button" className="btn listo" onClick={accion(listo, true)}>
+              {esperaPrevia > 0 ? 'Ya lo hice ✓' : paso.espera ? 'Seguir ✓' : progreso.exceso_s > 0 ? 'Listo (con demora) ✓' : 'Listo, siguiente ✓'}
             </button>
             <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => setMostrarPorQue((v) => !v)}>
               ?

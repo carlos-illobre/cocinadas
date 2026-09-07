@@ -29,7 +29,8 @@ function armar(receta: Receta = recetaDosEtapas, almacen: Almacen & { datos: Map
       vi.advanceTimersByTime(segundos * 1000);
     });
   };
-  const listo = () => fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
+  // «Listo, siguiente» o «Listo (con demora)», según si el paso se pasó de tiempo.
+  const listo = () => fireEvent.click(screen.getByRole('button', { name: /^Listo|Seguir/ }));
   return { ...vista, almacen, avisador, alVolver, alTerminar, alGuardar, pasar, listo };
 }
 
@@ -60,7 +61,7 @@ describe('Cocina · etapa tranquila', () => {
     const { pasar } = armar();
     pasar(12);
     expect(screen.getByText('0:12', { selector: '.clock' })).toBeInTheDocument();
-    expect(document.querySelector('.big')).toHaveTextContent('de 0:30 previstos');
+    expect(document.querySelector('.cronometro')).toHaveTextContent('de 0:30 previstos');
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '40');
   });
 
@@ -71,6 +72,10 @@ describe('Cocina · etapa tranquila', () => {
     expect(document.querySelector('.track .ov')).toHaveStyle({ width: '25%' });
     expect(document.querySelector('.track .mk')).toHaveAttribute('data-t', '0:30');
     expect(screen.getByText('✓ Sin apuro: en esta etapa pasarse no cambia el plato')).toHaveClass('ok');
+    // La tarjeta entera late en rojo y el botón lo dice, como en el prototipo.
+    expect(document.querySelector('.now')).toHaveClass('pasado');
+    expect(screen.getByRole('button', { name: 'Listo (con demora) ✓' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Listo, siguiente ✓' })).not.toBeInTheDocument();
   });
 
   it('los sub-pasos se tildan y destildan', () => {
@@ -169,7 +174,7 @@ it('el gantt dibuja una barra por paso y un carril por proceso, y se va llenando
     listo();
     expect(screen.getByText('Espera · preparate')).toBeInTheDocument();
     expect(screen.getByText('para que venza lo que corre')).toBeInTheDocument();
-    expect(screen.getByText('7:30', { selector: '.big' })).toBeInTheDocument();
+    expect(screen.getByText('7:30', { selector: '.cronometro b' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Seguir ✓' })).toBeInTheDocument();
   });
 
@@ -205,12 +210,12 @@ it('el gantt dibuja una barra por paso y un carril por proceso, y se va llenando
     pasar(30);
     listo(); // p1 termina a los 30; p2 empieza a los 60: hueco de 30 s
     expect(screen.getByText('Todavía no · empieza en')).toBeInTheDocument();
-    expect(screen.getByText('0:30', { selector: '.big' })).toBeInTheDocument();
+    expect(screen.getByText('0:30', { selector: '.cronometro b' })).toBeInTheDocument();
     expect(screen.getByText('para empezar este paso')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ya lo hice ✓' })).toBeInTheDocument();
     pasar(31);
     expect(screen.getByText('Ahora · con las manos')).toBeInTheDocument();
-    expect(document.querySelector('.big')).toHaveTextContent('de 2:30 previstos');
+    expect(document.querySelector('.cronometro')).toHaveTextContent('de 2:30 previstos');
   });
 
   it('«Reiniciar el paso» vuelve el cronómetro a cero y destilda los sub-pasos, sin tocar los procesos', () => {
@@ -265,7 +270,8 @@ describe('Cocina · fin de etapa y etapa crítica', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Empezar Etapa 2' }));
     expect(screen.getByText('Etapa 2 · Cocción y plato')).toBeInTheDocument();
     expect(document.querySelector('main')).toHaveClass('critica');
-    expect(document.querySelector('.now')).toHaveClass('hot');
+    // La etapa crítica se nota en la cabecera; la tarjeta sigue verde mientras se esté en tiempo.
+    expect(document.querySelector('.now')).not.toHaveClass('pasado');
     expect(screen.getByText('0:00', { selector: '.clock' })).toBeInTheDocument();
   });
 
