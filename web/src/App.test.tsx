@@ -108,7 +108,6 @@ describe('el recorrido de la app', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Ver resultados 🏆' }));
     expect(screen.getByRole('heading', { level: 1, name: '¡Receta completada!' })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
     const guardadas = JSON.parse(almacen.datos.get(CLAVE_HISTORIAL) ?? '[]') as { id: string; plato: string }[];
     expect(guardadas).toHaveLength(1);
     expect(guardadas[0]).toMatchObject({ id: 'id-1', plato: 'spaghetti-integral-brocoli-camarones' });
@@ -301,8 +300,7 @@ describe('el recorrido de la app', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Empezar Etapa 2' }));
       for (let i = 0; i < 5; i += 1) fireEvent.click(screen.getByRole('button', { name: /Listo, siguiente|Seguir/ }));
       fireEvent.click(screen.getByRole('button', { name: 'Ver resultados 🏆' }));
-      fireEvent.click(screen.getByRole('button', { name: 'Guardar esta cocinada' }));
-      // Se guardó con el almacén y el id del navegador: aparece en Progreso.
+        // Se guardó con el almacén y el id del navegador: aparece en Progreso.
       fireEvent.click(screen.getByRole('button', { name: 'Ver el progreso' }));
       expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Spaghetti integral');
     } finally {

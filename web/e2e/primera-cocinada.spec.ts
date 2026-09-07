@@ -109,7 +109,7 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
     expect(caja?.y).toBe(0);
     await expect(page.getByLabel('Desglose de XP')).toContainText('Total');
 
-    await page.getByRole('button', { name: 'Guardar esta cocinada' }).click();
+    // Se guarda sola al llegar: no hay botón.
     await expect(page.getByText('Guardada en este teléfono', { exact: false })).toBeVisible();
   });
 
