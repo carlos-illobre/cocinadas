@@ -32,14 +32,14 @@ export const recetaDosEtapas: Receta = {
   tiempo_total_s: 1260,
   tiempo_total_texto: '11 + 10 min',
   utensilios: [
-    { id: 'wok-eternity-copper-30cm', nombre: 'Wok Eternity 30 cm con su tapa', uso: 'Todo lo del wok', foto: '/fotos/utensilios/wok-eternity-copper-30cm.jpg' },
-    { id: 'jarro-slow-fire-2l', nombre: 'Jarro hervidor Slow Fire 2 L', uso: 'Hervir la pasta', foto: null },
-    { id: null, nombre: '1 bol mediano', uso: 'Descongelar', foto: null },
+    { id: 'wok-eternity-copper-30cm', nombre: 'Wok Eternity 30 cm con su tapa', uso: 'Todo lo del wok', foto: '/fotos/utensilios/wok-eternity-copper-30cm.jpg', foto_grande: '/fotos/utensilios-grandes/wok-eternity-copper-30cm.jpg' },
+    { id: 'jarro-slow-fire-2l', nombre: 'Jarro hervidor Slow Fire 2 L', uso: 'Hervir la pasta', foto: null, foto_grande: null },
+    { id: null, nombre: '1 bol mediano', uso: 'Descongelar', foto: null, foto_grande: null },
   ],
   ingredientes: [
-    { id: 'brocoli-entero', nombre: 'Brócoli fresco entero', cantidad: '½ pieza', preparacion: 'Flores, tallo y hojas', foto: '/fotos/ingredientes/brocoli-entero.jpg' },
-    { id: 'ajo-picado-congelado', nombre: 'Ajo picado congelado', cantidad: '1 cdta', preparacion: 'Directo al wok', foto: null },
-    { id: null, nombre: 'Agua', cantidad: '0,8 L', preparacion: 'Para la pasta', foto: null },
+    { id: 'brocoli-entero', nombre: 'Brócoli fresco entero', cantidad: '½ pieza', preparacion: 'Flores, tallo y hojas', foto: '/fotos/ingredientes/brocoli-entero.jpg', foto_grande: '/fotos/ingredientes-grandes/brocoli-entero.jpg' },
+    { id: 'ajo-picado-congelado', nombre: 'Ajo picado congelado', cantidad: '1 cdta', preparacion: 'Directo al wok', foto: null, foto_grande: null },
+    { id: null, nombre: 'Agua', cantidad: '0,8 L', preparacion: 'Para la pasta', foto: null, foto_grande: null },
   ],
   etapas: [
     {

@@ -31,17 +31,20 @@ export function esImagen(ruta: string): boolean {
  *   portada a sangre; 860 es 2×.
  * - `escena`: las capas de la pantalla de inicio, sobre un lienzo de 1414 × 2000. Los
  *   1000 px vienen del pipeline anterior (docs/mockups/inicio-capas/README.md).
+ * - `grande`: la misma foto de ingrediente o utensilio, para cuando se toca la miniatura
+ *   y se amplía a pantalla completa (componentes/FotoAmpliable). 720 es casi 2× de los
+ *   380 px a los que se muestra.
  *
  * Nunca se agranda: si el original mide menos, se deja como está.
  */
-export const ANCHOS = { miniatura: 128, plato: 860, escena: 1000 } as const;
+export const ANCHOS = { miniatura: 128, plato: 860, escena: 1000, grande: 720 } as const;
 export type Uso = keyof typeof ANCHOS;
 
 /**
  * Calidad de WebP por uso. Las miniaturas aguantan más compresión porque se ven chiquitas;
  * el fondo de inicio es lo primero que se ve y ocupa la pantalla entera.
  */
-export const CALIDADES: Readonly<Record<Uso, number>> = { miniatura: 0.82, plato: 0.85, escena: 0.86 };
+export const CALIDADES: Readonly<Record<Uso, number>> = { miniatura: 0.82, plato: 0.85, escena: 0.86, grande: 0.84 };
 
 export interface Imagen {
   /** Ruta del original, relativa a la raíz del repositorio. */
@@ -75,6 +78,10 @@ export const FUENTES: readonly Fuente[] = [
   { directorio: 'data/recetas', destino: 'web/assets/recetas', uso: 'plato' },
   { directorio: 'data/ingredientes', destino: 'web/assets/ingredientes', uso: 'miniatura' },
   { directorio: 'data/utencillos', destino: 'web/assets/utencillos', uso: 'miniatura' },
+  // Las mismas fotos, grandes, en una carpeta hermana con sufijo: el catálogo encuentra
+  // las dos versiones cambiando solo el prefijo (`chicaDe`, `grandeDe`).
+  { directorio: 'data/ingredientes', destino: 'web/assets/ingredientes-grandes', uso: 'grande' },
+  { directorio: 'data/utencillos', destino: 'web/assets/utencillos-grandes', uso: 'grande' },
   {
     directorio: 'docs/mockups/inicio-capas',
     destino: 'web/assets/inicio',
@@ -133,7 +140,16 @@ export function planificarImagenes(raiz: string): readonly Imagen[] {
  * nada más. Que exista es otra pregunta, y la hace quien la use.
  */
 export function chicaDe(origen: string, directorioDatos: string, directorioAssets: string): string {
+  return versionDe(origen, directorioDatos, directorioAssets, '');
+}
+
+/** La versión grande: la misma ruta, con la primera carpeta con sufijo `-grandes`. */
+export function grandeDe(origen: string, directorioDatos: string, directorioAssets: string): string {
+  return versionDe(origen, directorioDatos, directorioAssets, '-grandes');
+}
+
+function versionDe(origen: string, directorioDatos: string, directorioAssets: string, sufijo: string): string {
   const relativo = relative(directorioDatos, origen);
-  const carpetas = relativo.split(sep).slice(0, -1);
-  return join(directorioAssets, ...carpetas, `${basename(relativo, extname(relativo))}.webp`);
+  const [primera, ...resto] = relativo.split(sep).slice(0, -1) as [string, ...string[]];
+  return join(directorioAssets, `${primera}${sufijo}`, ...resto, `${basename(relativo, extname(relativo))}.webp`);
 }

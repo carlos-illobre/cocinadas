@@ -209,7 +209,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
               meta —el previsto— y no «transcurrido»: es contra eso que se mide. */}
           <div className="ttl">
             {/* Con `key` por paso: al pasar de paso, la foto ampliada se cierra sola. */}
-            {fotoPaso !== null && <FotoAmpliable key={paso.id} src={fotoPaso} nombre={ingredientePaso} className="ph" />}
+            {fotoPaso !== null && <FotoAmpliable key={paso.id} src={fotoPaso.chica} srcGrande={fotoPaso.grande} nombre={ingredientePaso} className="ph" />}
             <h2 id="titulo-paso">{paso.titulo}</h2>
             <div className="cronometro">
               {esperaPrevia > 0 ? (
