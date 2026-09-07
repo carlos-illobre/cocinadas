@@ -46,6 +46,8 @@ export interface Ingrediente {
   readonly cantidad: string;
   readonly preparacion: string;
   readonly foto: string | null;
+  /** La misma foto, grande, para ampliarla; null si no hay foto. */
+  readonly foto_grande: string | null;
 }
 
 export interface Utensilio {
@@ -53,6 +55,7 @@ export interface Utensilio {
   readonly nombre: string;
   readonly uso: string;
   readonly foto: string | null;
+  readonly foto_grande: string | null;
 }
 
 export interface Paso {

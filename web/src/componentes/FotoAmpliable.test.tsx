@@ -16,4 +16,11 @@ describe('FotoAmpliable', () => {
     fireEvent.click(ampliada);
     expect(screen.queryByRole('button', { name: /Cerrar la foto/ })).not.toBeInTheDocument();
   });
+
+  it('ampliada usa la versión grande si la hay', () => {
+    render(<FotoAmpliable src="chica.webp" srcGrande="grande.webp" nombre="Wok" className="ph" />);
+    expect(screen.getByRole('button', { name: 'Ver la foto de Wok' }).querySelector('img')).toHaveAttribute('src', 'chica.webp');
+    fireEvent.click(screen.getByRole('button', { name: 'Ver la foto de Wok' }));
+    expect(screen.getByRole('button', { name: 'Cerrar la foto de Wok' }).querySelector('img')).toHaveAttribute('src', 'grande.webp');
+  });
 });

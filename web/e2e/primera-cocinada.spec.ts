@@ -44,6 +44,11 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
     await expect
       .poll(() => foto.evaluate((img: HTMLImageElement) => img.naturalWidth))
       .toBeGreaterThan(0);
+    // La foto ampliada es la versión grande: bastante más ancha que la miniatura de 128.
+    await page.getByRole('button', { name: /^Ver la foto de/ }).first().click();
+    const ampliada = page.getByRole('button', { name: /^Cerrar la foto de/ }).locator('img');
+    await expect.poll(() => ampliada.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(300);
+    await page.getByRole('button', { name: /^Cerrar la foto de/ }).click();
     await page.getByRole('button', { name: /^Comenzar · / }).click();
   });
 

@@ -128,6 +128,8 @@ function armarAssets(datos: string, assets: string): void {
     'recetas/pasta-brocoli/pasta-brocoli.webp',
     'ingredientes/fotos-envases/brocoli.webp',
     'utencillos/fotos/wok-30cm-frente.webp',
+    'ingredientes-grandes/fotos-envases/brocoli.webp',
+    'utencillos-grandes/fotos/wok-30cm-frente.webp',
   ]) {
     mkdirSync(join(assets, dirname(relativo)), { recursive: true });
     writeFileSync(join(assets, relativo), 'webp');
@@ -242,14 +244,14 @@ describe('sobre un directorio de datos', () => {
         const receta = json(plan, ruta) as RecetaServida;
         expect(receta.version.numero).toBe(2);
         expect(receta.foto).toBe('/fotos/recetas/pasta-brocoli.webp');
-        expect(receta.ingredientes.map((i) => [i.id, i.foto])).toEqual([
-          ['brocoli-entero', '/fotos/ingredientes/brocoli-entero.webp'],
-          ['sin-foto', null],
-          [null, null],
+        expect(receta.ingredientes.map((i) => [i.id, i.foto, i.foto_grande])).toEqual([
+          ['brocoli-entero', '/fotos/ingredientes/brocoli-entero.webp', '/fotos/ingredientes-grandes/brocoli-entero.webp'],
+          ['sin-foto', null, null],
+          [null, null, null],
         ]);
-        expect(receta.utensilios.map((u) => [u.id, u.foto])).toEqual([
-          ['wok-30cm', '/fotos/utensilios/wok-30cm.webp'],
-          [null, null],
+        expect(receta.utensilios.map((u) => [u.id, u.foto, u.foto_grande])).toEqual([
+          ['wok-30cm', '/fotos/utensilios/wok-30cm.webp', '/fotos/utensilios-grandes/wok-30cm.webp'],
+          [null, null, null],
         ]);
       }
     });
@@ -257,8 +259,10 @@ describe('sobre un directorio de datos', () => {
     it('copia solo las fotos que alguna receta referencia, una sola vez cada una', () => {
       const plan = planificar(raiz, assets, () => undefined);
       expect(plan.fotos.map((f) => f.ruta).sort()).toEqual([
+        'fotos/ingredientes-grandes/brocoli-entero.webp',
         'fotos/ingredientes/brocoli-entero.webp',
         'fotos/recetas/pasta-brocoli.webp',
+        'fotos/utensilios-grandes/wok-30cm.webp',
         'fotos/utensilios/wok-30cm.webp',
       ]);
       // Lo que se copia sale de assets, no de data: es la versión chica.

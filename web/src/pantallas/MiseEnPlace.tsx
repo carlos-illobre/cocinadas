@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { cantidadLegible } from '../cantidad';
 import { FotoAmpliable } from '../componentes/FotoAmpliable';
-import { BASE_CATALOGO, type Receta } from '../api';
+import { BASE_CATALOGO, urlFoto, type Receta } from '../api';
 
 export interface PropiedadesMiseEnPlace {
   readonly receta: Receta;
@@ -17,8 +17,8 @@ export interface PropiedadesMiseEnPlace {
  */
 export function MiseEnPlace({ receta, alVolver, alCocinar }: PropiedadesMiseEnPlace): React.JSX.Element {
   const [tildados, setTildados] = useState<ReadonlySet<string>>(new Set());
-  const utensilios: readonly Item[] = receta.utensilios.map((u, i) => ({ clave: `u-${i}`, nombre: u.nombre, detalle: null, foto: u.foto, icono: '🔧' }));
-  const ingredientes: readonly Item[] = receta.ingredientes.map((x, i) => ({ clave: `i-${i}`, nombre: x.nombre, detalle: cantidadLegible(x.cantidad), foto: x.foto, icono: '🥄' }));
+  const utensilios: readonly Item[] = receta.utensilios.map((u, i) => ({ clave: `u-${i}`, nombre: u.nombre, detalle: null, foto: u.foto, fotoGrande: u.foto_grande, icono: '🔧' }));
+  const ingredientes: readonly Item[] = receta.ingredientes.map((x, i) => ({ clave: `i-${i}`, nombre: x.nombre, detalle: cantidadLegible(x.cantidad), foto: x.foto, fotoGrande: x.foto_grande, icono: '🥄' }));
   const total = utensilios.length + ingredientes.length;
   const hechos = tildados.size;
   const alternarTodos = (): void => {
@@ -85,6 +85,7 @@ interface Item {
   /** La cantidad, en los ingredientes; null en los utensilios. */
   readonly detalle: string | null;
   readonly foto: string | null;
+  readonly fotoGrande: string | null;
   /** Lo que se muestra cuando no hay foto. */
   readonly icono: string;
 }
@@ -107,7 +108,7 @@ function Lista({ titulo, icono, items, tildados, alternar }: { readonly titulo: 
                   {x.icono}
                 </span>
               ) : (
-                <FotoAmpliable src={`${BASE_CATALOGO}${x.foto}`} nombre={x.nombre} className="mise-foto" />
+                <FotoAmpliable src={`${BASE_CATALOGO}${x.foto}`} srcGrande={urlFoto(x.fotoGrande)} nombre={x.nombre} className="mise-foto" />
               )}
               <button type="button" className={hecho ? 'mise ok' : 'mise'} aria-pressed={hecho} onClick={() => alternar(x.clave)}>
                 <span className="mise-texto">

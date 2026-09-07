@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { ANCHOS, buscarImagenes, chicaDe, destinoDe, esImagen, FUENTES, planificarImagenes } from './plan';
+import { ANCHOS, buscarImagenes, chicaDe, destinoDe, esImagen, FUENTES, grandeDe, planificarImagenes } from './plan';
 
 describe('esImagen', () => {
   it.each(['a.jpg', 'a.jpeg', 'a.png', 'a.webp', 'a.PNG'])('%s se puede convertir', (n) => {
@@ -36,6 +36,12 @@ describe('chicaDe', () => {
   it('cambia el prefijo de datos por el de assets y la extensión por webp', () => {
     expect(chicaDe(join('/r', 'data', 'utencillos', 'fotos', 'wok.PNG'), join('/r', 'data'), join('/r', 'web', 'assets'))).toBe(
       join('/r', 'web', 'assets', 'utencillos', 'fotos', 'wok.webp'),
+    );
+  });
+
+  it('la grande está en la carpeta hermana con sufijo', () => {
+    expect(grandeDe(join('/r', 'data', 'ingredientes', 'fotos-envases', 'brocoli.jpg'), join('/r', 'data'), join('/r', 'web', 'assets'))).toBe(
+      join('/r', 'web', 'assets', 'ingredientes-grandes', 'fotos-envases', 'brocoli.webp'),
     );
   });
 });
@@ -84,6 +90,8 @@ describe('sobre un árbol de originales', () => {
     expect(porDestino.get('web/assets/recetas/pasta/pasta.webp')?.ancho).toBe(ANCHOS.plato);
     expect(porDestino.get('web/assets/ingredientes/fotos-envases/brocoli.webp')?.ancho).toBe(ANCHOS.miniatura);
     expect(porDestino.get('web/assets/utencillos/fotos/wok.webp')?.ancho).toBe(ANCHOS.miniatura);
+    expect(porDestino.get('web/assets/ingredientes-grandes/fotos-envases/brocoli.webp')?.ancho).toBe(ANCHOS.grande);
+    expect(porDestino.get('web/assets/utencillos-grandes/fotos/wok.webp')?.ancho).toBe(ANCHOS.grande);
     expect(porDestino.get('web/assets/inicio/1.webp')?.ancho).toBe(ANCHOS.escena);
   });
 

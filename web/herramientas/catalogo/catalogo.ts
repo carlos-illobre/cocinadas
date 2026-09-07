@@ -11,7 +11,7 @@
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
-import { chicaDe } from '../imagenes/plan.js';
+import { chicaDe, grandeDe } from '../imagenes/plan.js';
 
 /** Nombres de archivo que no son fichas aunque terminen en .md (ver los README de cada carpeta). */
 export function esFicha(nombre: string): boolean {
@@ -76,8 +76,8 @@ export interface RecetaResumen {
 /** La receta completa tal como la lee la app: el JSON más la ruta de cada foto resuelta. */
 export type RecetaServida = RecetaJson & {
   readonly foto: string | null;
-  readonly ingredientes: readonly { readonly id: string | null; readonly foto: string | null; readonly [k: string]: unknown }[];
-  readonly utensilios: readonly { readonly id: string | null; readonly foto: string | null; readonly [k: string]: unknown }[];
+  readonly ingredientes: readonly { readonly id: string | null; readonly foto: string | null; readonly foto_grande: string | null; readonly [k: string]: unknown }[];
+  readonly utensilios: readonly { readonly id: string | null; readonly foto: string | null; readonly foto_grande: string | null; readonly [k: string]: unknown }[];
 };
 
 /** Un archivo del bundle: su ruta relativa a public/api/catalogo/ y de dónde sale. */
@@ -214,6 +214,10 @@ export function planificar(directorioDatos: string, directorioAssets: string, av
     new Map([...mapa].map(([id, origen]) => [id, chicaDe(origen, directorioDatos, directorioAssets)]));
   const chicasIngredientes = aChicas(fotosIngredientes);
   const chicasUtensilios = aChicas(fotosUtensilios);
+  const aGrandes = (mapa: Map<string, string>): Map<string, string> =>
+    new Map([...mapa].map(([id, origen]) => [id, grandeDe(origen, directorioDatos, directorioAssets)]));
+  const grandesIngredientes = aGrandes(fotosIngredientes);
+  const grandesUtensilios = aGrandes(fotosUtensilios);
   const chicasRecetas = aChicas(fotosRecetas);
 
   const url = (fotos: Map<string, string>, prefijo: string, id: string | null): string | null => {
@@ -221,8 +225,9 @@ export function planificar(directorioDatos: string, directorioAssets: string, av
     return origen === undefined ? null : urlDeFoto(prefijo, id as string, origen);
   };
 
-  const conFotos = <T extends { readonly id: string | null }>(lista: readonly T[], fotos: Map<string, string>, prefijo: string) =>
-    lista.map((x) => ({ ...x, foto: url(fotos, prefijo, x.id) }));
+  // La chica es la de las listas; la grande, la que se abre al tocarla (FotoAmpliable).
+  const conFotos = <T extends { readonly id: string | null }>(lista: readonly T[], fotos: Map<string, string>, grandes: Map<string, string>, prefijo: string) =>
+    lista.map((x) => ({ ...x, foto: url(fotos, prefijo, x.id), foto_grande: url(grandes, `${prefijo}-grandes`, x.id) }));
 
   const porPlato = new Map<string, RecetaJson[]>();
   for (const r of recetas) {
@@ -247,8 +252,8 @@ export function planificar(directorioDatos: string, directorioAssets: string, av
     const servida: RecetaServida = {
       ...r,
       foto: url(chicasRecetas, 'recetas', r.plato),
-      ingredientes: conFotos(r.ingredientes, chicasIngredientes, 'ingredientes'),
-      utensilios: conFotos(r.utensilios, chicasUtensilios, 'utensilios'),
+      ingredientes: conFotos(r.ingredientes, chicasIngredientes, grandesIngredientes, 'ingredientes'),
+      utensilios: conFotos(r.utensilios, chicasUtensilios, grandesUtensilios, 'utensilios'),
     };
     // Por clave y por número: la API aceptaba las dos formas y la app usa la clave.
     json.push({ ruta: `recetas/${r.plato}/${r.version.clave}.json`, contenido: servida });
@@ -276,9 +281,11 @@ export function planificar(directorioDatos: string, directorioAssets: string, av
     copiar('recetas', chicasRecetas, r.plato);
     for (const i of r.ingredientes) {
       copiar('ingredientes', chicasIngredientes, i.id);
+      copiar('ingredientes-grandes', grandesIngredientes, i.id);
     }
     for (const u of r.utensilios) {
       copiar('utensilios', chicasUtensilios, u.id);
+      copiar('utensilios-grandes', grandesUtensilios, u.id);
     }
   }
 

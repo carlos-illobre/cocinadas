@@ -12,7 +12,7 @@ export function Proceso({ visible, receta }: { readonly visible: ProcesoVisible;
   return (
     <div className={clase} role="timer" aria-label={proceso.nombre}>
       <div className="ic">
-        {foto !== null ? <img className="ph" src={foto} alt="" /> : <span className="ph ph-vacio" aria-hidden="true">{ICONO_PROCESO[proceso.tipo] ?? '·'}</span>}
+        {foto !== null ? <img className="ph" src={foto.chica} alt="" /> : <span className="ph ph-vacio" aria-hidden="true">{ICONO_PROCESO[proceso.tipo] ?? '·'}</span>}
         <b aria-hidden="true">{ICONO_PROCESO[proceso.tipo] ?? '·'}</b>
       </div>
       <div className="nm">

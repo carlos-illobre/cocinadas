@@ -148,13 +148,13 @@ function Valor({ icono, valor, nombre }: { readonly icono: string; readonly valo
 }
 
 /** La foto de la ficha, ampliable; si no tiene, el ícono de su tipo. */
-function Foto({ foto, icono, nombre }: { readonly foto: string | null; readonly icono: string; readonly nombre: string }): React.JSX.Element {
+function Foto({ foto, fotoGrande, icono, nombre }: { readonly foto: string | null; readonly fotoGrande: string | null; readonly icono: string; readonly nombre: string }): React.JSX.Element {
   return foto === null ? (
     <span className="fila-foto sin-foto" aria-hidden="true">
       {icono}
     </span>
   ) : (
-    <FotoAmpliable src={`${BASE_CATALOGO}${foto}`} nombre={nombre} className="fila-foto" />
+    <FotoAmpliable src={`${BASE_CATALOGO}${foto}`} srcGrande={urlFoto(fotoGrande)} nombre={nombre} className="fila-foto" />
   );
 }
 
@@ -173,7 +173,7 @@ function Necesario({ receta, solapa, alCambiarSolapa }: { readonly receta: Recet
         <ul className="filas">
           {receta.ingredientes.map((i) => (
             <li key={`${i.id ?? 'sin-id'}-${i.nombre}`} className="fila">
-              <Foto foto={i.foto} icono="🥄" nombre={i.nombre} />
+              <Foto foto={i.foto} fotoGrande={i.foto_grande} icono="🥄" nombre={i.nombre} />
               <span className="fila-nombre">{i.nombre}</span>
               <span className="fila-cantidad">{cantidadLegible(i.cantidad)}</span>
             </li>
@@ -183,7 +183,7 @@ function Necesario({ receta, solapa, alCambiarSolapa }: { readonly receta: Recet
         <ul className="filas">
           {receta.utensilios.map((u) => (
             <li key={`${u.id ?? 'sin-id'}-${u.nombre}`} className="fila">
-              <Foto foto={u.foto} icono="🔧" nombre={u.nombre} />
+              <Foto foto={u.foto} fotoGrande={u.foto_grande} icono="🔧" nombre={u.nombre} />
               <span className="fila-nombre">{u.nombre}</span>
             </li>
           ))}

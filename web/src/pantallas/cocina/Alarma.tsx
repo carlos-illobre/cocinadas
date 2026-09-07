@@ -22,7 +22,7 @@ export function Alarma({ estado, alAtender }: { readonly estado: EstadoCocina; r
         <p className="lead">{proceso.nota}</p>
         {siguiente !== undefined && (
           <div className="next">
-            {fotoSiguiente !== null && <img className="ph" src={fotoSiguiente} alt="" />}
+            {fotoSiguiente !== null && <img className="ph" src={fotoSiguiente.chica} alt="" />}
             <div>
               <b>{siguiente.titulo}</b>
               <small>{siguiente.acciones[0] ?? ''}</small>
