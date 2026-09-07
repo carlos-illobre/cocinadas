@@ -1137,7 +1137,12 @@ h1 {
   transition: opacity 0.2s ease;
 }
 
-.mise-item { display: flex; align-items: center; gap: 12px; }
+/* El rectángulo es el ítem entero, con la foto adentro; el botón de tildar ocupa el resto
+   y no tiene borde propio. Así la foto puede ser un botón (se amplía) sin estar adentro
+   del de tildar, que no admite otro botón. */
+.mise-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 10px; background: var(--paper); border: 2px solid var(--line); border-radius: 14px; transition: all 0.2s ease; }
+.mise-item.ok { background: rgba(6, 214, 160, 0.08); border-color: var(--green); }
+.mise-item .mise, .mise-item .mise.ok { border: 0; background: none; padding: 4px 0; border-radius: 0; }
 .mise-item .mise { flex: 1; min-width: 0; }
 .mise-item.ok .mise-foto {
   opacity: 0.5;
