@@ -304,6 +304,15 @@ describe('Cocina · fin de etapa y etapa crítica', () => {
     scrollTo.mockRestore();
   });
 
+  it('cada paso nuevo arranca arriba: «Listo» se toca al pie de la tarjeta', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const c = armar();
+    scrollTo.mockClear();
+    c.listo();
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+    scrollTo.mockRestore();
+  });
+
   it('una etapa terminada justo a tiempo lo dice, y pasada de tiempo también', () => {
     const c = armar(recetaUnaEtapa);
     // Una sola etapa: no hay pausa, así que se prueba con la de dos etapas y tiempos exactos.
