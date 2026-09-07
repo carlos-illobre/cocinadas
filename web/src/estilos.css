@@ -886,11 +886,14 @@ h1 {
   transition: all 0.2s ease;
 }
 
-.modo.on {
-  border-color: var(--brand);
-  background: rgba(255, 107, 53, 0.06);
-  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.15);
-}
+/* Cada modo tiene su color: verde el fácil, rojo el difícil. Elegido, el marco se afirma. */
+.modo.facil { border-color: rgba(6, 214, 160, 0.35); }
+.modo.dificil { border-color: rgba(255, 59, 48, 0.35); }
+.modo.facil.on { border-color: var(--green); background: rgba(6, 214, 160, 0.08); box-shadow: 0 4px 16px rgba(6, 214, 160, 0.18); }
+.modo.dificil.on { border-color: var(--rojo); background: rgba(255, 59, 48, 0.08); box-shadow: 0 4px 16px rgba(255, 59, 48, 0.18); }
+.modo-dificultad { font-size: 13px; font-weight: 800; padding: 2px 9px; border-radius: 20px; letter-spacing: 0.02em; }
+.modo.facil .modo-dificultad { color: var(--green); background: rgba(6, 214, 160, 0.14); }
+.modo.dificil .modo-dificultad { color: var(--rojo); background: rgba(255, 59, 48, 0.14); }
 
 .modo-icono {
   width: 48px;
@@ -904,9 +907,8 @@ h1 {
   transition: background 0.2s ease;
 }
 
-.modo.on .modo-icono {
-  background: rgba(255, 107, 53, 0.12);
-}
+.modo.facil.on .modo-icono { background: rgba(6, 214, 160, 0.16); }
+.modo.dificil.on .modo-icono { background: rgba(255, 59, 48, 0.16); }
 
 .modo-texto {
   flex: 1;
@@ -927,9 +929,8 @@ h1 {
   color: var(--ink-2);
 }
 
-.modo.on .modo-nombre b {
-  color: var(--brand);
-}
+.modo.facil.on .modo-nombre b { color: var(--green); }
+.modo.dificil.on .modo-nombre b { color: var(--rojo); }
 
 .modo-tiempo {
   font-size: 15px;
@@ -942,10 +943,8 @@ h1 {
   white-space: nowrap;
 }
 
-.modo.on .modo-tiempo {
-  color: var(--brand);
-  background: var(--brand-soft);
-}
+.modo.facil.on .modo-tiempo { color: var(--green); background: rgba(6, 214, 160, 0.14); }
+.modo.dificil.on .modo-tiempo { color: var(--rojo); background: rgba(255, 59, 48, 0.14); }
 
 .modo-texto small {
   display: block;

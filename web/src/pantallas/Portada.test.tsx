@@ -79,6 +79,9 @@ describe('Portada', () => {
     expect(modos).toHaveLength(2);
     expect(modos[0]).toHaveTextContent('🎯');
     expect(modos[0]).toHaveTextContent('Mise en place primero');
+    // La lenta es la fácil, en verde; la rápida la difícil, en rojo.
+    expect(modos[0]).toHaveClass('facil');
+    expect(modos[0]).toHaveTextContent('¡Fácil!');
     expect(modos[0]).toHaveTextContent('21 min');
     expect(modos[0]).toHaveTextContent('Primero se prepara todo sin apuro.');
     expect(modos[0]).toHaveAttribute('aria-selected', 'true');
@@ -86,9 +89,11 @@ describe('Portada', () => {
     expect(modos[0]?.querySelector('.circulo')).toHaveTextContent('✓');
     expect(modos[1]).toHaveTextContent('⚡');
     expect(modos[1]).toHaveTextContent('Flujo continuo');
+    expect(modos[1]).toHaveClass('dificil');
+    expect(modos[1]).toHaveTextContent('¡Difícil!');
     expect(modos[1]).toHaveTextContent('16 min');
     expect(modos[1]).toHaveAttribute('aria-selected', 'false');
-    expect(modos[1]?.className).toBe('modo');
+    expect(modos[1]?.className).toBe('modo dificil');
     expect(modos[1]?.querySelector('.circulo')).toHaveTextContent('');
 
     fireEvent.click(modos[1] as HTMLElement);
