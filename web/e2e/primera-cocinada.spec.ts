@@ -70,8 +70,20 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
 
   await test.step('la pantalla de victoria festeja y guarda', async () => {
     await expect(page.getByText(/^Plato listo · /)).toBeVisible();
+    // Arriba de todo: se llega desde el pie de una línea de tiempo larga, y todas las
+    // pantallas viven en el mismo documento, así que el desplazamiento no se reinicia solo.
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
     // Los papelitos del confeti: 40, los mismos que arma `confeti(40)`.
-    await expect(page.locator('.confeti i')).toHaveCount(40);
+    const confeti = page.locator('.confeti');
+    await expect(confeti.locator('i')).toHaveCount(40);
+
+    // Y que el confeti cubra la ventana, no la pantalla. Es `position: fixed; inset: 0`,
+    // así que su caja tiene que ser exactamente la ventana; si un ancestro tuviera un
+    // `transform`, pasaría a ser el bloque contenedor y el confeti caería fuera de lo
+    // visible. Estar en el DOM no alcanza: eso ya pasó, y la cuenta de 40 seguía en verde.
+    const caja = await confeti.boundingBox();
+    expect(caja).toEqual(expect.objectContaining(page.viewportSize() ?? {}));
+    expect(caja?.y).toBe(0);
     await expect(page.getByText(/XP por lo cerca que estuviste/)).toBeVisible();
 
     await page.getByRole('button', { name: 'Guardar esta cocinada' }).click();
