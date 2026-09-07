@@ -1300,7 +1300,7 @@ h1 {
 .fijo .proc .ic b { width: 14px; height: 14px; font-size: 8px; }
 .fijo .proc .nm small, .fijo .proc .tm small { display: none; }
 .fijo .proc .tm { font-size: 18px; }
-.now { margin-top: 14px; background: var(--now-tinte); border-radius: 22px; padding: 16px 18px; border: 2px solid var(--green); box-shadow: 0 12px 28px -18px rgba(22, 33, 27, 0.35); }
+.now { margin-top: 20px; background: var(--now-tinte); border-radius: 22px; padding: 16px 18px; border: 2px solid var(--green); box-shadow: 0 12px 28px -18px rgba(22, 33, 27, 0.35); }
 /*
  * Pasado de tiempo, la tarjeta entera late en rojo, como en el prototipo: es la alarma
  * silenciosa de la cocina. Late el marco y el tinte, no el texto, para que siga legible.
@@ -1372,7 +1372,9 @@ h1 {
  */
 .por-que { margin: 12px 0 0; font-size: 16px; color: var(--ink); background: var(--soft); border-radius: 10px; padding: 10px 12px; line-height: 1.5; }
 .por-que b { color: var(--brand); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 6px; }
-.actions { display: flex; gap: 10px; margin-top: 14px; }
+.ayuda-paso { display: flex; justify-content: flex-end; margin-top: 14px; }
+.ayuda-paso .btn.ghost { width: 54px; height: 44px; padding: 0; }
+.actions { display: flex; gap: 10px; margin-top: 10px; }
 .actions .btn { flex: 1; width: auto; height: 54px; padding: 0 16px; }
 .actions .btn.ghost { flex: 0 0 54px; padding: 0; }
 .btn.hot { background: var(--coral); color: #fff; }
@@ -1388,15 +1390,16 @@ h1 {
 .row { display: grid; grid-template-columns: 40px 24px 1fr auto; align-items: center; height: 50px; column-gap: 10px; font-size: 15.5px; border-radius: 10px; }
 /* Los 34px de más son el ancho de la etiqueta vertical del carril, que es texto
  * rotado: su ancho es su tamaño de letra, así que al agrandarla invadía el título. */
-.rows.withlanes .row { grid-template-columns: 40px 24px calc(34px + var(--carriles) * 11px) 1fr auto; }
+/* El gantt va en la última columna, a la derecha del todo; las barras se posicionan desde ese borde. */
+.rows.withlanes .row { grid-template-columns: 40px 24px 1fr auto calc(34px + var(--carriles) * 11px); }
 
 /* El gantt: el tiempo baja, cada barra ocupa lo que dura y se pinta al pasar el frente. */
 .gantt { position: absolute; inset: 0; pointer-events: none; }
 .gantt .barra, .gantt .carril { position: absolute; width: 7px; border-radius: 4px; }
-.gantt .barra { left: calc(36px + 6px + 24px + 6px); background: var(--soft); box-shadow: inset 0 0 0 1px var(--line); }
+.gantt .barra { right: calc(34px + var(--carriles) * 11px - 13px); background: var(--soft); box-shadow: inset 0 0 0 1px var(--line); }
 .gantt .barra.espera { background: repeating-linear-gradient(180deg, var(--soft) 0 4px, transparent 4px 8px); }
 .gantt .barra i { display: block; width: 100%; background: var(--green); border-radius: 4px; }
-.gantt .carril { left: calc(36px + 6px + 24px + 6px + 11px + var(--i) * 11px); }
+.gantt .carril { right: calc(34px + var(--carriles) * 11px - 13px - 11px * (var(--i) + 1)); }
 .gantt .carril.cold { background: var(--cold-soft); }
 .gantt .carril.hot { background: var(--coral-soft); }
 .gantt .carril i { display: block; width: 100%; border-radius: 4px; opacity: 0.85; }
@@ -1422,7 +1425,8 @@ h1 {
 .row .d { font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .row .d.plus { color: var(--coral); }
 .row .d.minus { color: var(--green); }
-.gantt .tag { position: absolute; left: calc(11px * var(--carriles) + 8px); top: 2px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; writing-mode: vertical-rl; line-height: 1; }
+/* La etiqueta es hija de su carril: se corre a la derecha del último carril según el índice del suyo. */
+.gantt .tag { position: absolute; left: calc(11px * (var(--carriles) - 1 - var(--i)) + 11px); top: 2px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; writing-mode: vertical-rl; line-height: 1; }
 .carril.cold .tag { color: var(--cold); }
 .carril.hot .tag { color: var(--coral-deep); }
 

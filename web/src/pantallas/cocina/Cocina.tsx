@@ -276,15 +276,18 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
   
           {/* El orden del prototipo: reiniciar chico a la izquierda y «Listo» grande; el «?» es
               nuestro y va al final. */}
+          {/* El «?» en su propia fila, arriba: así «Listo» se queda con todo el ancho de abajo. */}
+          <div className="ayuda-paso">
+            <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => setMostrarPorQue((v) => !v)}>
+              ?
+            </button>
+          </div>
           <div className="actions">
             <button type="button" className="btn ghost" aria-label="Reiniciar el paso" title="Reiniciar el paso" onClick={accion(reiniciarPaso)}>
               ↺
             </button>
             <button type="button" className="btn listo" onClick={accion(listo, true)}>
               {esperaPrevia > 0 ? 'Ya lo hice ✓' : paso.espera ? 'Seguir ✓' : progreso.exceso_s > 0 ? 'Listo (con demora) ✓' : 'Listo, siguiente ✓'}
-            </button>
-            <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => setMostrarPorQue((v) => !v)}>
-              ?
             </button>
           </div>
         </section>
