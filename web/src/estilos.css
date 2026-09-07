@@ -1040,7 +1040,9 @@ h1 {
   font-weight: 700;
   color: var(--brand);
   font-family: var(--mono);
-  white-space: nowrap;
+  text-align: right;
+  max-width: 46%;
+  line-height: 1.25;
 }
 
 /* ---------- mise en place ---------- */

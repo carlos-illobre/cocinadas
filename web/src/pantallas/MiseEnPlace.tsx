@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { cantidadLegible } from '../cantidad';
 import { FotoAmpliable } from '../componentes/FotoAmpliable';
 import { BASE_CATALOGO, type Receta } from '../api';
 
@@ -17,7 +18,7 @@ export interface PropiedadesMiseEnPlace {
 export function MiseEnPlace({ receta, alVolver, alCocinar }: PropiedadesMiseEnPlace): React.JSX.Element {
   const [tildados, setTildados] = useState<ReadonlySet<string>>(new Set());
   const utensilios: readonly Item[] = receta.utensilios.map((u, i) => ({ clave: `u-${i}`, nombre: u.nombre, detalle: null, foto: u.foto, icono: '🔧' }));
-  const ingredientes: readonly Item[] = receta.ingredientes.map((x, i) => ({ clave: `i-${i}`, nombre: x.nombre, detalle: x.cantidad, foto: x.foto, icono: '🥄' }));
+  const ingredientes: readonly Item[] = receta.ingredientes.map((x, i) => ({ clave: `i-${i}`, nombre: x.nombre, detalle: cantidadLegible(x.cantidad), foto: x.foto, icono: '🥄' }));
   const total = utensilios.length + ingredientes.length;
   const hechos = tildados.size;
   const alternarTodos = (): void => {

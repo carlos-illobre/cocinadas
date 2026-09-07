@@ -113,7 +113,7 @@ describe('Portada', () => {
     const ingredientes = document.querySelectorAll('.fila');
     expect(ingredientes).toHaveLength(3);
     expect(ingredientes[0]?.querySelector('.fila-nombre')).toHaveTextContent('Brócoli fresco entero');
-    expect(ingredientes[0]?.querySelector('.fila-cantidad')).toHaveTextContent('½ pieza');
+    expect(ingredientes[0]?.querySelector('.fila-cantidad')).toHaveTextContent('1/2 pieza');
     expect(ingredientes[0]?.querySelector('img.fila-foto')).toHaveAttribute('src', 'api/catalogo/fotos/ingredientes/brocoli-entero.jpg');
     // Sin ficha con foto, el ícono de su tipo.
     expect(ingredientes[1]?.querySelector('.fila-foto.sin-foto')).toHaveTextContent('🥄');

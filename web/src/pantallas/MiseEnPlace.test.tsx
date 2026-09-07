@@ -27,7 +27,7 @@ describe('MiseEnPlace', () => {
     expect(items[0]?.querySelector('small')).toBeNull();
     expect(filas[0]?.querySelector('img')).toHaveAttribute('src', 'api/catalogo/fotos/utensilios/wok-eternity-copper-30cm.jpg');
     expect(filas[1]?.querySelector('.mise-sin-foto')).toHaveTextContent('🔧');
-    expect(items[3]?.querySelector('small')).toHaveTextContent('½ pieza');
+    expect(items[3]?.querySelector('small')).toHaveTextContent('1/2 pieza');
     expect(filas[3]?.querySelector('img')).toHaveAttribute('src', 'api/catalogo/fotos/ingredientes/brocoli-entero.jpg');
     expect(filas[4]?.querySelector('.mise-sin-foto')).toHaveTextContent('🥄');
 

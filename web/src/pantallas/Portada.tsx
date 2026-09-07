@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { cantidadLegible } from '../cantidad';
 import { FotoAmpliable } from '../componentes/FotoAmpliable';
 import { BASE_CATALOGO, minutos, obtenerReceta, urlFoto, versionesOrdenadas, type Fetch, type Receta, type RecetaResumen } from '../api';
 
@@ -171,7 +172,7 @@ function Necesario({ receta, solapa, alCambiarSolapa }: { readonly receta: Recet
             <li key={`${i.id ?? 'sin-id'}-${i.nombre}`} className="fila">
               <Foto foto={i.foto} icono="🥄" nombre={i.nombre} />
               <span className="fila-nombre">{i.nombre}</span>
-              <span className="fila-cantidad">{i.cantidad}</span>
+              <span className="fila-cantidad">{cantidadLegible(i.cantidad)}</span>
             </li>
           ))}
         </ul>
