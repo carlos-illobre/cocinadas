@@ -84,20 +84,22 @@ describe('Cocina · etapa tranquila', () => {
     expect(sub).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('el botón «?» muestra y oculta el porqué, y se cierra al pasar de paso', () => {
+  it('las etiquetas del paso están siempre a la vista; el botón «?» muestra y oculta el texto, y se cierra al pasar de paso', () => {
     const { listo } = armar();
     const porQue = screen.getByRole('button', { name: 'Por qué' });
+    // La etiqueta es una pastilla del paso, esté o no abierto el porqué.
+    expect(screen.getByLabelText('Qué cuida este paso')).toHaveTextContent('SEGURIDAD');
     expect(screen.queryByText(/En agua fría/)).not.toBeInTheDocument();
     fireEvent.click(porQue);
     expect(porQue).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByText('SEGURIDAD')).toBeInTheDocument();
     expect(screen.getByText(/En agua fría se mantiene/)).toBeInTheDocument();
     listo();
     expect(screen.queryByText(/En agua fría/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Qué cuida este paso')).toHaveTextContent('NUTRICIÓN');
     fireEvent.click(screen.getByRole('button', { name: 'Por qué' }));
-    expect(screen.getByText('NUTRICIÓN')).toBeInTheDocument();
+    expect(screen.getByText(/sulforafano/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Por qué' }));
-    expect(screen.queryByText('NUTRICIÓN')).not.toBeInTheDocument();
+    expect(screen.queryByText(/sulforafano/)).not.toBeInTheDocument();
   });
 
   it('«Listo» pasa al siguiente, anota el desvío en el riel y arranca el proceso que el paso dispara', () => {
