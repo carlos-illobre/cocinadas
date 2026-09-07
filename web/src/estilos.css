@@ -27,6 +27,7 @@
   --barra-inferior: rgba(250, 250, 247, 0.97);
   --barra-inferior-linea: rgba(0, 0, 0, 0.08);
   --now-tinte: #f0fbf7;
+  --verde-texto: #04875f;
   --now-tinte-hot: #fff3ee;
   --rojo: #ff3b30;
   --now-tinte-pasado: #ffe9e7;
@@ -35,6 +36,7 @@
 
 [data-tema='oscuro'] {
   --now-tinte: rgba(6, 214, 160, 0.08);
+  --verde-texto: #06d6a0;
   --now-tinte-hot: rgba(255, 107, 53, 0.1);
   --rojo: #ff3b30;
   --now-tinte-pasado: rgba(255, 59, 48, 0.16);
@@ -894,8 +896,10 @@ h1 {
 .modo.dificil { border-color: rgba(255, 59, 48, 0.35); }
 .modo.facil.on { border-color: var(--green); background: rgba(6, 214, 160, 0.08); box-shadow: 0 4px 16px rgba(6, 214, 160, 0.18); }
 .modo.dificil.on { border-color: var(--rojo); background: rgba(255, 59, 48, 0.08); box-shadow: 0 4px 16px rgba(255, 59, 48, 0.18); }
-.modo-dificultad { font-size: 13px; font-weight: 800; padding: 2px 9px; border-radius: 20px; letter-spacing: 0.02em; }
-.modo.facil .modo-dificultad { color: var(--green); background: rgba(6, 214, 160, 0.14); }
+.modo-lado { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: none; }
+.modo-dificultad { font-size: 12.5px; font-weight: 800; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.02em; white-space: nowrap; }
+/* El verde de texto: sobre fondo claro el de las barras no contrasta, así que en claro es más oscuro. */
+.modo.facil .modo-dificultad { color: var(--verde-texto); background: rgba(6, 214, 160, 0.14); }
 .modo.dificil .modo-dificultad { color: var(--rojo); background: rgba(255, 59, 48, 0.14); }
 
 .modo-icono {
@@ -932,7 +936,7 @@ h1 {
   color: var(--ink-2);
 }
 
-.modo.facil.on .modo-nombre b { color: var(--green); }
+.modo.facil.on .modo-nombre b { color: var(--verde-texto); }
 .modo.dificil.on .modo-nombre b { color: var(--rojo); }
 
 .modo-tiempo {
@@ -946,7 +950,7 @@ h1 {
   white-space: nowrap;
 }
 
-.modo.facil.on .modo-tiempo { color: var(--green); background: rgba(6, 214, 160, 0.14); }
+.modo.facil.on .modo-tiempo { color: var(--verde-texto); background: rgba(6, 214, 160, 0.14); }
 .modo.dificil.on .modo-tiempo { color: var(--rojo); background: rgba(255, 59, 48, 0.14); }
 
 .modo-texto small {
