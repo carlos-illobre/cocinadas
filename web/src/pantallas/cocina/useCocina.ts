@@ -78,11 +78,17 @@ export function useCocina(receta: Receta, almacen: Almacen, avisador: Avisador, 
       if (sonar) {
         avisador.toque();
       }
-      // Cada acción puede cambiar de paso, de etapa o de fase: lo que se va se funde con lo que llega.
-      conTransicion(() => {
+      // Cambiar de fase (alarma, fin de etapa, final) se funde; cambiar de paso no: la
+      // tarjeta ya entra animada, y una transición por cada «Listo» demora la respuesta.
+      const cambiar = () => {
         setReloj(t);
         setEstado((e) => f(e, t));
-      });
+      };
+      if (f(estado, t).fase === estado.fase) {
+        cambiar();
+      } else {
+        conTransicion(cambiar);
+      }
     },
     tildar: (i) => setEstado((e) => tildar(e, i)),
   };

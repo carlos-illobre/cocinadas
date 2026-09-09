@@ -11,6 +11,9 @@ import { defineConfig, devices } from '@playwright/test';
  * probar en un escritorio de 1280 px sería probar una pantalla que nadie usa.
  */
 export default defineConfig({
+  // Cada toque espera a que termine la animación de entrada de lo que apareció (Playwright no
+  // toca lo que se mueve): con 21 toques por cocinada, los 30 s por omisión quedaban justos en el CI.
+  timeout: 60_000,
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

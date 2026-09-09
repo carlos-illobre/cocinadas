@@ -53,6 +53,8 @@ test('los avisos suenan al confirmar un paso y al terminar la cocinada', async (
   await page.getByRole('button', { name: 'Entrar sin cuenta' }).click();
   await page.getByRole('button', { name: /Spaghetti integral/ }).click();
   await page.getByRole('button', { name: /^Comenzar · / }).click();
+  // El cambio de pantalla es una transición: la mise en place se monta un instante después del toque.
+  await expect(page.getByRole('heading', { level: 1, name: 'Mise en place' })).toBeVisible();
   const items = page.locator('.cuerpo button.mise');
   for (let i = 0; i < (await items.count()); i++) {
     await items.nth(i).click();
@@ -71,8 +73,13 @@ test('los avisos suenan al confirmar un paso y al terminar la cocinada', async (
 
   await test.step('el arpegio del plato listo', async () => {
     const siguiente = page.getByRole('button', { name: /^(Listo, siguiente|Listo \(con demora\)|Seguir|Ya lo hice|Empezar) / });
+    // Cada toque se espera hasta que ese botón se va: el cambio de fase es una transición
+    // y el DOM se actualiza un instante después del toque; sin esperar, el siguiente
+    // `count()` vería el botón viejo y el clic se quedaría esperando uno que ya no existe.
     for (let i = 0; i < 30 && (await siguiente.count()) > 0; i++) {
-      await siguiente.first().click();
+      const boton = await siguiente.first().elementHandle();
+      await boton?.click();
+      await boton?.waitForElementState('hidden');
     }
     await page.getByRole('button', { name: 'Ver resultados 🏆' }).click();
     await expect(page.getByRole('heading', { level: 1, name: '¡Receta completada!' })).toBeVisible();

@@ -85,8 +85,13 @@ test('de la portada a la primera cocinada guardada', async ({ page }) => {
     // etapas se cruza la pantalla de cierre, que dice «Empezar <etapa>». El tope es una
     // red de seguridad para que un cambio en la receta no deje la prueba colgada.
     const siguiente = page.getByRole('button', { name: /^(Listo, siguiente|Listo \(con demora\)|Seguir|Ya lo hice|Empezar) / });
+    // Cada toque se espera hasta que ese botón se va: el cambio de fase es una transición
+    // y el DOM se actualiza un instante después del toque; sin esperar, el siguiente
+    // `count()` vería el botón viejo y el clic se quedaría esperando uno que ya no existe.
     for (let i = 0; i < 30 && (await siguiente.count()) > 0; i++) {
-      await siguiente.first().click();
+      const boton = await siguiente.first().elementHandle();
+      await boton?.click();
+      await boton?.waitForElementState('hidden');
     }
   });
 
