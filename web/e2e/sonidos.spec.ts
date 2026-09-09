@@ -78,8 +78,8 @@ test('los avisos suenan al confirmar un paso y al terminar la cocinada', async (
     // `count()` vería el botón viejo y el clic se quedaría esperando uno que ya no existe.
     for (let i = 0; i < 30 && (await siguiente.count()) > 0; i++) {
       const boton = await siguiente.first().elementHandle();
-      await boton?.click();
-      await boton?.waitForElementState('hidden');
+      await boton.click();
+      await boton.waitForElementState('hidden');
     }
     await page.getByRole('button', { name: 'Ver resultados 🏆' }).click();
     await expect(page.getByRole('heading', { level: 1, name: '¡Receta completada!' })).toBeVisible();
