@@ -4,6 +4,7 @@ import { borrarEnCurso } from '../../cocina/enCurso';
 import { atenderAlarma, empezarEtapa, etapaActual } from '../../cocina/modelo';
 import type { Avisador } from '../../cocina/sonido';
 import type { Almacen, Cocinada } from '../../historial/almacen';
+import { conTransicion } from '../../transicion';
 import { Alarma } from './Alarma';
 import { Cabecera } from './Cabecera';
 import { FinDeEtapa } from './FinDeEtapa';
@@ -69,7 +70,7 @@ export function Cocina({ receta, avisador, alVolver, alTerminar, alGuardar, coci
             ✅
           </p>
           <h2>¡Receta completada!</h2>
-          <button type="button" className="btn verde" onClick={() => setVerResultados(true)}>
+          <button type="button" className="btn verde" onClick={() => conTransicion(() => setVerResultados(true))}>
             Ver resultados 🏆
           </button>
         </section>

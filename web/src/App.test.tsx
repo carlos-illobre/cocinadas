@@ -5,6 +5,7 @@ import type { Fetch } from './api';
 import type { Avisador } from './cocina/sonido';
 import { CLAVE_HISTORIAL, type Almacen } from './historial/almacen';
 import { CLAVE_TEMA } from './tema';
+import { CLAVE_SILENCIO } from './silencio';
 import { CLAVE_EN_CURSO } from './cocina/enCurso';
 import { fetchDeCatalogo, nunca, recetaDosEtapas, resumenSpaghetti } from './pruebas/datos';
 
@@ -137,6 +138,23 @@ describe('el recorrido de la app', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cambiar a modo claro' }));
     expect(document.documentElement.getAttribute('data-tema')).toBe('claro');
     expect(almacen.datos.get(CLAVE_TEMA)).toBe('claro');
+  });
+
+  it('el botón de sonido apaga los avisos, lo guarda, y se recuerda al arrancar', async () => {
+    const almacen = montar({ almacen: memoria({ [CLAVE_SILENCIO]: 'si' }) });
+    await hastaLaCocina();
+    expect(screen.getByRole('button', { name: 'Activar los sonidos' })).toBeInTheDocument();
+    vi.mocked(avisadorFalso.toque).mockClear();
+    fireEvent.click(screen.getByRole('button', { name: /^Listo/ }));
+    expect(avisadorFalso.toque).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Activar los sonidos' }));
+    expect(almacen.datos.get(CLAVE_SILENCIO)).toBe('no');
+    fireEvent.click(screen.getByRole('button', { name: /^Listo/ }));
+    expect(avisadorFalso.toque).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Silenciar los sonidos' }));
+    expect(almacen.datos.get(CLAVE_SILENCIO)).toBe('si');
   });
 
   it('arranca con el tema ya guardado en el teléfono', () => {

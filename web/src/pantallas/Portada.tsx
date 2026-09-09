@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { cantidadLegible } from '../cantidad';
 import { FotoAmpliable } from '../componentes/FotoAmpliable';
 import { useCarga } from '../ganchos/useCarga';
+import { conTransicion } from '../transicion';
 import { BASE_CATALOGO, minutos, obtenerReceta, urlFoto, versionesOrdenadas, type Fetch, type Receta, type RecetaResumen } from '../api';
 
 interface PropiedadesPortada {
@@ -65,7 +66,7 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
             <h3 id="titulo-modo" className="titulo-seccion">
               Seleccioná el modo de preparación
             </h3>
-            <button type="button" className="ayuda" aria-label="Qué es el modo de preparación" aria-expanded={ayuda} aria-controls="ayuda-modo" onClick={() => setAyuda(!ayuda)}>
+            <button type="button" className="ayuda" aria-label="Qué es el modo de preparación" aria-expanded={ayuda} aria-controls="ayuda-modo" onClick={() => conTransicion(() => setAyuda(!ayuda))}>
               ?
             </button>
           </div>
@@ -102,7 +103,7 @@ export function Portada({ fetchImpl, resumen, version, alCambiarVersion, alVolve
         </section>
       )}
 
-      {carga.estado === 'lista' && <Necesario receta={carga.datos} solapa={solapa} alCambiarSolapa={setSolapa} />}
+      {carga.estado === 'lista' && <Necesario receta={carga.datos} solapa={solapa} alCambiarSolapa={(s) => conTransicion(() => setSolapa(s))} />}
 
       {carga.estado === 'lista' && (
         <div className="cta-fija">

@@ -1,9 +1,11 @@
 import { versionPorOmision, type Fetch } from './api';
 import { BarraInferior, type Pestana } from './componentes/BarraInferior';
+import { BotonSonido } from './componentes/BotonSonido';
 import { BotonTema } from './componentes/BotonTema';
-import { avisadorDelNavegador, type Avisador } from './cocina/sonido';
+import { avisadorDelNavegador, SIN_AVISADOR, type Avisador } from './cocina/sonido';
 import { useAvisador } from './ganchos/useAvisador';
 import { usePila } from './ganchos/usePila';
+import { useSilencio } from './ganchos/useSilencio';
 import { useTema } from './ganchos/useTema';
 import { almacenSeguro, guardarCocinada, listarCocinadas, type Almacen, type Cocinada } from './historial/almacen';
 import { Cocina } from './pantallas/cocina/Cocina';
@@ -43,12 +45,13 @@ function almacenDelNavegador(): Almacen {
 
 /**
  * El recorrido: inicio → recetas → portada → mise en place → cocina → resumen, más las
- * pestañas de historial y perfil. El botón del tema flota sobre todas menos la de entrada.
+ * pestañas de historial y perfil. Los botones de tema y de sonido flotan sobre todas menos la de entrada.
  */
 export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNavegador, ahora, almacen = almacenDelNavegador(), nuevoId = () => crypto.randomUUID() }: PropiedadesApp): React.JSX.Element {
   const { pantalla, avanzar, atras, reemplazar } = usePila(almacen, ahora ?? Date.now);
   const { avisador, despertar } = useAvisador(crearAvisador);
   const { tema, cambiarTema } = useTema(almacen);
+  const { silencio, cambiarSilencio } = useSilencio(almacen);
   const [cocinadas, setCocinadas] = useState<readonly Cocinada[]>(() => listarCocinadas(almacen));
   const experiencia = experienciaDe(cocinadas);
 
@@ -89,7 +92,7 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
         return (
           <Cocina
             receta={pantalla.receta}
-            avisador={avisador}
+            avisador={silencio ? SIN_AVISADOR : avisador}
             {...(ahora === undefined ? {} : { ahora })}
             alVolver={atras}
             alTerminar={() => avanzar({ nombre: 'historial' })}
@@ -107,7 +110,12 @@ export function App({ fetchImpl = fetchNavegador, crearAvisador = avisadorDelNav
 
   return (
     <>
-      {pantalla.nombre !== 'inicio' && <BotonTema tema={tema} alCambiar={cambiarTema} />}
+      {pantalla.nombre !== 'inicio' && (
+        <>
+          <BotonTema tema={tema} alCambiar={cambiarTema} />
+          <BotonSonido silencio={silencio} alCambiar={cambiarSilencio} />
+        </>
+      )}
       {pantallaActual()}
     </>
   );

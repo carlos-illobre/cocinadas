@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { reloj, type Receta } from '../../api';
 import { esperaPrevia_s, etapaActual, listo, pasoActual, progresoPaso, proximoVencimiento_s, reiniciarPaso } from '../../cocina/modelo';
 import { FotoAmpliable } from '../../componentes/FotoAmpliable';
+import { conTransicion } from '../../transicion';
 import { Cronometro } from './Cronometro';
 import { fotoDe } from './fotoDe';
 import type { CocinaEnMarcha } from './useCocina';
@@ -67,7 +68,7 @@ export function TarjetaPaso({ estado, reloj_ms, accion, tildar, receta }: Cocina
             </li>
           ))}
         </ul>
-        <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => setMostrarPorQue((v) => !v)}>
+        <button type="button" className="btn ghost" aria-label="Por qué" aria-expanded={mostrarPorQue} onClick={() => conTransicion(() => setMostrarPorQue((v) => !v))}>
           ?
         </button>
       </div>

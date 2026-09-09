@@ -9,8 +9,9 @@ antes de cambiar algo que tenga un ADR, leelo.
 - **Nunca una ruta fuera de la carpeta del proyecto**, ni siquiera como texto dentro de
   un comando: `/tmp`, `~/.claude`, `../algo`, un `#!/bin/sh`, un literal que empiece con
   `/`. Todo lo temporal va en `tmp/` (en el `.gitignore`) y se limpia al terminar.
-- **Una rama por pedido.** Carlos sube las ramas y abre los PR; Claude no tiene token.
-  Si un pedido depende de otro sin mergear, la rama se apila sobre esa y se dice el orden.
+- **Todo va directo a `main`**: Claude commitea y pushea a `main`, sin ramas ni PR
+  (decisión de Carlos del 2026-09-09; cada push publica). Antes de pushear, las tres
+  compuertas: `pnpm lint`, `pnpm test:cov` y `pnpm e2e`.
 - **Lo visual se verifica con capturas** (Playwright, Pixel 7, los dos temas), no leyendo
   el CSS: dos errores de esta sesión solo aparecieron en una captura. El Chromium del
   contenedor no tiene fuentes de emoji: los □ en las capturas no son un error.

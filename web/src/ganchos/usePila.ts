@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Receta, RecetaResumen } from '../api';
 import { borrarEnCurso, recetaEnCurso } from '../cocina/enCurso';
 import type { Almacen } from '../historial/almacen';
+import { conTransicion } from '../transicion';
 
 export type Pantalla =
   | { readonly nombre: 'inicio' }
@@ -77,13 +78,13 @@ export function usePila(almacen: Almacen, ahora: () => number): Pila {
     pantalla,
     avanzar: (p) => {
       window.history.pushState(null, '');
-      setPila((prev) => [...prev, p]);
+      conTransicion(() => setPila((prev) => [...prev, p]));
     },
     atras: () => {
       volviendoSolo.current = true;
-      setPila(sinLaUltima);
+      conTransicion(() => setPila(sinLaUltima));
       window.history.back();
     },
-    reemplazar: (p) => setPila((prev) => [...prev.slice(0, -1), p]),
+    reemplazar: (p) => conTransicion(() => setPila((prev) => [...prev.slice(0, -1), p])),
   };
 }

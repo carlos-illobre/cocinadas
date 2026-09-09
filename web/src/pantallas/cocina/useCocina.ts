@@ -4,6 +4,7 @@ import { borrarEnCurso, guardarEnCurso, leerEnCurso } from '../../cocina/enCurso
 import { avanzarReloj, empezar, tildar, type EstadoCocina } from '../../cocina/modelo';
 import type { Avisador } from '../../cocina/sonido';
 import type { Almacen } from '../../historial/almacen';
+import { conTransicion } from '../../transicion';
 
 type Transicion = (e: EstadoCocina, t: number) => EstadoCocina;
 
@@ -77,8 +78,11 @@ export function useCocina(receta: Receta, almacen: Almacen, avisador: Avisador, 
       if (sonar) {
         avisador.toque();
       }
-      setReloj(t);
-      setEstado((e) => f(e, t));
+      // Cada acción puede cambiar de paso, de etapa o de fase: lo que se va se funde con lo que llega.
+      conTransicion(() => {
+        setReloj(t);
+        setEstado((e) => f(e, t));
+      });
     },
     tildar: (i) => setEstado((e) => tildar(e, i)),
   };
