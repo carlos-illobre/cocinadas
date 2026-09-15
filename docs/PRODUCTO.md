@@ -1,199 +1,151 @@
-# Cocinadas: qué es, para quién y cómo funciona
+# Cocinadas
 
-Descripción funcional y de negocio de la aplicación, tal como está publicada en
-<https://carlos-illobre.github.io/cocinadas/>. Lo técnico está en
-[ARCHITECTURE.md](ARCHITECTURE.md); lo que todavía no existe está en el
-[backlog](https://github.com/carlos-illobre/cocinadas/issues) y no acá.
+Descripción de negocio de la aplicación: qué es, a quién sirve, cómo se usa y hacia dónde
+va.
 
 ## En una frase
 
-Una app de celular que convierte una receta en una línea de tiempo viva, guía la
-preparación paso a paso con el reloj corriendo, y mide cuánto se acercó cada cocinada a los
-tiempos previstos, para que quien cocina entrene y mejore con cada repetición.
+Cocinadas convierte una receta en una línea de tiempo viva: elegís qué cocinar y la app te
+lleva paso a paso, con la mise en place, los cronómetros y los procesos en paralelo a la
+vista, y a medida que cocinás ganás puntos de experiencia y logros. Es una app gamificada
+para entrenar en la cocina hasta que cada plato salga igual, siempre.
 
 ## El problema
 
-Las recetas tradicionales dicen qué hacer, pero no cuándo. Quien cocina tiene que calcular
-por su cuenta cuándo poner el agua, cuándo sacar el brócoli, cuánto lleva descongelar, y
-qué cosas pueden correr al mismo tiempo. El resultado es comida que se pasa, que se enfría
-esperando otra cosa, o que lleva el doble del tiempo anunciado. Las apps de recetas
-existentes son recetarios con fotos; los temporizadores de cocina son relojes sin receta.
-Ninguna de las dos une el qué con el cuándo.
+Las recetas dicen qué hacer, pero no cuándo. Quien cocina tiene que calcular por su cuenta
+cuándo poner el agua, cuándo sacar el brócoli, cuánto lleva descongelar y qué cosas pueden
+correr al mismo tiempo. El resultado es comida que se pasa, que se enfría esperando otra
+cosa, o que lleva el doble del tiempo anunciado. Y en una cocina profesional el problema
+es peor: el mismo plato sale distinto según quién lo prepare.
 
-## La propuesta
+Las apps de recetas son recetarios con fotos. Los temporizadores de cocina son relojes sin
+receta. Ninguna une el qué con el cuándo, y ninguna mide si salió bien.
 
-Cada receta viene con su tiempo pensado: qué paso empieza en qué minuto, cuánto dura, qué
-procesos corren solos en paralelo (un descongelado, una olla al fuego) y cuáles son
-críticos, es decir, en cuáles pasarse arruina el plato. La app lleva el reloj, muestra en
-todo momento la tarea de las manos y lo que corre solo, avisa con sonido y vibración cuando
-algo vence, y al final compara lo previsto con lo real.
+## La propuesta: recetas como POE
 
-Sobre eso hay un juego: la app **premia la precisión, no la velocidad**. Cocinar la misma
-receta varias veces y acercarse al tiempo previsto da experiencia, sube de nivel y
-desbloquea logros. Es una app de entrenamiento con forma de recetario.
+En Cocinadas cada receta es un **POE, un procedimiento operativo estándar**: no solo
+ingredientes y pasos, sino el tiempo pensado de cada cosa. Qué paso empieza en qué minuto y
+cuánto dura. Qué procesos corren solos en paralelo, como un descongelado o una olla al
+fuego. Cuáles son críticos, es decir, en cuáles pasarse arruina el plato, y en cuáles no
+importa demorarse. Qué hay que tener en la mano antes de empezar.
 
-## Para quién
+Con eso la app hace lo que un recetario no puede: lleva el reloj, muestra en todo momento
+la tarea de las manos y lo que corre solo, avisa con sonido y vibración cuando algo vence,
+y al terminar compara lo previsto con lo real, paso por paso.
 
-- **Quien quiere aprender a cocinar bien una receta**, no cien. Repetirla hasta que salga
-  al punto, con una guía que no lo deja solo con el reloj.
-- **Quien cocina con poco tiempo** y necesita que los 20 minutos declarados sean 20.
-- **Quien come con criterio**: las recetas del catálogo son POE (procedimiento operativo
-  estándar): una porción, cero desperdicio, sin sal agregada, con calorías y proteína a la
-  vista. El reloj arranca al abrir el freezer y el tiempo declarado incluye descongelar,
-  lavar y cortar.
+Y sobre eso hay un juego. La app **premia la precisión, no la velocidad**: cocinar la misma
+receta varias veces y acercarse cada vez más al tiempo previsto da experiencia, sube de
+nivel y desbloquea logros. Es una app de entrenamiento con forma de recetario.
 
-## Modelo de negocio hoy
+## A quién le sirve
 
-Hoy la app es gratuita y no tiene cuentas: es un sitio estático que se baja entero al
-teléfono, con el catálogo adentro, y guarda las cocinadas en el propio dispositivo. No hay
-servidor, base de datos ni costo de operación más allá del alojamiento gratuito. Es la
-versión de validación: sirve para probar la mecánica con usuarios reales sin construir
-infraestructura.
+**A quien cocina en su casa.** Para aprender a hacer bien una receta, no cien: repetirla
+hasta que salga al punto, con una guía que no lo deja solo con el reloj. Para que los 20
+minutos declarados sean 20. Y para comer con criterio: las recetas del catálogo propio son
+POE de una porción, con cero desperdicio, sin sal agregada y con calorías y proteína a la
+vista.
 
-El valor acumulable está en dos activos: **el catálogo** (recetas con tiempos probados, que
-es trabajo editorial difícil de copiar) y **el historial de cada usuario** (sus cocinadas,
-su progreso, sus logros), que hoy vive en el teléfono y que, con cuentas, pasa a ser lo que
-retiene.
+**A escuelas de cocina y universidades.** Cada alumno cocina los POE de la cátedra con la
+app como guía y se autoevalúa: ve su desvío en cada paso, su historial de intentos y su
+progreso. El profesor hace el seguimiento de cada alumno y del curso: quién mejora, en qué
+paso se traba cada uno, cuánto tardan en llegar al tiempo. La app se vuelve el cuaderno de
+práctica de la carrera.
 
-## El recorrido
+**A restaurantes de hoteles de 4 y 5 estrellas.** En una cocina de hotel el plato tiene que
+salir igual a como lo definió el chef ejecutivo, sin importar quién lo prepare ese día. Los
+POE del restaurante se cargan en la app y cada cocinero nuevo entrena con ellos. El
+supervisor mide la performance de cada uno con datos: tiempos, desvíos, pasos críticos a
+tiempo, cuántas repeticiones hasta dominar el plato. El entrenamiento deja de depender de
+que alguien esté mirando.
 
-Las pantallas van en este orden. El botón de tema (claro u oscuro) y el de sonido flotan
-sobre todas menos la primera. Una barra inferior con tres pestañas (Recetas, Historial,
-Perfil) aparece en las pantallas que no son parte de una cocinada.
+## El flujo central: elegir una receta y cocinarla
 
-### 1. Inicio
+Todo lo demás gira alrededor de esto.
 
-La mesada de una cocina, en capas, con el logotipo y el lema «Tu receta, al punto justo».
-Dos botones: «Continuar con Google», que hoy no hace nada (queda como intención), y «Entrar
-sin cuenta», que es la entrada real. Es la única pantalla sin los botones flotantes.
+**1. Elegir la receta.** Una lista con la foto del plato, el tiempo total, las porciones y
+las calorías. La ficha de cada receta muestra el plato, sus valores nutricionales, los
+ingredientes y los utensilios con foto, y el **modo de preparación**: la misma receta puede
+cocinarse de forma fácil, con la mise en place primero y una cosa por vez, o difícil, en
+flujo continuo con todo en paralelo. Cambia el orden y el tiempo total, no el plato.
 
-### 2. Recetas
+**2. Mise en place.** Antes de arrancar, la lista de todo lo que hay que tener en la mano:
+utensilios e ingredientes, cada uno con su foto, para tildar. No se puede empezar sin todo
+tildado, porque empezar sin el rallador en la mano es como se pierde el tiempo crítico.
 
-Cabecera oscura con el saludo y la barra de experiencia: nivel actual, nombre del nivel,
-puntos y cuánto falta para el siguiente. Debajo, una tarjeta grande por receta, con su foto
-a sangre y tres datos en chips: tiempo total del modo propuesto, porciones y calorías.
-Tocar la tarjeta abre la receta.
+**3. Cocinar con la línea de tiempo.** La pantalla de cocina tiene tres zonas. Arriba, la
+etapa en curso, el reloj y **lo que corre solo**: los procesos que están andando sin las
+manos, cada uno con su cuenta regresiva y una alerta cuando está por vencer. En el medio,
+**la tarea de ahora**: qué hacer, la foto del ingrediente, los sub-pasos para tildar, el
+porqué de cada paso, y el cronómetro contra el tiempo previsto. Abajo, **la línea de tiempo
+completa** de la etapa, con los pasos hechos y su desvío, el actual llenándose, los que
+vienen, y un diagrama con un carril por cada proceso paralelo.
 
-### 3. Portada de la receta
-
-La foto del plato con el título encima y la fila de valores: tiempo, porciones, calorías y
-proteína.
-
-**Modo de preparación.** Una receta puede tener más de una versión. Se muestran como
-tarjetas para elegir: la más lenta se marca en verde como «¡Fácil!» (mise en place primero,
-una cosa por vez) y la más rápida en rojo como «¡Difícil!» (flujo continuo, todo en una
-pasada). Cambiar de modo cambia el orden de los pasos y el tiempo total, no el plato. Un
-botón «?» explica esto en la misma pantalla.
-
-**Qué necesitás.** Dos solapas, Ingredientes y Utensilios, con foto, nombre y cantidad. Las
-cantidades se muestran legibles («½ cucharadita (2,5 ml)»). Cualquier foto se amplía a
-pantalla completa al tocarla, con una animación que la lleva de la miniatura a la grande.
-
-El botón fijo al pie, «Comenzar · 21 min →», lleva a la mise en place.
-
-### 4. Mise en place
-
-La lista de todo lo que hay que tener en la mano antes de arrancar: utensilios e
-ingredientes, cada uno con su foto, para tildar. Una barra fija arriba muestra cuántos van
-de cuántos y el porcentaje. Las fotos de lo que falta se mueven suavemente hasta que se
-tilda. Un enlace marca o desmarca todo de una vez. El botón «Cocinar» se habilita recién con
-todo tildado: la receta es un procedimiento, y empezar sin el rallador en la mano es como se
-pierde el tiempo crítico.
-
-### 5. Cocina
-
-La pantalla central. Se divide en tres zonas:
-
-**Arriba, fijo al hacer scroll.** El nombre de la etapa, «Paso 3 de 9», el reloj de la etapa
-contra su duración prevista y una barra de avance. Debajo, «Corre solo» o «En el fuego»: los
-procesos que están andando sin las manos (descongelado, agua calentándose, pasta, brócoli
-tapado), cada uno con su foto, su cuenta regresiva y una alerta ámbar cuando está por
-vencer.
-
-**En el medio, la tarjeta del paso.** Qué hacer ahora, con la foto del ingrediente
-principal, el título, y a la derecha el cronómetro: cuenta lo transcurrido contra lo
-previsto. Si el paso todavía no tiene que empezar, cuenta regresiva hasta que empiece; si es
-un paso de espera, cuenta hasta que venza lo que corre. Los sub-pasos se tildan uno a uno.
-Etiquetas dicen qué cuida el paso (sabor, seguridad, desperdicio) y un «?» despliega el
-porqué completo. Dos botones: reiniciar el paso y «Listo, siguiente ✓», que suena al
-tocarse.
-
-Cuando el paso se pasa de tiempo, la tarjeta entera late: **en rojo si la etapa es crítica**
-(el brócoli se pasa, los camarones se ponen gomosos) y **en ámbar si es tranquila**, con el
-aviso «Sin apuro: en esta etapa pasarse no cambia el plato». El botón pasa a decir «Listo
-(con demora)».
-
-**Abajo, la línea de tiempo.** Un riel vertical con todos los pasos de la etapa a escala de
-tiempo: los hechos con su desvío («+0:12», «−0:05»), el actual llenándose con el cronómetro,
-los que vienen en gris. A la derecha, un diagrama de Gantt con un carril por proceso
-paralelo, para ver qué corre junto con qué.
-
-**Alarma.** Cuando vence un proceso crítico, una pantalla roja parpadeante tapa todo, con
-sonido fuerte repetido y vibración, hasta que se toca «Atendido».
-
-**Fin de etapa.** Entre etapas, una pausa con el resumen de la etapa que terminó (cada paso
-con su desvío) y el botón para seguir.
-
-**Receta completada.** Al terminar el último paso no se salta a los resultados: la tarjeta
-se vuelve «¡Receta completada!» con un botón «Ver resultados 🏆». El festejo empieza recién
-al tocarlo.
-
-Salir de la cocina con «‹ Volver» o con el botón de atrás del teléfono descarta la cocinada.
-Si el teléfono descarta la pestaña o la página se recarga, la cocinada en curso se retoma
+Cuando un paso se pasa de tiempo, la pantalla lo dice con el cuerpo: late en rojo si la
+etapa es crítica y en ámbar si es tranquila. Cuando vence algo crítico, una alarma tapa
+todo con sonido fuerte y vibración hasta que se atiende. Entre etapas hay una pausa con el
+resumen de lo hecho. Si el teléfono se apaga o la app se cierra, la cocinada se retoma
 donde estaba.
 
-### 6. Resultados
+**4. Resultados y progreso.** Al terminar, confeti, el tiempo total contra el previsto y el
+desglose de puntos: por completar la receta, un bonus por terminar cerca del tiempo (tanto
+por arriba como por abajo: la velocidad no vale) y puntos por cada paso que no se pasó.
+Los logros que se desbloquearon aparecen ahí mismo. La cocinada se guarda sola.
 
-Confeti, trofeo y el tiempo total contra el previsto. La cocinada se guarda sola. Debajo:
+**5. Historial y perfil.** El historial muestra, por receta, cada cocinada como un punto
+contra la línea del tiempo objetivo: acercarse a la línea es mejorar. El perfil muestra el
+nivel (de Aprendiz a Chef Maestro), la experiencia, los números de la cocina y los logros:
+la primera receta, terminar en tiempo, todos los pasos críticos a tiempo, cocinar tres días
+seguidos.
 
-- **El desglose de experiencia**: 200 puntos por completar la receta, 100 de bonus si el
-  total quedó a menos del 10 % del previsto (por arriba o por abajo, a propósito: la
-  velocidad no vale), y 10 por cada paso que no se pasó de su tiempo.
-- **Los logros nuevos** que esta cocinada desbloqueó.
-- **El paso a paso** de toda la receta con el desvío de cada paso.
+La app está pensada para leerse de parado, a un brazo de distancia y con las manos
+ocupadas: letra grande, botones grandes, tema claro u oscuro, sonidos que se pueden
+silenciar. Se instala en el teléfono desde el navegador y se actualiza sola.
 
-### 7. Historial
+## Lo que se suma alrededor del flujo central
 
-Un gráfico por receta: cada cocinada es un punto contra la línea del tiempo objetivo, con
-escala simétrica, así que la distancia a la línea es el desempeño y acercarse es mejorar.
-Debajo, la lista de intentos con fecha, modo, tiempo y desvío. Se puede cambiar de receta.
+**POE propios.** Cada usuario, escuela o restaurante crea sus propias recetas como POE, con
+sus pasos, tiempos, procesos paralelos, ingredientes, utensilios y fotos. Los POE propios
+son privados por defecto: los de un restaurante son de ese restaurante.
 
-### 8. Perfil
+**Comunidad.** Quien quiera comparte sus POE con los demás. Las recetas compartidas se
+pueden cocinar, comentar y marcar con «me gusta», y a cada creador se lo puede seguir para
+ver lo nuevo que publica. Es una red social alrededor de cocinar bien, donde lo que se
+comparte no es una foto del plato sino el procedimiento para que salga.
 
-Nivel y nombre del nivel (Aprendiz, Cocinero, Sous Chef, Chef, Chef Maestro), la barra de
-experiencia, y los números: recetas cocinadas, minutos en la cocina, experiencia y logros
-conseguidos. La lista de logros, cada uno con su condición:
+**Reels.** Cada receta puede llevar videos cortos que muestran cómo se prepara paso a paso:
+la técnica del corte, el punto del salteado, cómo tiene que verse la salsa. Se ven en el
+paso correspondiente mientras se cocina.
 
-| Logro | Condición |
-|---|---|
-| Primera receta | Cocinar una receta de punta a punta. |
-| En tiempo | Terminar a menos del 10 % del tiempo previsto. |
-| Sin pasarse | Todos los pasos críticos a tiempo en una misma cocinada. |
-| Racha de 3 | Cocinar tres días seguidos. |
+**Ingredientes y utensilios propios.** El usuario carga lo que tiene en su casa: qué
+ingredientes tiene en la heladera y la alacena, qué utensilios en la cocina. Con eso, el
+buscador muestra qué recetas puede preparar con lo que ya tiene, y qué le falta para las
+demás.
 
-Todo sale de las cocinadas guardadas: no hay un estado paralelo que pueda desincronizarse.
+**Costo del plato.** La app calcula cuánto cuesta cada receta buscando los precios de los
+ingredientes en las páginas de los supermercados de la zona, y los de los utensilios en
+Mercado Libre. El costo por porción se ve en la ficha, junto a las calorías.
 
-## Transversal
+**Compras integradas.** Desde la receta se compran los ingredientes en el supermercado y
+los utensilios en Mercado Libre, con lo que sugiere el POE ya cargado en el carrito. Cuando
+un mismo ingrediente o utensilio está en más de un lugar, la app compara precios y deja
+elegir.
 
-- **Solo para celular**, pensada para leerse de parado, a un brazo de distancia, con las
-  manos ocupadas: tipografía grande, botones grandes, nada informativo por debajo de
-  13,5 px.
-- **Tema claro y oscuro**, con un botón flotante, recordado en el teléfono.
-- **Sonidos y vibración**: un toque al confirmar un paso, un aviso suave cuando vence un
-  proceso no crítico, uno fuerte y repetido en la alarma, un arpegio al terminar. Un botón
-  flotante los silencia. Respeta «reducir movimiento» del sistema.
-- **Instalable**: desde el navegador se agrega a la pantalla de inicio y abre sin la barra
-  del navegador. Se actualiza sola con cada publicación.
-- **Recuperación**: si algo falla, una pantalla de error deja volver al inicio sin perder lo
-  guardado.
-- **Sin cuentas ni datos personales**: nada sale del teléfono.
+## Qué hay hoy y qué viene
 
-## El catálogo
+Hoy está publicado y en uso el flujo central completo: elegir la receta, el modo de
+preparación, la mise en place, la cocina con línea de tiempo, cronómetros, alarmas y
+procesos paralelos, los resultados con puntos y logros, el historial y el perfil. Funciona
+sin cuenta y guarda todo en el teléfono de cada usuario, sin costo de operación. Es la
+versión con la que se valida la mecánica con usuarios reales.
 
-Las recetas son contenido, no código. Cada versión de una receta existe en tres formatos
-que dicen lo mismo: un HTML imprimible, un PDF y el JSON que la app consume. Cada
-ingrediente y cada utensilio tiene su ficha con foto (marca y modelo concretos). El catálogo
-se valida automáticamente y la app se publica con él adentro.
+Lo que se suma alrededor (cuentas, POE propios, comunidad, reels, ingredientes en casa,
+costos y compras) es el camino previsto, en ese orden aproximado. Cada pieza se apoya en
+la anterior: primero las cuentas, después los POE propios, después compartirlos.
 
-Hoy hay una receta, Spaghetti integral con brócoli, champiñones y camarones al limón, en
-sus dos modos. El formato está pensado para agregar recetas sin tocar la app.
+## Dónde está el valor
+
+En dos activos que se acumulan. **El catálogo de POE**, propios y de la comunidad: recetas
+con tiempos probados, que es trabajo editorial difícil de copiar y que mejora con cada
+cocinada que la comunidad registra. Y **el historial de cada usuario**: sus cocinadas, su
+progreso, sus logros, sus seguidores. Para un alumno es su carrera; para un restaurante,
+la trazabilidad de su entrenamiento; para la app, lo que hace que se vuelva.
