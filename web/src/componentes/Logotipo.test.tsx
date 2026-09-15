@@ -6,7 +6,7 @@ describe('Logotipo', () => {
   it('escribe el nombre como texto, no como imagen', () => {
     const { container } = render(<Logotipo />);
 
-    expect(screen.getByText('Ilioth')).toBeInTheDocument();
+    expect(screen.getByText('ILIOTH')).toBeInTheDocument();
     // La olla sigue siendo imagen, pero decorativa: el nombre ya lo da el texto.
     const olla = container.querySelector('img.logotipo-olla');
     expect(olla).toHaveAttribute('src', 'icono-192.png');
