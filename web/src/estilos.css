@@ -87,7 +87,7 @@
   --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'Space Mono', ui-monospace, Menlo, monospace;
   /* Solo para la marca escrita: es la tipografía del logo original. */
-  --logotipo: 'Atkinson Hyperlegible', var(--body);
+  --lobster: 'Lobster', cursive;
   /*
    * El degradado de la palabra en el logo original: arranca en el naranja de marca y
    * termina en el verde de las hojas de la olla. Los dos extremos y el paso por el
@@ -339,36 +339,41 @@ h1 {
 }
 
 /*
- * La marca: la olla y el nombre. El nombre es texto y no una imagen, así que vive en un
- * solo lugar (src/componentes/Logotipo.tsx). «ILIOTH» grande con el degradado de marca y
- * «Chef Training» debajo, en versalitas espaciadas.
+ * La marca: la olla y el nombre. El nombre es texto en Lobster y no una imagen, así que
+ * vive en un solo lugar (src/componentes/Logotipo.tsx): «Ilioth» grande con el degradado
+ * de marca y «Chef Training» debajo, más chico, en la misma letra.
  */
 .logotipo {
   display: inline-flex;
   align-items: center;
-  gap: 0.22em;
+  gap: 0.18em;
   line-height: 1;
 }
 
 .logotipo-olla {
-  /* La olla ocupa cerca de un tercio del conjunto y sus hojas asoman por encima de las
-     mayúsculas. Con menos, parece un adorno al costado. */
+  /* Proporción del logo original: la olla ocupa cerca de un tercio del conjunto y sus
+     hojas asoman por encima de las mayúsculas. Con menos, parece un adorno al costado. */
   width: 1.7em;
   height: auto;
   flex: none;
+  /* Lobster apoya sobre una base alta; centrar la olla en la caja completa la deja
+     flotando, así que se la baja un poco para alinearla con el cuerpo de las letras. */
+  margin-top: 0.12em;
 }
 
 .logotipo-palabra {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  font-family: var(--lobster);
+  font-weight: 400;
 }
 
 .logotipo-palabra b {
-  font-family: var(--logotipo);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1;
+  font-weight: 400;
+  /* Lobster tiene descendentes largas; sin esto la «I» se corta contra lo de arriba. */
+  line-height: 1.15;
+  padding-right: 0.06em;
   /* Respaldo: si el navegador no recorta el fondo al texto, se ve el naranja de marca en
      vez de un hueco transparente. */
   color: var(--brand);
@@ -376,15 +381,10 @@ h1 {
 }
 
 .logotipo-palabra small {
-  font-family: var(--body);
-  font-weight: 800;
-  font-size: 0.27em;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
+  font-size: 0.4em;
+  line-height: 1;
   color: var(--brand);
-  margin-top: 0.14em;
-  /* El espaciado deja un hueco al final; se compensa para que quede centrado bajo ILIOTH. */
-  margin-left: 0.15em;
+  margin-top: -0.1em;
 }
 
 @supports (-webkit-background-clip: text) or (background-clip: text) {
