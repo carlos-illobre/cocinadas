@@ -1,4 +1,4 @@
-# Ilioth Chef Training
+# Cocinadas
 
 **La app: <https://carlos-illobre.github.io/cocinadas/>**
 

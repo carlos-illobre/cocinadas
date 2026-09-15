@@ -1,7 +1,4 @@
-# Ilioth Chef Training
-
-El repositorio y la URL siguen llamándose `cocinadas` (la app se llamó así hasta el
-2026-09-15); en la app y en la documentación el nombre es Ilioth Chef Training.
+# Cocinadas
 
 Contexto que no se deduce leyendo el código. Lo demás está en el [README](README.md), en
 [docs/](docs/) y en los [ADR](docs/adr/), que son la explicación larga de cada decisión:

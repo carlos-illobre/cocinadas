@@ -7,7 +7,7 @@ describe('Inicio', () => {
     render(<Inicio alEntrar={() => undefined} />);
 
     // La marca es texto, no una imagen: por eso se busca por texto y no por rol de imagen.
-    expect(screen.getByText('ILIOTH')).toBeInTheDocument();
+    expect(screen.getByText('Cocinadas')).toBeInTheDocument();
     expect(screen.getByText('Tu receta, al punto justo')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Continuar con Google' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Entrar sin cuenta' })).toBeInTheDocument();

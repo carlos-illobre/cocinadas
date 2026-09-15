@@ -87,7 +87,7 @@
   --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'Space Mono', ui-monospace, Menlo, monospace;
   /* Solo para la marca escrita: es la tipografía del logo original. */
-  --logotipo: 'Atkinson Hyperlegible', var(--body);
+  --lobster: 'Lobster', cursive;
   /*
    * El degradado de la palabra en el logo original: arranca en el naranja de marca y
    * termina en el verde de las hojas de la olla. Los dos extremos y el paso por el
@@ -339,56 +339,41 @@ h1 {
 }
 
 /*
- * La marca: la olla y el nombre. El nombre es texto y no una imagen, así que vive en un
- * solo lugar (src/componentes/Logotipo.tsx). «ILIOTH» grande con el degradado de marca y
- * «Chef Training» debajo, en versalitas espaciadas.
+ * La marca: la olla y la palabra. La palabra es texto en Lobster y no una imagen, así que
+ * el nombre del proyecto vive en un solo lugar (src/componentes/Logotipo.tsx).
  */
 .logotipo {
   display: inline-flex;
   align-items: center;
-  gap: 0.22em;
+  gap: 0.18em;
   line-height: 1;
 }
 
 .logotipo-olla {
-  /* La olla ocupa cerca de un tercio del conjunto y sus hojas asoman por encima de las
-     mayúsculas. Con menos, parece un adorno al costado. */
+  /* Proporción del logo original: la olla ocupa cerca de un tercio del conjunto y sus
+     hojas asoman por encima de las mayúsculas. Con menos, parece un adorno al costado. */
   width: 1.7em;
   height: auto;
   flex: none;
+  /* Lobster apoya sobre una base alta; centrar la olla en la caja completa la deja
+     flotando, así que se la baja un poco para alinearla con el cuerpo de las letras. */
+  margin-top: 0.12em;
 }
 
 .logotipo-palabra {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.logotipo-palabra b {
-  font-family: var(--logotipo);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1;
+  font-family: var(--lobster);
+  font-weight: 400;
+  /* Lobster tiene descendentes largas; sin esto la «C» se corta contra lo de arriba. */
+  line-height: 1.15;
+  padding-right: 0.06em;
   /* Respaldo: si el navegador no recorta el fondo al texto, se ve el naranja de marca en
      vez de un hueco transparente. */
   color: var(--brand);
   background-image: var(--degradado-marca);
 }
 
-.logotipo-palabra small {
-  font-family: var(--body);
-  font-weight: 800;
-  font-size: 0.27em;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--brand);
-  margin-top: 0.14em;
-  /* El espaciado deja un hueco al final; se compensa para que quede centrado bajo ILIOTH. */
-  margin-left: 0.15em;
-}
-
 @supports (-webkit-background-clip: text) or (background-clip: text) {
-  .logotipo-palabra b {
+  .logotipo-palabra {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
