@@ -20,9 +20,9 @@ Los diagramas de esta página están en [diagrams/](diagrams/) como Mermaid.
 
 ```mermaid
 C4Context
-  title Cocinadas · contexto
+  title Ilioth Chef Training · contexto
   Person(cocinero, "Cocinero", "Usa la app desde el celular apoyado en la mesada")
-  System(cocinadas, "Cocinadas", "Línea de tiempo viva de la receta, cronómetros, alarmas y progreso")
+  System(cocinadas, "Ilioth Chef Training", "Línea de tiempo viva de la receta, cronómetros, alarmas y progreso")
   System_Ext(github, "GitHub · Actions · Pages", "Código, CI y el hosting del sitio, con su TLS")
   Rel(cocinero, cocinadas, "HTTPS", "carlos-illobre.github.io/cocinadas/")
   Rel(github, cocinadas, "publica en cada merge a main")
@@ -64,7 +64,7 @@ velocidad; el criterio exacto de puntos es provisional.
 
 ```mermaid
 C4Container
-  title Cocinadas · qué hay corriendo
+  title Ilioth Chef Training · qué hay corriendo
   Person(cocinero, "Cocinero")
   System_Boundary(pages, "GitHub Pages") {
     Container(sitio, "el sitio", "archivos estáticos", "index.html, el bundle, y el catálogo bajo api/catalogo/")

@@ -1,11 +1,11 @@
-# Cocinadas
+# Ilioth Chef Training
 
 Descripción de negocio de la aplicación: qué es, a quién sirve, cómo se usa y hacia dónde
 va.
 
 ## En una frase
 
-Cocinadas convierte una receta en una línea de tiempo viva: elegís qué cocinar y la app te
+Ilioth Chef Training convierte una receta en una línea de tiempo viva: elegís qué cocinar y la app te
 lleva paso a paso, con la mise en place, los cronómetros y los procesos en paralelo a la
 vista, y a medida que cocinás ganás puntos de experiencia y logros. Es una app gamificada
 para entrenar en la cocina hasta que cada plato salga igual, siempre.
@@ -23,7 +23,7 @@ receta. Ninguna une el qué con el cuándo, y ninguna mide si salió bien.
 
 ## La propuesta: recetas como POE
 
-En Cocinadas cada receta es un **POE, un procedimiento operativo estándar**: no solo
+En Ilioth Chef Training cada receta es un **POE, un procedimiento operativo estándar**: no solo
 ingredientes y pasos, sino el tiempo pensado de cada cosa. Qué paso empieza en qué minuto y
 cuánto dura. Qué procesos corren solos en paralelo, como un descongelado o una olla al
 fuego. Cuáles son críticos, es decir, en cuáles pasarse arruina el plato, y en cuáles no

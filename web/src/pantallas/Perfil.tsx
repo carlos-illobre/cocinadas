@@ -76,7 +76,7 @@ export function Perfil({ cocinadas, xp, version }: PropiedadesPerfil): React.JSX
           <p className="lead">
             {cocinadas.length === 0 ? 'Todavía no hay cocinadas guardadas.' : `Suman ${reloj(total_s)} de cocina, guardadas en este teléfono.`}
           </p>
-          <p className="perfil-version">Cocinadas {version}</p>
+          <p className="perfil-version">Ilioth Chef Training {version}</p>
         </section>
       </div>
     </main>

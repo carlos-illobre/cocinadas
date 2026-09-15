@@ -63,6 +63,6 @@ describe('Perfil', () => {
 
   it('muestra la versión de la app', () => {
     montar([], 0);
-    expect(screen.getByText('Cocinadas 0.3.0')).toBeInTheDocument();
+    expect(screen.getByText('Ilioth Chef Training 0.3.0')).toBeInTheDocument();
   });
 });
