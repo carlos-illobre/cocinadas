@@ -18,6 +18,24 @@ antes de cambiar algo que tenga un ADR, leelo.
 - **La interfaz actual es la fuente de verdad del diseño.** No hay prototipo aparte: lo que
   se ve en la app es lo que hay que conservar.
 
+## Requerimientos y tareas
+
+El tablero del portafolio (<https://gratis-vnic.tail994934.ts.net:8444/>) lee este
+repositorio: `docs/REQUERIMIENTOS.md`, `proyecto/proyecto.yml`, `proyecto/riesgos.yml` y los
+issues, con un milestone por lanzamiento.
+
+- **Los requerimientos mandan.** Uno nuevo, o uno que cambia, se le pregunta a Carlos;
+  recién con su respuesta se edita el documento y se anota en sus decisiones con la fecha.
+- **Se toman solo tareas listas:** abiertas y con todo su «Depende de» cerrado.
+- **Al terminar una tarea:** el estado del requerimiento pasa de `Pendiente (#N)` a
+  `Hecho (#N)` y se cierra el issue. El estado tiene que empezar con `Hecho`,
+  `Hecho en parte`, `A validar`, `Pendiente` o `Nuevo`; si contiene `fuera de esta etapa`,
+  no cuenta para el avance.
+- **Trabajo nuevo:** un issue con su milestone y, si depende de otros, una sección
+  `## Depende de` con los `#N`.
+- Lo que cruza proyectos (marcas, prioridades, impuestos) se trata en la sesión del
+  portafolio, no acá.
+
 ## Cómo se escribe acá
 
 - **Todo en español**: código, comentarios, commits, documentación y textos de la app,
