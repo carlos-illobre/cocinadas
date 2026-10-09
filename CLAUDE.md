@@ -26,6 +26,8 @@ issues, con un milestone por lanzamiento.
 
 - **Los requerimientos mandan.** Uno nuevo, o uno que cambia, se le pregunta a Carlos;
   recién con su respuesta se edita el documento y se anota en sus decisiones con la fecha.
+- **Antes de tocar una pantalla**, leer la sección 6 de `docs/REQUERIMIENTOS.md` (lo que ya
+  funciona y no se puede romper) y la 7 (lo que todavía no está decidido).
 - **Se toman solo tareas listas:** abiertas y con todo su «Depende de» cerrado.
 - **Al terminar una tarea:** el estado del requerimiento pasa de `Pendiente (#N)` a
   `Hecho (#N)` y se cierra el issue. El estado tiene que empezar con `Hecho`,
@@ -61,7 +63,8 @@ issues, con un milestone por lanzamiento.
 
 Sitio estático en GitHub Pages (<https://carlos-illobre.github.io/cocinadas/>): una SPA
 que se baja entera al teléfono, catálogo incluido. Las cocinadas viven en el
-`localStorage` (`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`).
+`localStorage` (`cocinadas.historial`, `cocinadas.tema`, `cocinadas.cocinando`,
+`cocinadas.silencio`).
 **Cada merge a `main` publica solo.**
 
 `web/` se divide por dónde corre cada cosa:
@@ -76,7 +79,7 @@ que se baja entera al teléfono, catálogo incluido. Las cocinadas viven en el
 
 El catálogo **se genera en el build**: `herramientas/catalogo/catalogo.ts` lee `data/` y
 decide (puro); `generar.ts` escribe en `web/public/api/catalogo/`, que no se versiona.
-Las imágenes tienen dos vidas: originales en `data/` y `docs/mockups/`, y las versiones
+Las imágenes tienen dos vidas: originales en `data/`, y las versiones
 publicadas en `web/assets/` (WebP, al tamaño que se muestran), que se regeneran con
 `pnpm optimizar`. Si falta una, el build corta y dice cuál.
 
@@ -100,8 +103,9 @@ ADR-015 y ADR-017; los ADR 001 a 016 son historia.
 - El gráfico de progreso es **puntos contra la línea del objetivo**, con escala simétrica:
   la distancia a la línea es el desempeño.
 - Del prototipo se dejaron afuera a propósito: login por nombre, dificultad, cronómetros
-  por paso independientes, el guardado automático (acá es explícito) y, por ahora, el
-  cartel modal «Logro desbloqueado» y los sub-pasos numerados.
+  por paso independientes y, por ahora, el cartel modal «Logro desbloqueado» y los
+  sub-pasos numerados.
+- **La cocinada se guarda sola al terminar.** No hay «salir sin guardar».
 
 ## Los datos son contenido, no código
 
