@@ -104,10 +104,14 @@ silenciar. Se instala en el teléfono desde el navegador y se actualiza sola.
 ## Lo que se suma alrededor del flujo central
 
 **POE propios.** Cada usuario, escuela o restaurante crea sus propias recetas como POE, con
-sus pasos, tiempos, procesos paralelos, ingredientes, utensilios y fotos. Los POE propios
-son privados por defecto: los de un restaurante son de ese restaurante.
+sus pasos, tiempos, procesos paralelos, ingredientes, utensilios y fotos.
 
-**Comunidad.** Quien quiera comparte sus POE con los demás. Las recetas compartidas se
+**Público gratis, privado pago.** Un POE público es gratuito para quien lo sube y para
+quien lo cocina: lo que se busca es la mayor difusión posible. Un POE privado es pago: es
+para el instituto o el restaurante que quiere entrenar a sus alumnos o a sus cocineros sin
+publicar sus recetas. De ahí sale el ingreso de la app.
+
+**Comunidad.** Los POE públicos están a la vista de todos. Se
 pueden cocinar, comentar y marcar con «me gusta», y a cada creador se lo puede seguir para
 ver lo nuevo que publica. Es una red social alrededor de cocinar bien, donde lo que se
 comparte no es una foto del plato sino el procedimiento para que salga.
@@ -138,9 +142,11 @@ procesos paralelos, los resultados con puntos y logros, el historial y el perfil
 sin cuenta y guarda todo en el teléfono de cada usuario, sin costo de operación. Es la
 versión con la que se valida la mecánica con usuarios reales.
 
-Lo que se suma alrededor (cuentas, POE propios, comunidad, reels, ingredientes en casa,
-costos y compras) es el camino previsto, en ese orden aproximado. Cada pieza se apoya en
-la anterior: primero las cuentas, después los POE propios, después compartirlos.
+Lo que se suma alrededor (cuentas, POE propios y públicos, espacios privados pagos,
+comunidad, reels, ingredientes en casa, costos y compras) es el camino previsto, en ese
+orden aproximado. Cada pieza se apoya en la anterior: primero las cuentas, después los POE
+públicos de los usuarios, después los espacios privados por suscripción. El detalle por
+lanzamiento está en [REQUERIMIENTOS.md](REQUERIMIENTOS.md).
 
 ## Dónde está el valor
 

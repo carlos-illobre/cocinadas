@@ -23,7 +23,9 @@ haga.
 | 3 · Espacios privados | Universidades, institutos y restaurantes suben POE privados para entrenar a su gente, por suscripción | Instituciones que pagan |
 | Más adelante | Red social de cocina, publicidad, compras, apps nativas | |
 
-El modelo de negocio es el de GitHub: lo público es gratis y lo privado se paga.
+El modelo de negocio es el de GitHub. **Un POE público es gratis**, porque se busca la
+mayor difusión. **Un POE privado es pago**: es para el instituto o el restaurante que quiere
+entrenar a sus alumnos o cocineros sin publicar sus recetas.
 
 ## 3. Requerimientos funcionales
 
@@ -32,11 +34,16 @@ El modelo de negocio es el de GitHub: lo público es gratis y lo privado se paga
 | ID | Requerimiento | Estado |
 |---|---|---|
 | RF-01 | Lista de recetas con foto, tiempo total, porciones y calorías | Hecho |
-| RF-02 | Ficha de la receta: plato, valores nutricionales, ingredientes y utensilios con foto | Hecho |
+| RF-02 | Ficha de la receta: plato, calorías y proteína, ingredientes y utensilios con foto | Hecho |
 | RF-03 | Modo de preparación fácil (una cosa por vez) o difícil (todo en paralelo) | Hecho |
 | RF-04 | Recetas de lanzamiento: fideos con brócoli, filet de merluza al papillot, pizza al molde y bife de chorizo con arroz | Hecho en parte: 1 de 4 (#92, #93, #94) |
 | RF-05 | Formato de receta que declara, por tarea, si se cronometra, si pasarse arruina el plato, si tiene un mínimo y con qué corre en paralelo | Pendiente (#70) |
-| RF-06 | La app muestra toda la información del POE de papel, adaptada a la pantalla del celular | Pendiente (#99) |
+| RF-06 | La app muestra toda la información del POE de papel, adaptada a la pantalla del celular. Lo que falta está en RF-06a a RF-06e | Pendiente (#99) |
+| RF-06a | Mecanismo para cargar un POE sin editar archivos a mano. En el primer lanzamiento lo usa solo Carlos | Pendiente (#103) |
+| RF-06b | Costo del plato | Pendiente (#78) |
+| RF-06c | Valores nutricionales completos | Pendiente (#104) |
+| RF-06d | Si la receta tiene TACC o no | Pendiente (#105) |
+| RF-06e | Octógonos de advertencia: exceso de azúcares, de grasas, de sodio y los demás | Pendiente (#106) |
 | RF-07 | Recetas de una porción | Hecho |
 | RF-08 | La receta se adapta a la cantidad de comensales | Nuevo, fuera de esta etapa |
 | RF-09 | Filtros: con o sin sal, apto celíacos | Pendiente (#83, #84), fuera de esta etapa |
@@ -51,10 +58,12 @@ El modelo de negocio es el de GitHub: lo público es gratis y lo privado se paga
 | RF-13 | Varios cronómetros a la vez: lo que corre solo, con su cuenta regresiva | Hecho |
 | RF-14 | Alarmas con sonido y vibración; la de un paso crítico tapa la pantalla hasta que se atiende | Hecho |
 | RF-15 | Línea de tiempo de la etapa con un carril por proceso paralelo | Hecho |
-| RF-16 | Manejo con la voz, para cuando las manos están sucias | Pendiente (#97) |
+| RF-16 | Manejo con la voz, para cuando las manos están sucias. Por ahora alcanza con tocar botones y escuchar alarmas | Pendiente (#97), fuera de esta etapa |
 | RF-17 | Si se cierra la app, la cocinada se retoma donde estaba | Hecho |
 | RF-18 | Silenciar los sonidos | Hecho |
-| RF-19 | Corregir lo que hoy no funciona bien, a relevar con Carlos | Pendiente (#98) |
+| RF-19 | La pantalla de cocina es cómoda de usar mientras se cocina, con las manos ocupadas | Pendiente (#98) |
+| RF-19a | Las barras de todos los cronómetros avanzan sincronizadas entre sí y con el reloj | Pendiente (#101) |
+| RF-19b | Todo cronómetro que vence avisa, sin excepción | Pendiente (#102) |
 | RF-20 | Videos cortos en los pasos | Pendiente (#77), fuera de esta etapa |
 
 ### 3.3 Progreso y juego
@@ -92,13 +101,13 @@ El modelo de negocio es el de GitHub: lo público es gratis y lo privado se paga
 | RF-50 | Red social: seguir cocineros y mandarse mensajes | Nuevo, fuera de esta etapa |
 | RF-51 | Publicidad, al estilo de Instagram pero de cocina | Nuevo, fuera de esta etapa |
 | RF-52 | Ingredientes y utensilios propios, y buscar recetas por lo que hay en casa | Pendiente (#72, #73), fuera de esta etapa |
-| RF-53 | Costo del plato y compra de ingredientes y utensilios, eligiendo entre marcas | Pendiente (#78, #80, #81, #82), fuera de esta etapa |
+| RF-53 | Compra de ingredientes y utensilios, eligiendo entre marcas | Pendiente (#80, #81, #82), fuera de esta etapa |
 
 ### 3.7 Marca
 
 | ID | Requerimiento | Estado |
 |---|---|---|
-| RF-60 | Nombre definitivo de la app, analizado como marca | Pendiente (#87) |
+| RF-60 | Nombre definitivo de la app: Cocinadas o Illioth Chef Training. Antes hay que ver si cada una está registrada como marca y decidir si comparte marca con la consultoría | Pendiente (#87) |
 
 ## 4. Requerimientos no funcionales
 
@@ -124,14 +133,17 @@ El modelo de negocio es el de GitHub: lo público es gratis y lo privado se paga
    adaptada a la pantalla interactiva del celular.
 3. Las recetas las escribe Carlos a medida que las aprende.
 4. Quién carga POE cambia con cada lanzamiento (sección 2).
-5. La cocina se maneja con las manos sucias: voz, botones grandes, pantalla siempre
-   encendida y sin internet.
+5. La cocina se maneja con las manos sucias: botones grandes, pantalla siempre encendida
+   y sin internet. La voz queda para una versión más avanzada.
 6. Varios cronómetros a la vez; en principio el celular está desbloqueado.
 7. Una porción por ahora; más adelante se adapta a los comensales.
 8. Sin registro para cocinar; el registro aparece solo para subir o comentar un POE.
 9. Es el proyecto de menor prioridad, pero terminado sirve como caso de éxito de la
    consultoría.
 
-**Diferencia con PRODUCTO.md:** ese documento dice que los POE propios son privados por
-defecto. La decisión de hoy es la contraria: los de un usuario son públicos y gratuitos, y
-lo privado es de las instituciones que pagan.
+10. Qué no funciona bien hoy: las barras de los cronómetros no están sincronizadas, las
+    alertas aparecen solo en algunos y la pantalla es incómoda de usar mientras se cocina
+    (RF-19, RF-19a, RF-19b).
+11. Qué falta del POE de papel: cómo cargarlo, el costo, los valores nutricionales, si
+    tiene TACC y los octógonos (RF-06a a RF-06e).
+12. El nombre no está decidido: Cocinadas o Illioth Chef Training (RF-60).
