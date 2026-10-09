@@ -106,10 +106,12 @@ silenciar. Se instala en el teléfono desde el navegador y se actualiza sola.
 **POE propios.** Cada usuario, escuela o restaurante crea sus propias recetas como POE, con
 sus pasos, tiempos, procesos paralelos, ingredientes, utensilios y fotos.
 
-**Público gratis, privado pago.** Un POE público es gratuito para quien lo sube y para
-quien lo cocina: lo que se busca es la mayor difusión posible. Un POE privado es pago: es
-para el instituto o el restaurante que quiere entrenar a sus alumnos o a sus cocineros sin
-publicar sus recetas. De ahí sale el ingreso de la app.
+**Público gratis, privado pago.** Todo lo público es gratuito, sin límites y sin obligación
+de registrarse: lo que se busca es la mayor difusión posible. Lo privado es pago: es para
+el restaurante que no quiere compartir sus recetas, para el instituto que no quiere
+publicar su metodología ni sus videos, y para cualquier particular que quiera lo mismo.
+Quien paga la membresía decide quién ve sus POE, y la app le da un marco de seguridad:
+cifrado y la garantía de que sus datos no se comparten. De ahí sale el primer ingreso.
 
 **Comunidad.** Los POE públicos están a la vista de todos. Se
 pueden cocinar, comentar y marcar con «me gusta», y a cada creador se lo puede seguir para

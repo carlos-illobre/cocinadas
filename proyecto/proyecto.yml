@@ -12,10 +12,10 @@ objetivos:
     - App web para celular que permita elegir una receta y cocinarla paso a paso, sin registrarse
     - Cuatro recetas de lanzamiento escritas como POE
     - Que se pueda usar con las manos sucias, sin internet y con la pantalla encendida
+    - "Gamificación: puntos, niveles y logros. Ya está publicada y no es bloqueante"
   mediano:
-    - Gamificación
     - Cualquier usuario registrado publica sus POE, gratis
-    - Universidades, institutos y restaurantes de 4 y 5 estrellas pagan por espacios privados
+    - Universidades, institutos, restaurantes de 4 y 5 estrellas y particulares pagan una membresía por espacios privados
   largo:
     - "Red social de cocina: seguir cocineros, me gusta, comentarios, mensajes y publicidad"
     - Apps nativas para Android y iPhone

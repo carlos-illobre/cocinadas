@@ -38,7 +38,7 @@ riesgos:
     probabilidad: 3
     impacto: 3
     respuesta: evitar
-    plan: "Definir el nombre y analizarlo como marca antes del primer lanzamiento (#87)"
+    plan: "El primer lanzamiento sale como Cocinadas; el análisis de marca queda pendiente (#87)"
     contingencia: Migrar los datos guardados al cambiar el nombre
     disparador: Se decide un nombre nuevo con usuarios ya usando la app
     responsable: Carlos
