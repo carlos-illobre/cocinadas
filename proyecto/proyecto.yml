@@ -1,0 +1,72 @@
+# Ficha del proyecto. La lee el portafolio (github.com/carlos-illobre/portafolio).
+nombre: Cocinadas
+tipo: software
+estado: en curso
+resumen: >-
+  App para aprender a cocinar: cada receta es un procedimiento operativo estándar (POE),
+  con cronómetros, alarmas y procesos en paralelo, para que el plato salga siempre igual
+  sin importar quién lo haga.
+
+objetivos:
+  corto:
+    - App web para celular que permita elegir una receta y cocinarla paso a paso, sin registrarse
+    - Cuatro recetas de lanzamiento escritas como POE
+    - Que se pueda usar con las manos sucias, sin internet y con la pantalla encendida
+  mediano:
+    - Gamificación
+    - Cualquier usuario registrado publica sus POE, gratis
+    - Universidades, institutos y restaurantes de 4 y 5 estrellas pagan por espacios privados
+  largo:
+    - "Red social de cocina: seguir cocineros, me gusta, comentarios, mensajes y publicidad"
+    - Apps nativas para Android y iPhone
+
+criterios_de_exito:
+  - Las cuatro recetas de lanzamiento se cocinan de punta a punta con la app
+  - Dos personas distintas cocinan el mismo POE y el plato sale igual
+  - Una institución paga por un espacio privado
+
+interesados:
+  - nombre: Carlos
+    rol: Dueño, desarrollador y autor de las recetas
+    interes: Escribe los POE a medida que aprende cada plato
+  - nombre: Quien cocina en su casa
+    rol: Usuario
+    interes: Que la receta le salga bien y en el tiempo que dice
+  - nombre: Escuelas de cocina y universidades
+    rol: Clientes futuros
+    interes: Seguir el progreso de sus alumnos
+  - nombre: Restaurantes de hoteles de 4 y 5 estrellas
+    rol: Clientes futuros
+    interes: Que el plato salga igual sin importar quién lo prepare
+  - nombre: Consultoría
+    rol: Proyecto relacionado
+    interes: La app terminada es un caso de éxito para mostrar
+
+supuestos:
+  - Una app web alcanza para validar la idea antes de hacer apps nativas
+  - Mientras se cocina, el celular está desbloqueado
+  - Las instituciones están dispuestas a pagar por POE privados
+
+restricciones:
+  - Es el proyecto de menor prioridad del portafolio
+  - Solo celular; no hay versión de escritorio
+  - Las recetas las escribe una sola persona
+  - Costo de operación cero en el primer lanzamiento
+
+requerimientos: docs/REQUERIMIENTOS.md
+
+# Fechas tentativas: primera estimación, a confirmar por Carlos. Es el proyecto de menor
+# prioridad, así que dependen de los otros cuatro.
+cronograma:
+  - etapa: Lanzamiento 1 · Cocinar sin cuenta
+    inicio: 2027-02-01
+    fin: 2027-03-31
+    tentativo: true
+  - etapa: Lanzamiento 2 · Cuentas y POE públicos
+    inicio: 2027-04-01
+    fin: 2027-06-30
+    tentativo: true
+  - etapa: Lanzamiento 3 · Espacios privados por suscripción
+    inicio: 2027-07-01
+    fin: 2027-09-30
+    tentativo: true

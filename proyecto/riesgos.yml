@@ -1,0 +1,78 @@
+# Registro de riesgos. Probabilidad e impacto de 1 a 5; la severidad es el producto.
+riesgos:
+  - id: R-01
+    riesgo: Una alarma no suena porque el navegador frena la app en segundo plano o se apaga la pantalla, y se arruina el plato
+    probabilidad: 4
+    impacto: 4
+    respuesta: mitigar
+    plan: "Mantener la pantalla encendida mientras se cocina (#96) y probar las alarmas en celulares reales"
+    contingencia: Adelantar las apps nativas, que sí pueden avisar con el celular bloqueado
+    disparador: Una alarma crítica llega tarde en una cocinada real
+    responsable: Carlos
+    estado: abierto
+
+  - id: R-02
+    riesgo: Escribir y probar cada POE lleva mucho tiempo y el catálogo queda en pocas recetas
+    probabilidad: 4
+    impacto: 3
+    respuesta: mitigar
+    plan: "Cuatro recetas para el primer lanzamiento; el segundo abre la carga a los usuarios"
+    contingencia: Lanzar con menos recetas
+    disparador: Pasa un mes sin sumar una receta
+    responsable: Carlos
+    estado: abierto
+
+  - id: R-03
+    riesgo: Al ser el proyecto de menor prioridad, queda parado indefinidamente
+    probabilidad: 4
+    impacto: 3
+    respuesta: aceptar
+    plan: Es la prioridad acordada; avanzar con tareas chicas e independientes cuando haya tiempo
+    contingencia: Correr las fechas del cronograma
+    disparador: Más de 60 días sin movimiento
+    responsable: Carlos
+    estado: abierto
+
+  - id: R-04
+    riesgo: El nombre cambia tarde y hay que rehacer repositorio, dirección, datos guardados en los teléfonos y material
+    probabilidad: 3
+    impacto: 3
+    respuesta: evitar
+    plan: "Definir el nombre y analizarlo como marca antes del primer lanzamiento (#87)"
+    contingencia: Migrar los datos guardados al cambiar el nombre
+    disparador: Se decide un nombre nuevo con usuarios ya usando la app
+    responsable: Carlos
+    estado: abierto
+
+  - id: R-05
+    riesgo: Las instituciones no pagan por espacios privados, o venderles lleva mucho más de lo previsto
+    probabilidad: 3
+    impacto: 4
+    respuesta: mitigar
+    plan: Conseguir una escuela o un restaurante piloto antes de construir el tercer lanzamiento
+    contingencia: Buscar otro modelo de ingresos, como publicidad o compras integradas
+    disparador: Ningún piloto interesado después de presentar la app a cinco instituciones
+    responsable: Carlos
+    estado: abierto
+
+  - id: R-06
+    riesgo: Al pasar a cuentas y contenido público aparecen costos de servidor y la necesidad de moderar lo que suben los usuarios
+    probabilidad: 3
+    impacto: 3
+    respuesta: mitigar
+    plan: Definir moderación y presupuesto de servidor antes del segundo lanzamiento
+    contingencia: Publicación de POE con aprobación previa
+    disparador: Primer contenido inapropiado o primera factura de servidor
+    responsable: Carlos
+    estado: abierto
+
+  - id: R-07
+    riesgo: El usuario pierde su historial al cambiar de teléfono o borrar los datos del navegador, porque todo se guarda en el teléfono
+    probabilidad: 3
+    impacto: 2
+    respuesta: aceptar
+    plan: Se resuelve con las cuentas del segundo lanzamiento
+    contingencia: Exportar e importar el historial a mano
+    disparador: Un usuario reclama por historial perdido
+    responsable: Carlos
+    estado: abierto
