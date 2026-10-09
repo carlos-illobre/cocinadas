@@ -38,7 +38,7 @@ riesgos:
     probabilidad: 3
     impacto: 3
     respuesta: evitar
-    plan: "El primer lanzamiento sale como Cocinadas; el análisis de marca queda pendiente (#87)"
+    plan: "El nombre queda Cocinadas, decidido el 2026-10-09; falta registrarlo como marca y reservar los dominios (#87)"
     contingencia: Migrar los datos guardados al cambiar el nombre
     disparador: Se decide un nombre nuevo con usuarios ya usando la app
     responsable: Carlos

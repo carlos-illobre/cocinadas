@@ -113,6 +113,10 @@ publicar su metodología ni sus videos, y para cualquier particular que quiera l
 Quien paga la membresía decide quién ve sus POE, y la app le da un marco de seguridad:
 cifrado y la garantía de que sus datos no se comparten. De ahí sale el primer ingreso.
 
+**Con cuenta o sin cuenta.** Sin cuenta se puede cocinar todo lo público y guardar en el
+propio teléfono el progreso y los POE propios. Para publicar, comentar o dar «me gusta» hace
+falta una cuenta: lo que se comparte tiene que tener un autor identificado.
+
 **Comunidad.** Los POE públicos están a la vista de todos. Se
 pueden cocinar, comentar y marcar con «me gusta», y a cada creador se lo puede seguir para
 ver lo nuevo que publica. Es una red social alrededor de cocinar bien, donde lo que se

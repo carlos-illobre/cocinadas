@@ -44,8 +44,19 @@ es obligatoria, porque hay que saber de quién es lo que no se divulga, y la app
 de seguridad: cifrado y la garantía de que esos datos no se comparten. Ese espacio se vende
 como una membresía vinculada a la cuenta, y es la primera fuente de ingresos.
 
-En una línea: si todo lo que hacés es público, es gratis y sin cuenta; si querés que algo
-sea privado, pagás la membresía.
+En una línea: si todo lo que hacés es público, es gratis; si querés que algo sea privado,
+pagás la membresía.
+
+**Qué se puede hacer sin cuenta y qué no.** La regla es una sola: nada que se escriba en el
+servidor se hace sin cuenta.
+
+- **Sin cuenta:** todo lo que es leer, y todo lo que se guarda únicamente en el teléfono.
+  Elegir recetas, cocinarlas con sus cronómetros y alarmas, ver la experiencia y los
+  logros, guardar el puntaje y guardar POE propios. Nada de eso se comparte con otro
+  dispositivo.
+- **Con cuenta:** todo lo que se comparte. Publicar un POE, comentar, dar me gusta. Hace
+  falta identificar a quien escribe, porque si publica algo ofensivo hay que poder banear
+  su cuenta.
 
 ## 3. Requerimientos funcionales
 
@@ -102,10 +113,11 @@ sea privado, pagás la membresía.
 | ID | Requerimiento | Estado |
 |---|---|---|
 | RF-30 | Cuentas de usuario con backend y base de datos | Pendiente (#68), fuera de esta etapa |
-| RF-31 | Iniciar sesión con Google o Instagram. Solo se pide para subir o comentar un POE; para cocinar no hace falta | Pendiente (#69), fuera de esta etapa |
-| RF-32 | Un usuario registrado crea su POE y lo publica | Pendiente (#71, #74), fuera de esta etapa |
+| RF-31 | Iniciar sesión con Google o Instagram. Se pide para todo lo que se escribe en el servidor: publicar un POE, comentar o dar me gusta. Para leer, cocinar y guardar en el propio teléfono no hace falta | Pendiente (#69), fuera de esta etapa |
+| RF-32 | Cualquiera crea su POE y lo guarda en su teléfono, sin cuenta. Para publicarlo hace falta cuenta | Pendiente (#71, #74), fuera de esta etapa |
 | RF-33 | Comentarios y me gusta en los POE | Pendiente (#75), fuera de esta etapa |
 | RF-34 | Con cuenta, el historial y el progreso se guardan en la cuenta, y se conserva lo que ya estaba en el teléfono. Es lo que resuelve el riesgo R-07 | Nuevo, fuera de esta etapa |
+| RF-35 | La cuenta que publica contenido ofensivo se puede banear | Pendiente (#111), fuera de esta etapa |
 
 ### 3.5 Lanzamiento 3: espacios privados por suscripción
 
@@ -116,6 +128,7 @@ sea privado, pagás la membresía.
 | RF-42 | Restaurantes: el supervisor mide tiempos, desvíos y repeticiones de cada cocinero | Nuevo, fuera de esta etapa |
 | RF-43 | Cobro de la membresía, vinculada a la cuenta de quien la compra | Pendiente (#100), fuera de esta etapa |
 | RF-44 | El espacio privado tiene un marco de seguridad: cifrado y la garantía de que los datos no se comparten | Pendiente (#110), fuera de esta etapa |
+| RF-45 | El docente y el supervisor miran el seguimiento en una vista de escritorio, en una dirección aparte. Es secundaria: no cambia nada del diseño de celular | Pendiente (#112), fuera de esta etapa |
 
 ### 3.6 Más adelante
 
@@ -133,37 +146,43 @@ sea privado, pagás la membresía.
 
 | ID | Requerimiento | Estado |
 |---|---|---|
-| RF-60 | Nombre definitivo de la app: Cocinadas o Illioth Chef Training. El primer lanzamiento sale como Cocinadas; queda pendiente el análisis de marca para saber cuál conviene y si comparte marca con la consultoría | Pendiente (#87), fuera de esta etapa |
+| RF-60 | El nombre de la app es Cocinadas. Falta registrarlo como marca y reservar los dominios | Pendiente (#87), fuera de esta etapa |
 
-Lo que ya se analizó (2026-09-12 y 2026-09-15), para no repetirlo:
+Análisis de «Cocinadas» (2026-10-09):
 
-- **Cocinadas**: sin marcas registradas en TMview, `cocinadas.com` y `cocinadas.app` libres.
-  En Instagram `@cocinadas` es un blog de recetas y en TikTok está tomado.
-- **De dónde sale el nombre**: de Illobre, el apellido de Carlos. La consultoría de software
-  que va a tener esta app en su portafolio se llamaría Illioth-Bress. Por eso lleva doble
-  «l».
-- **Illioth** (2026-10-09): sin marcas en la base mundial de WIPO. `illioth.com` e
-  `illioth.app` están registrados desde junio de 2025 y hay un sitio publicado con ese
-  nombre; `illioth.com.ar` está libre. En YouTube `@illioth` es de otra persona; en TikTok e
-  Instagram está libre. «Illiothbress» no tiene marcas y sus dominios están libres.
-- **Ilioth**, con una sola «l» (2026-09-15): sin marcas en WIPO, sin apps en las tiendas,
-  dominios y usuarios de YouTube, TikTok e Instagram libres. Se aplicó a la app ese día
-  como «Ilioth Chef Training» y se volvió a Cocinadas.
-- En los dos casos «Chef» y «Training» son descriptivos: lo que se protege es la primera
-  palabra.
-- **Descartados**: MiseChef (ya existe una app con ese nombre y la misma idea), CronoChef
-  (Chef Chrono en Francia, Cronochef Bernabeu S.L. en Madrid) y Templa (el nombre anterior,
-  con el campo de marcas saturado y los dominios tomados).
-- **Falta en todos**: la consulta por denominación en el INPI argentino, que exige iniciar
-  sesión con ARCA.
-- **Mientras no se decida**, el repositorio, la dirección publicada y los datos guardados en
-  cada teléfono siguen llamándose `cocinadas` (riesgo R-04).
+- **Marcas**: ninguna «Cocinadas» en TMview ni en la base mundial de WIPO. Con «Cocinada»
+  hay tres registradas en el INPI argentino desde 2020, «Cocinada y Organizada by Flavia» y
+  «Cocinada y Organizada Tienda Online», de una misma titular, en las clases 35, 41 y 43.
+  Son marcas de varias palabras y de otro rubro, pero la clase 41 (formación) es una de las
+  que le sirven a esta app: es donde puede aparecer una oposición.
+- **Es una palabra del idioma**: «cocinadas» quiere decir «cocidas». Para una app de cocina
+  eso la hace una marca débil, fácil de registrar con su logotipo y difícil de defender como
+  palabra sola. Conviene pedirla como marca mixta, con la olla.
+- **Clases a pedir**: 9 (la app), 42 (el servicio en línea) y 41 (formación).
+- **Dominios libres**: `.com`, `.app`, `.net`, `.org`, `.io`, `.co`, `.es` y `.mx`. Los
+  `.com.ar` y `.ar` no tienen sitio publicado; falta confirmarlos en NIC Argentina.
+- **Tiendas**: ninguna app con ese nombre en la App Store ni en Google Play.
+- **Redes**: en YouTube `@cocinadas` está libre. En Instagram lo tiene «Cocinadas Blog», sin
+  seguidores ni publicaciones; en TikTok, una cuenta de humor con 7 seguidores.
+- **Falta**: la consulta por denominación en el INPI argentino, que exige iniciar sesión con
+  ARCA, y reservar los dominios. Las dos las hace Carlos.
+
+Nombres descartados, para no volver a analizarlos:
+
+- **Illioth e Illioth Chef Training**: el nombre deriva de Illobre, el apellido de Carlos.
+  Descartado el 2026-10-09 porque `illioth.com` e `illioth.app` están registrados
+  desde junio de 2025, con un sitio publicado.
+- **Ilioth Chef Training**, con una sola «l»: se aplicó a la app el 2026-09-15 y se volvió a
+  Cocinadas el mismo día.
+- **MiseChef**: ya existe una app con ese nombre y la misma idea.
+- **CronoChef**: Chef Chrono en Francia y Cronochef Bernabeu S.L. en Madrid.
+- **Templa**: el nombre anterior, con el campo de marcas saturado y los dominios tomados.
 
 ## 4. Requerimientos no funcionales
 
 | ID | Requerimiento | Estado |
 |---|---|---|
-| RNF-01 | Solo celular: app web que se instala desde el navegador. No hay versión de escritorio | Hecho |
+| RNF-01 | Solo celular: app web que se instala desde el navegador. No hay versión de escritorio para cocinar; la única vista de escritorio prevista es la del seguimiento (RF-45) | Hecho |
 | RNF-02 | Se lee de parado, a un brazo de distancia y con las manos ocupadas: letra y botones grandes | Hecho |
 | RNF-03 | Abre y funciona sin internet | Pendiente (#95) |
 | RNF-04 | La pantalla no se apaga mientras se cocina | Pendiente (#96) |
@@ -196,7 +215,8 @@ Lo que ya se analizó (2026-09-12 y 2026-09-15), para no repetirlo:
     (RF-19, RF-19a, RF-19b).
 11. Qué falta del POE de papel: cómo cargarlo, el costo, los valores nutricionales, si
     tiene TACC y los octógonos (RF-06a a RF-06e).
-12. El nombre no está decidido: Cocinadas o Illioth Chef Training (RF-60).
+12. El nombre no está decidido: Cocinadas o Illioth Chef Training (RF-60). Resuelto en
+    la decisión 28.
 
 ### Respuestas a las preguntas de la revisión (2026-10-09)
 
@@ -224,6 +244,18 @@ Lo que ya se analizó (2026-09-12 y 2026-09-15), para no repetirlo:
 26. Una porción, cero desperdicio y sin sal agregada no son obligatorios: son variantes
     que se eligen desde la receta y se combinan. En la primera versión no están esos
     selectores (#109).
+
+27. **Nada que se escriba en el servidor se hace sin cuenta.** Sin cuenta se puede leer
+    todo y guardar en el propio teléfono: cocinar, ver el progreso, guardar el puntaje y
+    guardar POE propios, sin compartirlo con otro dispositivo. Publicar, comentar y dar me
+    gusta exigen cuenta, para poder banear a quien publique algo ofensivo (sección 2,
+    RF-31, RF-32, RF-35). Completa las decisiones 8 y 19.
+28. **El nombre es Cocinadas.** Illioth queda descartado porque su dominio ya está
+    registrado. Falta registrar la marca y reservar los dominios (RF-60). Reemplaza la
+    decisión 23.
+29. El seguimiento de docentes y supervisores tiene una vista de escritorio, en una
+    dirección aparte. Es secundaria: lo que importa es que no afecte el diseño de celular
+    (RF-45). Completa la decisión 25.
 
 ### Decisiones anteriores, de las sesiones de septiembre de 2026
 
@@ -329,12 +361,7 @@ pregunta antes.
 ## 7. Contradicciones y preguntas abiertas
 
 Ninguna se resuelve sin Carlos. Cuando responda, la respuesta va a la sección 5 con su
-fecha y la pregunta se borra de acá. Las ocho de la revisión del 2026-10-09 ya están
-respondidas (decisiones 19 a 26).
+fecha y la pregunta se borra de acá.
 
-1. **¿Se puede publicar y comentar sin cuenta?** La decisión 19 dice que lo público no
-   obliga a registrarse y que la cuenta es opcional. La decisión 8, RF-31 y RF-32 dicen que
-   el registro aparece justamente para subir o comentar un POE. Falta decidir si publicar
-   un POE, comentar y dar me gusta se pueden hacer de forma anónima, o si «sin cuenta» vale
-   para cocinar y mirar. De eso depende cómo se modera lo que se sube (riesgo R-06) y cómo
-   se sigue a un creador (RF-50).
+No hay preguntas abiertas al 2026-10-09. Las de la revisión de ese día están respondidas
+en las decisiones 19 a 29.

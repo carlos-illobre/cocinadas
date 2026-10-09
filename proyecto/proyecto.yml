@@ -49,7 +49,7 @@ supuestos:
 
 restricciones:
   - Es el proyecto de menor prioridad del portafolio
-  - Solo celular; no hay versión de escritorio
+  - Solo celular; la única vista de escritorio prevista es la del seguimiento de docentes y supervisores
   - Las recetas las escribe una sola persona
   - Costo de operación cero en el primer lanzamiento
 
