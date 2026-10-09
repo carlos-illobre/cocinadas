@@ -29,8 +29,9 @@ issues, con un milestone por lanzamiento.
 - **Se toman solo tareas listas:** abiertas y con todo su «Depende de» cerrado.
 - **Al terminar una tarea:** el estado del requerimiento pasa de `Pendiente (#N)` a
   `Hecho (#N)` y se cierra el issue. El estado tiene que empezar con `Hecho`,
-  `Hecho en parte`, `A validar`, `Pendiente` o `Nuevo`; si contiene `fuera de esta etapa`,
-  no cuenta para el avance.
+  `Hecho en parte` (o `Parcial`), `A validar`, `Pendiente` o `Nuevo`; si en cualquier parte
+  dice `fuera de esta etapa` o `segunda versión`, aunque empiece con eso, no cuenta para
+  el avance.
 - **Trabajo nuevo:** un issue con su milestone y, si depende de otros, una sección
   `## Depende de` con los `#N`.
 - Lo que cruza proyectos (marcas, prioridades, impuestos) se trata en la sesión del
