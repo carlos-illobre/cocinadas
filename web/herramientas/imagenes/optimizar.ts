@@ -4,7 +4,7 @@
  *   pnpm optimizar            todas las que falten o hayan cambiado
  *   pnpm optimizar --todas    rehace todas, aunque estén al día
  *
- * Excluido de la cobertura (docs/TESTING.md): no decide nada. Qué imagen, a qué ancho y
+ * Excluido de la cobertura (specs/001-base-del-sistema/quickstart.md): no decide nada. Qué imagen, a qué ancho y
  * con qué nombre lo resuelve `plan.ts`, que sí se mide; acá solo se maneja el navegador y
  * se escriben archivos.
  *

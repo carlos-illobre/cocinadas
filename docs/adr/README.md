@@ -16,6 +16,11 @@ Formato: `ADR-NNN-titulo-en-kebab-case.md`, con contexto, opciones consideradas 
 la que parecía buena y no lo era), decisión, consecuencias positivas, negativas y lo que
 no cambia, cuándo revisarla y referencias.
 
+Los ADR anteriores al 2026-10-10 citan `docs/ARCHITECTURE.md`, `docs/TESTING.md`,
+`docs/SECURITY.md` y `docs/DEPLOYMENT.md`. Esos documentos ya no existen: su contenido está
+en `specs/001-base-del-sistema/` (`plan.md` y `quickstart.md`) y en `docs/operacion/`; las
+versiones que los ADR citaban están en el historial de git.
+
 | N.º | Título | Estado | Fecha |
 |---|---|---|---|
 | [001](ADR-001-compose-unico-y-env-como-fuente-de-verdad.md) | Un solo `docker-compose.yml` y el `.env` como fuente de la verdad | Enmendado por 017 | 2026-09-05 |

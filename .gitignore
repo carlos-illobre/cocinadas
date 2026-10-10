@@ -1,4 +1,4 @@
-# Configuración real: nunca al repositorio (ver docs/SECURITY.md)
+# Configuración real: nunca al repositorio (ver specs/001-base-del-sistema/plan.md)
 .env
 deployment/*/.env
 

@@ -140,19 +140,19 @@ los utensilios en Mercado Libre, con lo que sugiere el POE ya cargado en el carr
 un mismo ingrediente o utensilio está en más de un lugar, la app compara precios y deja
 elegir.
 
-## Qué hay hoy y qué viene
+## En qué orden se construye
 
-Hoy está publicado y en uso el flujo central completo: elegir la receta, el modo de
-preparación, la mise en place, la cocina con línea de tiempo, cronómetros, alarmas y
-procesos paralelos, los resultados con puntos y logros, el historial y el perfil. Funciona
-sin cuenta y guarda todo en el teléfono de cada usuario, sin costo de operación. Es la
-versión con la que se valida la mecánica con usuarios reales.
+Primero el flujo central: elegir la receta y el modo de preparación, la mise en place, la
+cocina con su línea de tiempo, los resultados con puntos y logros, el historial y el
+perfil. Funciona sin cuenta y guarda todo en el teléfono de cada usuario, sin costo de
+operación: es la versión con la que se valida la mecánica con usuarios reales.
 
 Lo que se suma alrededor (cuentas, POE propios y públicos, espacios privados pagos,
-comunidad, reels, ingredientes en casa, costos y compras) es el camino previsto, en ese
-orden aproximado. Cada pieza se apoya en la anterior: primero las cuentas, después los POE
+comunidad, reels, ingredientes en casa, costos y compras) viene después, en ese orden
+aproximado. Cada pieza se apoya en la anterior: primero las cuentas, después los POE
 públicos de los usuarios, después los espacios privados por suscripción. El detalle por
-lanzamiento está en [REQUERIMIENTOS.md](REQUERIMIENTOS.md).
+lanzamiento está en [specs/README.md](../specs/README.md); qué está hecho hoy, en
+`proyecto/estado.yml`.
 
 ## Dónde está el valor
 

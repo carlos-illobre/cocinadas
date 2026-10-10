@@ -148,4 +148,4 @@ inactividad, conseguir otra Ampere A1 depende de que haya capacidad.
 - [ADR-006](ADR-006-catalogo-desde-el-repositorio-en-la-imagen.md),
   [ADR-013](ADR-013-frontend-spa-react-vite.md),
   [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md).
-- [DEPLOYMENT.md](../DEPLOYMENT.md).
+- [operacion/despliegue.md](../operacion/despliegue.md).

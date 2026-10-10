@@ -5,7 +5,7 @@ resultado a GitHub Pages.
 
 **La app: <https://carlos-illobre.github.io/cocinadas/>**
 
-El porqué está en [ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md).
+El porqué está en [ADR-017](../adr/ADR-017-sitio-estatico-en-github-pages.md).
 
 ## El pipeline
 
@@ -49,9 +49,10 @@ base. El día que haya enlaces profundos de verdad (`/receta/...`) hay que revis
 además Pages devuelve `404.html` con estado 404 para rutas que no existen como archivo.
 
 **2. Pages no deja poner cabeceras HTTP.** Se perdieron la CSP, `Permissions-Policy`,
-`Referrer-Policy`, `X-Content-Type-Options` y HSTS, que vivían en el Caddyfile. Está
-anotado como pendiente en [SECURITY.md](SECURITY.md): la CSP se puede recuperar con
-`<meta http-equiv>` en el `index.html`.
+`Referrer-Policy`, `X-Content-Type-Options` y HSTS, que vivían en el Caddyfile. La política de
+contenido se recuperó como `<meta http-equiv>` inyectado en el build; lo exigido y lo que
+sigue abierto está en «Seguridad exigida» de
+[el plan](../../specs/001-base-del-sistema/plan.md).
 
 ## Revertir
 
@@ -92,7 +93,7 @@ de que llegue a producción.
 
 Pages sirve archivos. Cuando las cocinadas tengan que salir del celular hay que traer un
 servidor, y ahí hay dos caminos, analizados en
-[ADR-017](adr/ADR-017-sitio-estatico-en-github-pages.md):
+[ADR-017](../adr/ADR-017-sitio-estatico-en-github-pages.md):
 
 - **Orígenes separados** (front en Pages, API en un servidor): trae CORS y empuja el token
   de sesión a `localStorage`, porque una cookie entre sitios necesita `SameSite=None` y

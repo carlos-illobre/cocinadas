@@ -53,7 +53,8 @@ restricciones:
   - Las recetas las escribe una sola persona
   - Costo de operación cero en el primer lanzamiento
 
-requerimientos: docs/REQUERIMIENTOS.md
+requerimientos: specs/README.md
+estado_de_requerimientos: proyecto/estado.yml
 
 # Fechas tentativas: primera estimación, a confirmar por Carlos. Es el proyecto de menor
 # prioridad, así que dependen de los otros cuatro.

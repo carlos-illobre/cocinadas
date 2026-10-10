@@ -1,0 +1,477 @@
+# Cómo está hoy cada requerimiento. Las reglas están en specs/ y no dependen de esto: si el
+# código se rehace, este archivo se reinicia y las especificaciones quedan como están.
+#
+#   estado    Empieza con Hecho, Hecho en parte, A validar, Pendiente o Nuevo. Si dice
+#             «fuera de esta etapa», no cuenta para el avance. Los #N son issues.
+#   pruebas   Los archivos de prueba que respaldan el requerimiento.
+#   defectos  Dónde el código de hoy se aparta de la regla, o qué le falta.
+#
+# Lo leen el tablero del portafolio y herramientas/trazabilidad.mjs. Todo texto va entre comillas.
+
+RF-01:
+  estado: "Hecho"
+  pruebas:
+    - web/src/pantallas/Recetas.test.tsx
+    - web/src/api.test.ts
+    - web/herramientas/catalogo/catalogo.test.ts
+    - web/e2e/primera-cocinada.spec.ts
+  defectos: []
+
+RF-02:
+  estado: "Hecho en parte: tres elementos de la única receta se muestran sin foto"
+  pruebas:
+    - web/src/pantallas/Portada.test.tsx
+    - web/src/cantidad.test.ts
+    - web/src/componentes/FotoAmpliable.test.tsx
+    - web/herramientas/catalogo/catalogo.test.ts
+    - web/e2e/primera-cocinada.spec.ts
+  defectos:
+    - "El ingrediente ajo-picado-congelado tiene ficha sin foto y sin marca: en la ficha de la receta sale con un ícono"
+    - "Los utensilios jarro-slow-fire-2l y cocina-4-hornallas-a-gas tienen ficha sin foto: en la ficha de la receta salen con un ícono"
+
+RF-03:
+  estado: "Hecho"
+  pruebas:
+    - web/src/pantallas/Portada.test.tsx
+    - web/src/api.test.ts
+    - web/herramientas/catalogo/catalogo.test.ts
+  defectos: []
+
+RF-04:
+  estado: "Hecho en parte (#92, #93, #94): 1 de 4 recetas de lanzamiento"
+  pruebas:
+    - web/src/cocina/receta-real.test.ts
+    - web/herramientas/catalogo/catalogo.test.ts
+    - web/e2e/primera-cocinada.spec.ts
+  defectos:
+    - "Faltan tres de las cuatro recetas de lanzamiento: filet de merluza al papillot, pizza al molde y bife de chorizo con arroz"
+    - "La receta que está usa un ingrediente (ajo-picado-congelado) y dos utensilios (jarro-slow-fire-2l, cocina-4-hornallas-a-gas) sin foto, y la regla pide que cada uno tenga marca y foto"
+
+RF-05:
+  estado: "Pendiente (#70)"
+  pruebas: []
+  defectos:
+    - "El formato vigente (esquema 1) no declara por tarea si se cronometra, ni el tiempo mínimo, ni con qué corre en paralelo; la criticidad está repartida entre el paso, el proceso y la vigilancia de la etapa"
+
+RF-06:
+  estado: "Pendiente (#99)"
+  pruebas: []
+  defectos:
+    - "La app no muestra en ninguna pantalla la preparación de cada ingrediente, el uso de cada utensilio, la sal agregada, los sobrantes, los criterios de diseño, las reglas de seguridad ni el cierre de cada etapa, aunque están en los datos de la receta"
+    - "Dependen de RF-06a, RF-06c, RF-06d y RF-06e, que no están"
+
+RF-06a:
+  estado: "Pendiente (#103)"
+  pruebas: []
+  defectos:
+    - "No hay mecanismo de carga: una receta se suma editando archivos a mano"
+
+RF-06b:
+  estado: "Pendiente (#78), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-06c:
+  estado: "Pendiente (#104)"
+  pruebas: []
+  defectos:
+    - "La ficha muestra solo calorías y proteína; la fibra y el sodio están en los datos y no se muestran, y el formato no trae carbohidratos, grasas ni azúcares"
+
+RF-06d:
+  estado: "Pendiente (#105)"
+  pruebas: []
+  defectos:
+    - "Ni el formato de receta ni las fichas de ingredientes declaran si tienen TACC"
+
+RF-06e:
+  estado: "Pendiente (#106)"
+  pruebas: []
+  defectos:
+    - "No hay octógonos, y el formato no trae los azúcares ni las grasas que hacen falta para calcularlos"
+
+RF-07:
+  estado: "Hecho"
+  pruebas:
+    - web/src/pantallas/Recetas.test.tsx
+    - web/src/pantallas/Portada.test.tsx
+  defectos: []
+
+RF-08:
+  estado: "Pendiente (#109), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-08a:
+  estado: "Pendiente (#109), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-09:
+  estado: "Pendiente (#83, #84), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-10:
+  estado: "Pendiente (#79), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-52:
+  estado: "Pendiente (#72, #73), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-53:
+  estado: "Pendiente (#80, #81, #82), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-54:
+  estado: "Pendiente (#108), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-55:
+  estado: "Nuevo, fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-56:
+  estado: "Pendiente (#108), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-11:
+  estado: "Hecho"
+  pruebas:
+    - web/src/pantallas/MiseEnPlace.test.tsx
+    - web/src/App.test.tsx
+    - web/e2e/primera-cocinada.spec.ts
+  defectos: []
+
+RF-12:
+  estado: "Hecho en parte: en la tarjeta del paso hay textos informativos por debajo de 13,5 px"
+  pruebas:
+    - web/src/cocina/modelo.test.ts
+    - web/src/cocina/receta-real.test.ts
+    - web/src/pantallas/cocina/Cocina.test.tsx
+    - web/src/App.test.tsx
+    - web/e2e/primera-cocinada.spec.ts
+  defectos:
+    - "La leyenda del cronómetro del paso («de 2:00 previstos», «para empezar este paso», «para que venza lo que corre») se muestra a 12 px, por debajo del mínimo de 13,5 px"
+    - "Las etiquetas de qué cuida el paso se muestran a 12,5 px, por debajo del mínimo de 13,5 px"
+    - "Ninguna prueba mide el tamaño de los textos de la tarjeta"
+
+RF-13:
+  estado: "Hecho en parte (#107): las barras de los cronómetros no avanzan sincronizadas y su diseño se rehace"
+  pruebas:
+    - web/src/cocina/modelo.test.ts
+    - web/src/pantallas/cocina/Cocina.test.tsx
+  defectos:
+    - "Las barras de los cronómetros no avanzan sincronizadas entre sí ni con el reloj"
+    - "Cada cronómetro redondea sus segundos desde su propio instante de inicio y la pantalla se redibuja cada medio segundo, así que los números no cambian todos en el mismo momento"
+    - "La barra del paso cambia de escala al pasarse de tiempo, mientras las de la etapa y los procesos se quedan llenas: no se leen con la misma regla"
+    - "El diseño de las barras no está aprobado: Carlos pidió rediseñarlas y todavía no dijo qué cambia"
+
+RF-14:
+  estado: "Hecho en parte (#107): suena y vibra en los procesos, pero un paso que se pasa de tiempo no avisa y la lógica de qué lleva alarma se rehace"
+  pruebas:
+    - web/src/cocina/sonido.test.ts
+    - web/src/cocina/modelo.test.ts
+    - web/src/pantallas/cocina/Cocina.test.tsx
+    - web/e2e/sonidos.spec.ts
+  defectos:
+    - "Un paso de manos que se pasa de su tiempo solo cambia de color: no suena ni vibra"
+    - "Un proceso no crítico que vence suena una vez y desaparece de la pantalla, sin dejar ninguna señal visible"
+    - "El aviso previo de 30 segundos existe solo para los procesos críticos y no tiene sonido"
+    - "Con los sonidos silenciados tampoco vibra, y la alarma igual dice «Suena y vibra hasta que toques»"
+    - "La lógica de qué cronómetro lleva alarma no está aprobada: Carlos pidió rediseñarla"
+
+RF-15:
+  estado: "Hecho en parte: el nombre del proceso en el diagrama de carriles está por debajo de 13,5 px"
+  pruebas:
+    - web/src/cocina/modelo.test.ts
+    - web/src/cocina/receta-real.test.ts
+    - web/src/pantallas/cocina/Cocina.test.tsx
+  defectos:
+    - "El nombre del proceso sobre su carril se muestra a 12,5 px, por debajo del mínimo de 13,5 px"
+
+RF-16:
+  estado: "Pendiente (#97), fuera de esta etapa"
+  pruebas: []
+  defectos:
+    - "No hay manejo por voz"
+
+RF-17:
+  estado: "Hecho"
+  pruebas:
+    - web/src/cocina/enCurso.test.ts
+    - web/src/pantallas/cocina/Cocina.test.tsx
+    - web/src/App.test.tsx
+  defectos: []
+
+RF-18:
+  estado: "Hecho"
+  pruebas:
+    - web/src/silencio.test.ts
+    - web/src/App.test.tsx
+  defectos: []
+
+RF-19:
+  estado: "Pendiente (#98)"
+  pruebas: []
+  defectos:
+    - "Carlos encontró la pantalla de cocina incómoda de usar mientras cocina; no hay una lista de las molestias concretas"
+    - "Hay textos informativos por debajo de 13,5 px: la leyenda del cronómetro del paso (12 px), las etiquetas del paso (12,5 px) y el nombre del proceso en el diagrama de carriles (12,5 px)"
+    - "Salir de la cocina descarta la cocinada con un solo toque, sin confirmación"
+
+RF-19a:
+  estado: "Pendiente (#101)"
+  pruebas: []
+  defectos:
+    - "Las barras de los cronómetros no avanzan sincronizadas entre sí ni con el reloj"
+
+RF-19b:
+  estado: "Pendiente (#102)"
+  pruebas: []
+  defectos:
+    - "Nada en la pantalla distingue, antes de que venza, el cronómetro que lleva alarma del que no"
+    - "No todo lo que vence avisa: un paso de manos que se pasa de su tiempo no suena ni vibra"
+    - "La alerta de vencimiento se ve en algunos cronómetros y en otros no: un proceso no crítico vence sin señal en pantalla"
+
+RF-20:
+  estado: "Pendiente (#77), fuera de esta etapa"
+  pruebas: []
+  defectos:
+    - "No hay videos en los pasos"
+
+RF-21:
+  estado: "Hecho"
+  pruebas:
+    - web/src/progreso/xp.test.ts
+    - web/src/cocina/modelo.test.ts
+    - web/src/pantallas/cocina/Cocina.test.tsx
+    - web/src/historial/almacen.test.ts
+    - web/src/App.test.tsx
+    - web/e2e/primera-cocinada.spec.ts
+    - web/e2e/sonidos.spec.ts
+  defectos: []
+
+RF-22:
+  estado: "Hecho"
+  pruebas:
+    - web/src/progreso/xp.test.ts
+    - web/src/progreso/logros.test.ts
+    - web/src/componentes/BarraXp.test.tsx
+    - web/src/pantallas/Perfil.test.tsx
+    - web/src/pantallas/cocina/Cocina.test.tsx
+  defectos: []
+
+RF-23:
+  estado: "Hecho"
+  pruebas:
+    - web/src/historial/almacen.test.ts
+    - web/src/pantallas/Historial.test.tsx
+    - web/src/App.test.tsx
+    - web/e2e/primera-cocinada.spec.ts
+  defectos: []
+
+RF-24:
+  estado: "Pendiente (#76), fuera de esta etapa"
+  pruebas: []
+  defectos:
+    - "No hay tabla de posiciones"
+
+RF-25:
+  estado: "Pendiente (#86), fuera de esta etapa"
+  pruebas: []
+  defectos:
+    - "No hay forma de compartir el progreso en Instagram"
+
+RF-30:
+  estado: "Pendiente (#68), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-31:
+  estado: "Pendiente (#69), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-32:
+  estado: "Pendiente (#71, #74), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-33:
+  estado: "Pendiente (#75), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-34:
+  estado: "Nuevo, fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-35:
+  estado: "Pendiente (#111), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-50:
+  estado: "Nuevo, fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-51:
+  estado: "Nuevo, fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-40:
+  estado: "Pendiente (#100), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-41:
+  estado: "Pendiente (#85), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-42:
+  estado: "Nuevo, fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-43:
+  estado: "Pendiente (#100), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-44:
+  estado: "Pendiente (#110), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-45:
+  estado: "Pendiente (#112), fuera de esta etapa"
+  pruebas: []
+  defectos: []
+
+RF-60:
+  estado: "Pendiente (#87), fuera de esta etapa"
+  pruebas:
+    - web/src/componentes/Logotipo.test.tsx
+    - web/e2e/primera-cocinada.spec.ts
+  defectos:
+    - "La marca no está registrada: falta la consulta por denominación en el INPI y la solicitud"
+    - "Los dominios no están reservados"
+
+RNF-01:
+  estado: "Hecho en parte"
+  pruebas:
+    - web/e2e/primera-cocinada.spec.ts
+    - web/src/App.test.tsx
+  defectos:
+    - "Ninguna prueba comprueba que la app sea instalable: la declaración de instalación (nombre, íconos, pantalla completa) existe pero no la mira ninguna prueba"
+    - "La app instalada no se actualiza sola en todos los casos: si cambia la declaración de instalación hay que reinstalar el acceso directo, y el alojamiento cachea 10 minutos"
+    - "El control de rutas absolutas de la integración continua revisa solo el index.html compilado, no el resto del sitio"
+    - "Ninguna prueba abre el sitio compilado desde una subcarpeta, que es como se sirve en línea"
+    - "No está definido qué se ve en una computadora o con el celular apaisado: el código muestra la pantalla de celular en una columna de 430 px, sin que ninguna regla lo pida"
+
+RNF-02:
+  estado: "Hecho en parte"
+  pruebas: []
+  defectos:
+    - "Hay textos informativos por debajo de 13,5 px: la leyenda debajo del cronómetro del paso (12 px), las etiquetas de qué cuida el paso (12,5 px), el cartel «¡Fácil!» / «¡Difícil!» de los modos (12,5 px) y la etiqueta vertical de los carriles (12,5 px)"
+    - "Los signos dentro de círculos miden 8, 9 y 12 px (marca de estado de un proceso y tilde de un sub-paso): a confirmar con Carlos si quedan exceptuados"
+    - "Ninguna prueba mide el tamaño de los textos ni el de los botones"
+    - "El tamaño mínimo de botón no está definido; los dos botones flotantes miden 40 px"
+
+RNF-03:
+  estado: "Pendiente (#95)"
+  pruebas: []
+  defectos:
+    - "Sin construir: la app no abre sin internet, no hay ningún mecanismo que la deje disponible sin conexión"
+    - "Las tipografías se cargan de Google Fonts en cada visita: sin conexión no están"
+    - "Ningún ADR decide cómo se cumple"
+
+RNF-04:
+  estado: "Pendiente (#96)"
+  pruebas: []
+  defectos:
+    - "Sin construir: nada mantiene la pantalla encendida mientras se cocina"
+
+RNF-05:
+  estado: "Hecho en parte"
+  pruebas:
+    - web/src/App.test.tsx
+    - web/src/historial/almacen.test.ts
+    - web/src/cocina/enCurso.test.ts
+    - web/src/componentes/Recuperacion.test.tsx
+    - web/src/tema.test.ts
+    - web/src/silencio.test.ts
+    - web/e2e/primera-cocinada.spec.ts
+  defectos:
+    - "Un fallo al leer o al guardar en el teléfono no se le muestra a la persona: la app sigue en memoria en silencio y lo guardado se pierde al cerrarla, o un historial ilegible se ve como si no hubiera cocinadas"
+    - "Cada visita pide las tipografías a Google Fonts, así que un tercero ve la dirección de red de quien abre la app"
+    - "Ninguna prueba comprueba que el recorrido no haga pedidos fuera del propio sitio ni envíe datos de la persona"
+
+RNF-06:
+  estado: "Hecho en parte"
+  pruebas:
+    - web/src/tema.test.ts
+    - web/src/componentes/BotonTema.test.tsx
+    - web/src/App.test.tsx
+  defectos:
+    - "Ninguna prueba recorre las pantallas en tema oscuro: la de punta a punta corre solo en el tema inicial y no hay capturas automáticas en los dos temas"
+    - "Sin preferencia guardada la app arranca siempre en claro; el tema inicial no está definido por ninguna regla"
+
+RNF-07:
+  estado: "Hecho"
+  pruebas: []
+  defectos: []
+
+RNF-08:
+  estado: "Hecho en parte"
+  pruebas:
+    - web/src/historial/almacen.test.ts
+    - web/src/cantidad.test.ts
+  defectos:
+    - "El documento se declara en «es» y no en castellano de Argentina; la declaración de instalación sí dice «es-AR»"
+    - "Ninguna prueba revisa que los textos estén en castellano con voseo"
+
+RNF-09:
+  estado: "Hecho"
+  pruebas:
+    - web/e2e/primera-cocinada.spec.ts
+    - web/e2e/sonidos.spec.ts
+  defectos: []
+
+RNF-10:
+  estado: "Nuevo, fuera de esta etapa"
+  pruebas: []
+  defectos:
+    - "Sin construir: con el celular bloqueado las alarmas no suenan"
+
+RNF-11:
+  estado: "Nuevo, fuera de esta etapa"
+  pruebas: []
+  defectos:
+    - "Sin construir: no hay apps nativas para Android ni para iPhone"
+
+general:
+  estado: ""
+  pruebas: []
+  defectos:
+    - "La barra inferior dice «Progreso» donde el diseño aprobado dice «Historial», y la pantalla también se titula «Progreso»"
+    - "Con «reducir movimiento» activado los papelitos del festejo se ocultan enteros, y el diseño aprobado dice que nada deja de verse: a confirmar con Carlos"
+    - "Ninguna prueba recorre la app con «reducir movimiento» activado"
+    - "Las acciones de la integración continua se referencian por etiqueta y no por el hash del commit, que es la mitigación exigida"
+    - "La política de contenido del código incluye una directiva de estilos con 'unsafe-inline' que la política documentada no tiene; pesa solo en navegadores que no entienden las directivas más específicas"
+    - "La política de contenido permite tipografías de Google; la exigida es solo el propio sitio"
+    - "Se cargan cinco tipografías (Nunito, Space Mono, Lobster, Poppins y Roboto) y el diseño documentado nombra tres"
+    - "Quedan restos de la arquitectura superada, que ADR-017 da por borrados: .env.example con la configuración del servidor, web/.dockerignore, las skills de despliegue en Oracle y de microservicios, y entradas del .gitignore"
+    - "docs/operacion/despliegue.md describe tres jobs de la integración continua; son cuatro"
+    - "web/README.md dice que el generador del catálogo vive en src/; vive en web/herramientas/"
+    - "README.md lista tres claves guardadas en el teléfono; son cuatro (falta el silencio)"

@@ -155,7 +155,7 @@ la diferencia con `docker compose rm -sf`. A mano es lo mismo.
 - [ADR-001](ADR-001-compose-unico-y-env-como-fuente-de-verdad.md),
   [ADR-009](ADR-009-caddy-reverse-proxy-y-tls.md),
   [ADR-015](ADR-015-de-cuatro-servicios-a-una-spa-estatica.md).
-- «Convivir con otra aplicación en la misma VM» en [DEPLOYMENT.md](../DEPLOYMENT.md).
+- «Convivir con otra aplicación en la misma VM» en [operacion/despliegue.md](../operacion/despliegue.md).
 
 ---
 

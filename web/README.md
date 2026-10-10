@@ -6,7 +6,7 @@ del catálogo. El porqué de que esté todo acá está en
 [ADR-017](../docs/adr/ADR-017-sitio-estatico-en-github-pages.md).
 
 Cómo levantarla y probarla: ver el [README de la raíz](../README.md) y
-[docs/TESTING.md](../docs/TESTING.md).
+[el quickstart](../specs/001-base-del-sistema/quickstart.md).
 
 ## Rutas relativas, siempre
 

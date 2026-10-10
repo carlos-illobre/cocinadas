@@ -1,8 +1,25 @@
 # Cocinadas
 
-Contexto que no se deduce leyendo el código. Lo demás está en el [README](README.md), en
-[docs/](docs/) y en los [ADR](docs/adr/), que son la explicación larga de cada decisión:
-antes de cambiar algo que tenga un ADR, leelo.
+Una app para aprender a cocinar con recetas que son POE. Se desarrolla con **spec driven
+development sobre GitHub Spec Kit**: no se escribe código de una funcionalidad sin su
+especificación aprobada.
+
+## Por dónde empezar
+
+1. [.specify/memory/constitution.md](.specify/memory/constitution.md): lo que no se
+   negocia y el flujo de trabajo. **Leela antes de tocar nada.**
+2. [specs/README.md](specs/README.md): de qué se trata el proyecto, cada requerimiento y en
+   qué carpeta está especificado.
+3. La carpeta de `specs/` de la capacidad que vayas a tocar (`001` a `006`, una por
+   capacidad, con todos sus requerimientos).
+4. [proyecto/estado.yml](proyecto/estado.yml): qué está hecho hoy, con qué pruebas, y dónde
+   el código se aparta de la regla.
+5. [docs/adr/](docs/adr/README.md): el porqué de cada decisión técnica. Antes de cambiar
+   algo que tenga un ADR, leelo.
+
+**La especificación no depende del código.** Lo fijo son las reglas del producto; el código
+puede rehacerse. `specs/` nunca nombra archivos del código ni dice si algo está hecho: eso
+vive en `proyecto/estado.yml`. Lo que sigue en este archivo es contexto del código de hoy.
 
 ## Cómo trabaja Claude acá
 
@@ -15,29 +32,49 @@ antes de cambiar algo que tenga un ADR, leelo.
 - **Lo visual se verifica con capturas** (Playwright, Pixel 7, los dos temas), no leyendo
   el CSS: dos errores de esta sesión solo aparecieron en una captura. El Chromium del
   contenedor no tiene fuentes de emoji: los □ en las capturas no son un error.
-- **La interfaz actual es la fuente de verdad del diseño.** No hay prototipo aparte: lo que
-  se ve en la app es lo que hay que conservar.
+- **El diseño aprobado está escrito** en el `ux.md` de cada capacidad. No hay prototipo
+  aparte: una pantalla nueva pasa primero por `/ux`.
 
-## Requerimientos y tareas
+## Cómo se trabaja
 
-El tablero del portafolio (<https://gratis-vnic.tail994934.ts.net:8444/>) lee este
-repositorio: `docs/REQUERIMIENTOS.md`, `proyecto/proyecto.yml`, `proyecto/riesgos.yml` y los
-issues, con un milestone por lanzamiento.
+Cuatro roles, y ninguno más (el detalle está en la constitución):
 
-- **Los requerimientos mandan.** Uno nuevo, o uno que cambia, se le pregunta a Carlos;
-  recién con su respuesta se edita el documento y se anota en sus decisiones con la fecha.
-- **Antes de tocar una pantalla**, leer la sección 6 de `docs/REQUERIMIENTOS.md` (lo que ya
-  funciona y no se puede romper) y la 7 (lo que todavía no está decidido).
-- **Se toman solo tareas listas:** abiertas y con todo su «Depende de» cerrado.
-- **Al terminar una tarea:** el estado del requerimiento pasa de `Pendiente (#N)` a
-  `Hecho (#N)` y se cierra el issue. El estado tiene que empezar con `Hecho`,
-  `Hecho en parte` (o `Parcial`), `A validar`, `Pendiente` o `Nuevo`; si en cualquier parte
-  dice `fuera de esta etapa` o `segunda versión`, aunque empiece con eso, no cuenta para
-  el avance.
-- **Trabajo nuevo:** un issue con su milestone y, si depende de otros, una sección
-  `## Depende de` con los `#N`.
+| Paso | Rol | Usá | Aprueba Carlos |
+|---|---|---|---|
+| 1 | Analista de negocio | `/speckit-specify`, y `/speckit-clarify` para preguntarle a Carlos | Sí |
+| 2 | Diseñador, si hay pantallas nuevas | `/ux`: maquetas para que elija | Sí |
+| 3 | Planificador | `/speckit-plan` y `/speckit-tasks` | No |
+| 4 | Desarrollador | `/speckit-implement` | Lo prueba en el sitio publicado |
+
+- **Un arreglo** que no cambia ninguna regla va solo con el desarrollador, con su prueba.
+- **Un cambio de regla** dentro de una capacidad va con analista y desarrollador: la regla
+  se escribe directamente en la `spec.md` de la capacidad, sin carpeta propia.
+- **Toda lista de tareas termina con tres:** una prueba por escenario, comparar con la
+  maqueta aprobada si hay pantallas, y dejar al día `proyecto/estado.yml`, la `spec.md` de
+  la capacidad y el issue.
+- **Nada avanza sin la aprobación que le toca:** la especificación y, si hay pantallas, la
+  maqueta.
+- **Las reglas no se inventan.** Un requerimiento nuevo, o uno que cambia, se le pregunta
+  a Carlos; su respuesta se anota con la fecha en `docs/decisiones-de-negocio.md` y en la
+  especificación. Lo que falta decidir está en `specs/preguntas-abiertas.md`.
+- **Antes de tocar una pantalla**, leer el `ux.md` de su capacidad: la sección «Diseño
+  aprobado por Carlos» es lo que no se puede romper.
+- **Lo que falta hacer son los issues abiertos de GitHub**, con un milestone por
+  lanzamiento. Se toma uno solo si todo lo que figura en su `## Depende de` está cerrado.
+- **Trabajo nuevo que aparece:** un issue nuevo con su milestone y, si depende de otros,
+  una sección `## Depende de` con los `#N`. No se hace de paso.
 - Lo que cruza proyectos (marcas, prioridades, impuestos) se trata en la sesión del
   portafolio, no acá.
+
+## Lo que lee el tablero del portafolio
+
+El tablero (<https://gratis-vnic.tail994934.ts.net:8444/>) lee `specs/README.md`,
+`proyecto/estado.yml`, `proyecto/proyecto.yml`, `proyecto/riesgos.yml` y los issues.
+
+- En `proyecto/estado.yml`, el `estado` de cada requerimiento empieza con `Hecho`,
+  `Hecho en parte`, `A validar`, `Pendiente` o `Nuevo`. Si dice `fuera de esta etapa` o
+  `segunda versión`, no cuenta para el avance. Los `#N` se enlazan a esos issues.
+- En los YAML de `proyecto/`, un texto con ` #` o `: ` adentro va entre comillas.
 
 ## Cómo se escribe acá
 
@@ -51,7 +88,8 @@ issues, con un milestone por lanzamiento.
 
 1. **Cobertura del 100 %** en `web/src/**` y `web/herramientas/**`, con compuerta en
    `vite.config.ts`. Lo que no se puede probar se extrae a un módulo medible y afuera
-   queda solo la llamada al sistema (`docs/TESTING.md`, cuatro exclusiones justificadas).
+   queda solo la llamada al sistema (cuatro exclusiones justificadas, en el
+   quickstart de `specs/001-base-del-sistema/`).
 2. **`tsc` y ESLint sin avisos** (`pnpm lint`), con las reglas de tipos estrictas. Tres
    reglas están apagadas a propósito y dicen por qué en `web/eslint.config.js`.
 3. **Todas las rutas son relativas.** Pages sirve en `/cocinadas/`; una ruta con `/`
@@ -84,7 +122,7 @@ publicadas en `web/assets/` (WebP, al tamaño que se muestran), que se regeneran
 `pnpm optimizar`. Si falta una, el build corta y dice cuál.
 
 La CSP va como `<meta>` inyectado por `vite.config.ts` **solo en el build**
-(`docs/SECURITY.md`). El historial de por qué esto fue microservicios y dejó de serlo:
+(`specs/001-base-del-sistema/plan.md`). El historial de por qué esto fue microservicios y dejó de serlo:
 ADR-015 y ADR-017; los ADR 001 a 016 son historia.
 
 ## El producto
@@ -125,6 +163,7 @@ cd web && pnpm dev                           # la app en http://localhost:5173
 cd web && pnpm generar:catalogo              # tras tocar una receta o una ficha
 cd web && pnpm optimizar                     # tras agregar o cambiar una imagen (necesita Chrome/Chromium)
 cd web && pnpm build && pnpm preview         # exactamente lo que se publica
+node herramientas/trazabilidad.mjs           # la especificación y el estado coinciden, y specs/ no nombra código
 python3 data/recetas/validar-receta.py       # el catálogo del repositorio es válido
 ```
 
@@ -147,5 +186,5 @@ python3 data/recetas/validar-receta.py       # el catálogo del repositorio es v
   explorador la capitalice; instalar desde otra capitalización carga React dos veces.
 - **`generar.ts`, `optimizar.ts` y `receta-real.test.ts` encuentran `data/` por una ruta
   relativa a su propio archivo.** Si se mueven de carpeta, hay que ajustarla.
-- Lo que sigue **abierto** en seguridad está en `docs/SECURITY.md`: Google Fonts como
+- Lo que sigue **abierto** en seguridad está en `specs/001-base-del-sistema/plan.md`: Google Fonts como
   único tercero, y las acciones del CI ancladas por etiqueta y no por SHA.

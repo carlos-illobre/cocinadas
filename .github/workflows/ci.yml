@@ -1,4 +1,4 @@
-# Pipeline (docs/TESTING.md):
+# Pipeline (specs/001-base-del-sistema/quickstart.md):
 #   pruebas          en cada push y PR: unitarias con la compuerta del 100 %.
 #   e2e              en cada push y PR: el camino feliz sobre el sitio compilado.
 #   vulnerabilidades en cada push y PR: CVE y secretos filtrados. Informa, no reprueba.
@@ -47,6 +47,9 @@ jobs:
         run: pnpm test:cov
       - name: El catálogo del repositorio es válido
         run: python3 data/recetas/validar-receta.py
+      # specs/ y proyecto/estado.yml coinciden, y specs/ no nombra archivos del código.
+      - name: Especificación y estado
+        run: node herramientas/trazabilidad.mjs
       - name: Informe de cobertura
         if: always()
         uses: actions/upload-artifact@v7

@@ -54,12 +54,12 @@ cd web && pnpm exec playwright install chromium && pnpm e2e
 Y un E2E: el camino feliz entero, de la portada a la primera cocinada guardada, en un
 navegador y contra el sitio compilado. El navegador se baja una sola vez.
 
-El detalle de qué se mide, qué está excluido y por qué, en [docs/TESTING.md](docs/TESTING.md).
+El detalle de qué se mide, qué está excluido y por qué, en [el quickstart](specs/001-base-del-sistema/quickstart.md).
 
 ## Cómo se publica
 
 **Cada merge a `main` publica el sitio solo.** El CI corre las pruebas, compila y sube el
-resultado a GitHub Pages. El detalle está en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+resultado a GitHub Pages. El detalle está en [docs/operacion/despliegue.md](docs/operacion/despliegue.md).
 
 ## El catálogo
 
@@ -88,10 +88,16 @@ inicio, con el script que genera las versiones livianas, están en `data/inicio-
 
 ## Dónde leer más
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): qué hace cada pieza y qué ADR respalda cada
-  decisión.
+- [specs/README.md](specs/README.md): qué tiene que hacer la app, requerimiento por
+  requerimiento, y en qué carpeta está especificado cada uno.
+- [.specify/memory/constitution.md](.specify/memory/constitution.md): lo que no se negocia
+  y cómo se trabaja.
+- [specs/001-base-del-sistema/plan.md](specs/001-base-del-sistema/plan.md): la arquitectura y la
+  seguridad, con el ADR que respalda cada decisión.
+- [proyecto/estado.yml](proyecto/estado.yml): qué está hecho hoy.
 - [docs/adr/README.md](docs/adr/README.md): el índice de decisiones de arquitectura, con
   las que se dieron de baja y por qué.
-- [docs/TESTING.md](docs/TESTING.md) y [docs/SECURITY.md](docs/SECURITY.md).
+- [specs/001-base-del-sistema/quickstart.md](specs/001-base-del-sistema/quickstart.md): cómo se
+  levanta, se prueba y se publica.
 - [data/recetas/README.md](data/recetas/README.md), [data/ingredientes/README.md](data/ingredientes/README.md),
   [data/utencillos/README.md](data/utencillos/README.md): las convenciones del catálogo.

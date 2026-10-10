@@ -4,7 +4,7 @@ import { App } from './App';
 import { Recuperacion } from './componentes/Recuperacion';
 
 /**
- * Raíz de composición. Excluida de la cobertura (docs/TESTING.md): monta la aplicación
+ * Raíz de composición. Excluida de la cobertura (specs/001-base-del-sistema/quickstart.md): monta la aplicación
  * en el DOM y nada más.
  */
 const raiz = document.getElementById('raiz');

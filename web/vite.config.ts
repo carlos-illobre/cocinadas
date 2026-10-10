@@ -4,7 +4,7 @@ import { defineConfig, type Plugin } from 'vite';
 
 /**
  * La política de contenido, como `<meta>` porque GitHub Pages no deja poner cabeceras
- * (docs/SECURITY.md). Solo en el build: en desarrollo `@vitejs/plugin-react` inyecta un
+ * (specs/001-base-del-sistema/plan.md). Solo en el build: en desarrollo `@vitejs/plugin-react` inyecta un
  * script en línea para el refresco en caliente y `script-src 'self'` lo bloquearía.
  *
  * Lo que abre, y por qué:
@@ -53,7 +53,7 @@ export default defineConfig({
   // Un solo React en memoria. Si react y react-dom se resuelven por rutas distintas (en
   // Windows pasa cuando pnpm instaló desde una ruta con otra capitalización que la real:
   // los enlaces de node_modules guardan la que se usó), los hooks fallan con «Cannot read
-  // properties of null (reading 'useState')». Ver docs/TESTING.md, «Windows».
+  // properties of null (reading 'useState')». Ver specs/001-base-del-sistema/quickstart.md, «Windows».
   resolve: { dedupe: ['react', 'react-dom'] },
   test: {
     globals: true,
@@ -64,9 +64,9 @@ export default defineConfig({
       provider: 'v8',
       all: true,
       // `herramientas/` son los scripts de build: corren en Node, no en el navegador,
-      // pero su lógica se mide con la misma compuerta (docs/TESTING.md).
+      // pero su lógica se mide con la misma compuerta (specs/001-base-del-sistema/quickstart.md).
       include: ['src/**/*.{ts,tsx}', 'herramientas/**/*.ts'],
-      // Exclusiones justificadas una por una (docs/TESTING.md):
+      // Exclusiones justificadas una por una (specs/001-base-del-sistema/quickstart.md):
       //   - main.tsx: raíz de composición; monta <App/> en el DOM y nada más.
       //   - herramientas/catalogo/generar.ts: escribe a disco lo que planificar() decidió; sin
       //     decisiones propias, y corre en el build y no en el navegador.

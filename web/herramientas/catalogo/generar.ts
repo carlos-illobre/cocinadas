@@ -3,7 +3,7 @@
  *
  *   pnpm generar:catalogo          usa ../../data del repositorio
  *
- * Excluido de la cobertura (docs/TESTING.md): decide nada. `planificar` arma el plan y
+ * Excluido de la cobertura (specs/001-base-del-sistema/quickstart.md): decide nada. `planificar` arma el plan y
  * acá solo se crean carpetas, se escriben archivos y se copian fotos. Si alguna vez
  * aparece un `if` con criterio propio, se muda a catalogo.ts.
  */
