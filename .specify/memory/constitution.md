@@ -109,6 +109,18 @@ El paso 2 se saltea cuando la funcionalidad no tiene pantallas nuevas. No se usa
 comandos opcionales del kit (análisis de coherencia, listas de control). Los comandos de
 Spec Kit no crean rama.
 
+**Los cuatro pasos corren en la misma sesión, uno detrás del otro, y los hace el mismo
+agente.** Un rol es un paso del trabajo, no un agente aparte: no se lanzan subagentes ni se
+abre una sesión por rol, porque cada uno arrancaría vacío y volvería a leer lo mismo. Para
+gastar poco:
+
+- Se lee la constitución, la carpeta de `specs/` de la capacidad que se toca y el código
+  que hace falta. No las demás capacidades, ni los ADR que no vienen al caso.
+- Lo que ya se leyó en la sesión no se vuelve a leer.
+- Las preguntas del analista van todas juntas, y las maquetas también.
+- Solo si la sesión se cortó se retoma en otra: `spec.md`, la maqueta aprobada y `tasks.md`
+  alcanzan para seguir sin la conversación anterior.
+
 No todo cambio pasa por los cuatro:
 
 | Tamaño | Ejemplo | Quién interviene |
@@ -157,4 +169,4 @@ Esta constitución prevalece sobre cualquier otra práctica del repositorio. Se 
 la aprobación de Carlos, anotando qué cambió y por qué, y subiendo la versión. Cada rol
 comprueba su trabajo contra ella antes de entregarlo; lo que la incumple no se termina.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-10 | **Last Amended**: 2026-10-10
+**Version**: 1.1.0 | **Ratified**: 2026-10-10 | **Last Amended**: 2026-10-11
