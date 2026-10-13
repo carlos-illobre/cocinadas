@@ -48,7 +48,13 @@ Cuatro roles, y ninguno más (el detalle está en la constitución):
 
 - **Todo en una sola sesión y sin subagentes:** el mismo agente hace los cuatro pasos en
   orden. Se lee solo la constitución y la carpeta de la capacidad que se toca.
-- **Un arreglo** que no cambia ninguna regla va solo con el desarrollador, con su prueba.
+- **Un arreglo** (el código no hace lo que la documentación dice) va solo con el
+  desarrollador, con su prueba; la documentación no cambia.
+- **Un ajuste** (Carlos pide que algo se vea o se comporte distinto de lo escrito, o algo
+  que no está escrito: un color, un texto, la forma de un botón) también va solo con el
+  desarrollador, pero **antes de programar lo escribe** en el `ux.md` de la capacidad o su `spec.md`.
+- **Ningún cambio queda solo en el código:** si otro agente reconstruyera la aplicación
+  leyendo solo la documentación, le tiene que salir igual que ahora.
 - **Un cambio de regla** dentro de una capacidad va con analista y desarrollador: la regla
   se escribe directamente en la `spec.md` de la capacidad, sin carpeta propia.
 - **Toda lista de tareas termina con tres:** una prueba por escenario, comparar con la
