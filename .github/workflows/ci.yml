@@ -50,6 +50,9 @@ jobs:
       # specs/ y proyecto/estado.yml coinciden, y specs/ no nombra archivos del código.
       - name: Especificación y estado
         run: node herramientas/trazabilidad.mjs
+
+      - name: Forma de los tasks.md
+        run: node herramientas/compuerta.mjs revisar
       - name: Informe de cobertura
         if: always()
         uses: actions/upload-artifact@v7
