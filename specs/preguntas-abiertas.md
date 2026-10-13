@@ -2,7 +2,7 @@
 
 Reglas del producto que ninguna fuente define. Salieron el 2026-10-10 al escribir las
 especificaciones completas: en vez de inventar una regla, cada vacío quedó como pregunta.
-Son 121, sacadas de las marcas `[NEEDS CLARIFICATION]` de cada documento. El
+Son 123, sacadas de las marcas `[NEEDS CLARIFICATION]` de cada documento. El
 requerimiento que figura al lado es el que nombra la pregunta o el último nombrado antes
 de ella.
 
@@ -31,11 +31,11 @@ Muchas son de lanzamientos posteriores al primero y no hace falta contestarlas t
 14. **RF-32.** ¿el mecanismo también tiene que producir la planilla para imprimir y cargar las fotos del plato, de los ingredientes y de los utensilios?
 15. **RF-06c.** ¿qué nutrientes forman la tabla «completa»? El formato de receta declara calorías, proteína, fibra y sodio; las fichas de los ingredientes traen además carbohidratos, grasas totales y grasas saturadas; los octógonos necesitan además azúcares.
 16. **RF-06c.** ¿la tabla completa reemplaza a la fila de tiempo, porciones, calorías y proteína de la ficha, o se suma aparte y la fila queda como está?
-17. **RF-06d.** ¿lo declara quien escribe la receta, o se deduce de sus ingredientes, marcando cada ingrediente como con o sin TACC?
+17. **RF-06d.** ¿lo declara quien escribe la receta, o se deduce de sus ingredientes, marcando cada ingrediente como con o sin TACC? El issue #84 pedía marcar sin TACC tanto las recetas como los ingredientes.
 18. **RF-06d.** ¿con qué texto o símbolo se muestra, y qué se muestra si de algún ingrediente no se sabe?
 19. **RF-06e.** ¿los calcula la app a partir de los valores nutricionales del plato, con los límites del etiquetado frontal, o los declara quien escribe la receta?
 20. **RF-06e.** ¿«los demás» son exceso de grasas totales, de grasas saturadas y de calorías, y también las leyendas de edulcorantes y de cafeína?
-21. **RF-54.** ¿el costo es por porción o de la receta entera, y se muestra también el precio de cada ingrediente?
+21. **RF-54.** ¿el costo es por porción o de la receta entera, y se muestra también el precio de cada ingrediente? El issue #78 pedía el precio de cada ingrediente y el costo total de la porción.
 22. **RF-54.** ¿el costo del plato incluye el de los utensilios, o los utensilios se informan aparte?
 23. **RF-08.** Al cambiar los comensales, ¿cambian solo las cantidades, o también los tiempos, los pasos y los utensilios? ¿Entre qué cantidades se puede elegir?
 24. **RF-08a.** ¿cómo declara una receta sus variantes y qué cambia con cada combinación: cantidades, pasos, tiempos?
@@ -46,8 +46,8 @@ Muchas son de lanzamientos posteriores al primero y no hace falta contestarlas t
 29. **RF-52.** ¿qué datos se piden de un ingrediente o utensilio propio: nombre, foto y unidad, o también marca y valores nutricionales?
 30. **RF-52.** Lo que hay en casa, ¿se registra solo como «tengo» o «no tengo», o con cantidades?
 31. **RF-52.** ¿los ingredientes y utensilios propios quedan solo en el teléfono de quien los cargó, o los ven todos?
-32. **RF-53.** «eligiendo entre marcas», ¿vale para los ingredientes, para los utensilios o para los dos? Si un ingrediente admite varias marcas, ¿la receta sigue nombrando un producto concreto como recomendado?
-33. **RF-53.** ¿cómo se determina el supermercado más cercano: por la ubicación del teléfono o por una dirección que carga quien compra?
+32. **RF-53.** «eligiendo entre marcas», ¿vale para los ingredientes, para los utensilios o para los dos? Si un ingrediente admite varias marcas, ¿la receta sigue nombrando un producto concreto como recomendado? El issue #82 lo pedía para los ingredientes: varias marcas de un ingrediente, cada una con su foto y su precio, y quien cocina elige la suya.
+33. **RF-53.** ¿cómo se determina el supermercado más cercano: por la ubicación del teléfono o por una dirección que carga quien compra? El issue #80 decía por geolocalización.
 34. **RF-55.** ¿cómo se define «la zona» de quien usa la app, y qué se muestra cuando un ingrediente no tiene precio en ningún supermercado?
 35. **RF-55.** Cuando un ingrediente tiene precio en varios supermercados, ¿qué precio entra en el costo del plato: el más bajo, el del más cercano o un promedio?
 36. **RF-56.** ¿cómo agrega un administrador un supermercado y quién es administrador? Carlos pidió discutirlo antes de empezar la integración.
@@ -63,6 +63,7 @@ Muchas son de lanzamientos posteriores al primero y no hace falta contestarlas t
 46. **RF-10.** ¿imprime la planilla del modo elegido o deja elegir entre las de todos los modos?
 47. **RF-52.** ¿qué datos se piden de un ingrediente o utensilio propio, y lo que hay en casa se registra con cantidades?
 48. **RF-56.** ¿qué se muestra cuando un ingrediente no tiene precio, y cómo agrega un supermercado el administrador?
+49. **RF-52.** De las recetas que no se pueden preparar con lo que hay en casa, ¿se muestran todas, con lo que le falta a cada una, o solo las que salen con uno o dos ingredientes más? El issue #73 pedía «cuáles con uno o dos más»; RF-52 y el escenario 3 de la historia 11 dicen todas las demás.
 
 ### Cocinar (003)
 
@@ -104,9 +105,9 @@ Muchas son de lanzamientos posteriores al primero y no hace falta contestarlas t
 5. **RF-20.** Al crear un POE, ¿los ingredientes y los utensilios se eligen del catálogo común, o cada persona carga los suyos con su marca y su foto? ¿Qué es lo mínimo que tiene que tener un POE para poder guardarse y para poder publicarse?
 6. **RF-20.** Después de publicar un POE, ¿su autor puede modificarlo, retirarlo de lo público o borrarlo? Si lo hace, ¿qué pasa con los comentarios, los me gusta y el historial de quienes ya lo cocinaron?
 7. **RF-20.** ¿un POE se publica al instante o pasa antes por una aprobación? El plan de contingencia del riesgo R-06 prevé la publicación con aprobación previa.
-8. **RF-20.** ¿dónde aparecen los POE públicos de los usuarios: mezclados con las recetas del catálogo de Carlos o en un lugar aparte? ¿Con qué orden y con qué búsqueda? ¿Existe la lista de «los más votados»?
+8. **RF-20.** ¿dónde aparecen los POE públicos de los usuarios: mezclados con las recetas del catálogo de Carlos o en un lugar aparte? ¿Con qué orden y con qué búsqueda? ¿Existe la lista de «los más votados»? El issue #75 pedía «ver las más votadas».
 9. **RF-20.** Cocinar un POE propio o un POE público de otro usuario, ¿da experiencia y logros igual que una receta del catálogo de Carlos? Si da lo mismo, alguien puede armarse un POE trivial para sumar puntos.
-10. **RF-20.** Con cuenta, ¿los POE propios sin publicar se guardan también en la cuenta, para no perderlos al cambiar de teléfono, o quedan solo en el teléfono? Si se guardan en la cuenta sin ser públicos, son contenido privado en el servidor, que según el modelo de negocio es lo que se paga con la membresía.
+10. **RF-20.** Con cuenta, ¿los POE propios sin publicar se guardan también en la cuenta, para no perderlos al cambiar de teléfono, o quedan solo en el teléfono? Si se guardan en la cuenta sin ser públicos, son contenido privado en el servidor, que según el modelo de negocio es lo que se paga con la membresía. El issue #71 decía que las recetas propias se guardan primero en el teléfono y, cuando haya cuentas, en la cuenta.
 11. **RF-33.** Reglas de los comentarios y de los me gusta. ¿El comentario es solo texto, con qué largo máximo? ¿Se puede responder a un comentario? ¿Quién puede borrar un comentario: su autor, el autor del POE, el administrador? ¿El me gusta es uno por cuenta y por POE y se puede quitar? ¿Se puede dar me gusta a un comentario?
 12. **RF-34.** Cuando alguien inicia sesión en un teléfono que tiene cocinadas y su cuenta ya tenía otras de otro teléfono, ¿se suman las dos? Al cerrar la sesión, ¿el historial queda en el teléfono o se va con la cuenta? ¿Qué más se guarda en la cuenta además de las cocinadas: la preferencia de tema y de sonido, la cocinada en curso?
 13. **RF-35.** ¿quién banea: solo Carlos, o hay más administradores? ¿Cómo se entera de un contenido ofensivo: hay un botón para denunciar, y lo puede usar alguien sin cuenta? ¿Qué se considera ofensivo?
@@ -151,3 +152,4 @@ Muchas son de lanzamientos posteriores al primero y no hace falta contestarlas t
 14. **RF-60.** ¿«costo cero» alcanza solo a operar la app (alojamiento y servicios), o también excluye del primer lanzamiento comprar un dominio y pagar el registro de la marca (RF-60)?
 15. ¿cuál es el peso máximo aceptable de la app con su catálogo completo para bajarla en una conexión de celular?
 16. **RNF-03.** Ningún ADR decide con qué mecanismo la app queda disponible sin conexión ni cómo convive eso con que se actualice sola. ADR-018 solo anota que el día que exista ese mecanismo hay que revisar la prueba de punta a punta.
+17. **RF-60.** ¿la app comparte marca con la consultoría de Carlos, como uno de sus productos para restaurantes? Carlos lo dejó como pendiente el 2026-10-09, cuando las candidatas eran Cocinadas e Illioth Chef Training; después eligió Cocinadas (decisión 28) y esto quedó sin contestar.

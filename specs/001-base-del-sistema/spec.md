@@ -610,6 +610,10 @@ son las condiciones comprobables de cada uno.
     2025), Ilioth Chef Training, MiseChef (existe una app con ese nombre y la misma
     idea), CronoChef (Chef Chrono en Francia y Cronochef Bernabeu S.L. en Madrid) y
     Templa (campo de marcas saturado y dominios tomados).
+  - (g) [NEEDS CLARIFICATION: ¿la app comparte marca con la consultoría de Carlos, como uno
+    de sus productos para restaurantes? Carlos lo dejó como pendiente el 2026-10-09, cuando
+    las candidatas eran Cocinadas e Illioth Chef Training; después eligió Cocinadas
+    (decisión 28) y esto quedó sin contestar.]
 
 #### Operación y calidad
 

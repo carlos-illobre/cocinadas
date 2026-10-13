@@ -334,14 +334,17 @@ que todo lo público sigue siendo gratis, sin límites y sin registro.
     El plan de contingencia del riesgo R-06 prevé la publicación con aprobación previa.]
   - [NEEDS CLARIFICATION: ¿dónde aparecen los POE públicos de los usuarios: mezclados con
     las recetas del catálogo de Carlos o en un lugar aparte? ¿Con qué orden y con qué
-    búsqueda? ¿Existe la lista de «los más votados»?]
+    búsqueda? ¿Existe la lista de «los más votados»? El issue #75 pedía «ver las más
+    votadas».]
   - [NEEDS CLARIFICATION: cocinar un POE propio o un POE público de otro usuario, ¿da
     experiencia y logros igual que una receta del catálogo de Carlos? Si da lo mismo,
     alguien puede armarse un POE trivial para sumar puntos.]
   - [NEEDS CLARIFICATION: con cuenta, ¿los POE propios sin publicar se guardan también en
     la cuenta, para no perderlos al cambiar de teléfono, o quedan solo en el teléfono? Si
     se guardan en la cuenta sin ser públicos, son contenido privado en el servidor, que
-    según el modelo de negocio es lo que se paga con la membresía.]
+    según el modelo de negocio es lo que se paga con la membresía. El issue #71 decía que
+    las recetas propias se guardan primero en el teléfono y, cuando haya cuentas, en la
+    cuenta.]
 
 - **RF-33**: Los POE públicos tienen comentarios y me gusta.
   - Comentar y dar me gusta exigen cuenta. Leer los comentarios y ver los me gusta, no.

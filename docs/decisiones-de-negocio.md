@@ -83,3 +83,10 @@ decidido está en [specs/preguntas-abiertas.md](../specs/preguntas-abiertas.md).
 18. El flujo central es elegir una receta y que la app la lleve paso a paso, ganando
     experiencia y logros. Todo lo demás se suma alrededor de eso y no lo reemplaza
     (2026-09-15).
+
+## Decisiones del 2026-10-13
+
+30. Las tareas se anotan en `tasks.md`, que es la fuente de verdad: el plan en
+    `proyecto/tasks.md` y el trabajo de cada capacidad o funcionalidad en el `tasks.md` de
+    su carpeta de `specs/`. Los issues del repositorio dejan de usarse y se cierran, cada
+    uno con una nota que dice a qué tarea pasó. Reemplaza a la decisión 16.

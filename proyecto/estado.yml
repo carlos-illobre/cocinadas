@@ -2,7 +2,7 @@
 # código se rehace, este archivo se reinicia y las especificaciones quedan como están.
 #
 #   estado    Empieza con Hecho, Hecho en parte, A validar, Pendiente o Nuevo. Si dice
-#             «fuera de esta etapa», no cuenta para el avance. Los #N son issues.
+#             «fuera de esta etapa», no cuenta para el avance. Un #19 es la tarea T019 de proyecto/tasks.md.
 #   pruebas   Los archivos de prueba que respaldan el requerimiento.
 #   defectos  Dónde el código de hoy se aparta de la regla, o qué le falta.
 #
@@ -114,7 +114,8 @@ RF-09:
 RF-10:
   estado: "Pendiente (#79), fuera de esta etapa"
   pruebas: []
-  defectos: []
+  defectos:
+    - "Cada receta del catálogo tiene su planilla imprimible (HTML y PDF) en data/recetas/, pero la app no tiene ningún botón que la abra"
 
 RF-52:
   estado: "Pendiente (#72, #73), fuera de esta etapa"
@@ -124,7 +125,8 @@ RF-52:
 RF-53:
   estado: "Pendiente (#80, #81, #82), fuera de esta etapa"
   pruebas: []
-  defectos: []
+  defectos:
+    - "Cada ficha de ingrediente tiene una sola marca: no hay entre qué elegir"
 
 RF-54:
   estado: "Pendiente (#108), fuera de esta etapa"
@@ -291,12 +293,14 @@ RF-25:
 RF-30:
   estado: "Pendiente (#68), fuera de esta etapa"
   pruebas: []
-  defectos: []
+  defectos:
+    - "La app es un sitio estático y todo se guarda en el teléfono: no hay servidor, base de datos ni cuentas"
 
 RF-31:
   estado: "Pendiente (#69), fuera de esta etapa"
   pruebas: []
-  defectos: []
+  defectos:
+    - "El botón «Continuar con Google» de la pantalla de entrada no hace nada"
 
 RF-32:
   estado: "Pendiente (#71, #74), fuera de esta etapa"

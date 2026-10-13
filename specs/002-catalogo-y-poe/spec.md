@@ -536,7 +536,8 @@ lugares con precio distinto.
   porciones, calorías y proteína de la ficha, o se suma aparte y la fila queda como está?]
 - **RF-06d**: La ficha DEBE decir si la receta tiene TACC o no. [NEEDS CLARIFICATION: ¿lo
   declara quien escribe la receta, o se deduce de sus ingredientes, marcando cada
-  ingrediente como con o sin TACC?] [NEEDS CLARIFICATION: ¿con qué texto o símbolo se
+  ingrediente como con o sin TACC? El issue #84 pedía marcar sin TACC tanto las recetas
+  como los ingredientes.] [NEEDS CLARIFICATION: ¿con qué texto o símbolo se
   muestra, y qué se muestra si de algún ingrediente no se sabe?]
 - **RF-06e**: La ficha DEBE mostrar los octógonos de advertencia del etiquetado frontal
   argentino que le corresponden al plato: exceso de azúcares, de grasas, de sodio y los
@@ -551,7 +552,8 @@ lugares con precio distinto.
 - **RF-06b**: La ficha DEBE mostrar el costo del plato, junto a las calorías. Es de «Más
   adelante»: se muestra recién cuando existe la integración con supermercados (RF-54); sin
   ella no se muestra ningún costo. [NEEDS CLARIFICATION: ¿el costo es por porción o de la
-  receta entera, y se muestra también el precio de cada ingrediente?] [NEEDS CLARIFICATION:
+  receta entera, y se muestra también el precio de cada ingrediente? El issue #78 pedía el
+  precio de cada ingrediente y el costo total de la porción.] [NEEDS CLARIFICATION:
   ¿el costo del plato incluye el de los utensilios, o los utensilios se informan aparte?]
 - **RF-08**: La receta DEBE adaptarse a la cantidad de comensales. Es de «Más adelante».
   [NEEDS CLARIFICATION: al cambiar los comensales, ¿cambian solo las cantidades, o también
@@ -580,14 +582,21 @@ lugares con precio distinto.
   ingrediente o utensilio propio: nombre, foto y unidad, o también marca y valores
   nutricionales?] [NEEDS CLARIFICATION: lo que hay en casa, ¿se registra solo como «tengo»
   o «no tengo», o con cantidades?] [NEEDS CLARIFICATION: ¿los ingredientes y utensilios
-  propios quedan solo en el teléfono de quien los cargó, o los ven todos?]
+  propios quedan solo en el teléfono de quien los cargó, o los ven todos?] [NEEDS
+  CLARIFICATION: de las recetas que no se pueden preparar con lo que hay en casa, ¿se
+  muestran todas, con lo que le falta a cada una, o solo las que salen con uno o dos
+  ingredientes más? El issue #73 pedía «cuáles con uno o dos más»; esta regla y el
+  escenario 3 de la historia 11 dicen todas las demás.]
 - **RF-53**: Desde la receta se DEBE poder comprar: los ingredientes en el supermercado
   online más cercano, con lo que pide el POE ya cargado en el carrito, y los utensilios en
   Mercado Libre, eligiendo entre marcas. Es de «Más adelante». [NEEDS CLARIFICATION:
   «eligiendo entre marcas», ¿vale para los ingredientes, para los utensilios o para los
   dos? Si un ingrediente admite varias marcas, ¿la receta sigue nombrando un producto
-  concreto como recomendado?] [NEEDS CLARIFICATION: ¿cómo se determina el supermercado más
-  cercano: por la ubicación del teléfono o por una dirección que carga quien compra?]
+  concreto como recomendado? El issue #82 lo pedía para los ingredientes: varias marcas de
+  un ingrediente, cada una con su foto y su precio, y quien cocina elige la suya.] [NEEDS
+  CLARIFICATION: ¿cómo se determina el supermercado más cercano: por la ubicación del
+  teléfono o por una dirección que carga quien compra? El issue #80 decía por
+  geolocalización.]
 - **RF-54**: El costo del plato se DEBE calcular con precios actuales: los ingredientes en
   las páginas de los supermercados de la zona y los utensilios en Mercado Libre. Es de «Más
   adelante» y es la base de RF-06b, RF-53 y RF-55. [NEEDS CLARIFICATION: ¿cómo se define

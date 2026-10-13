@@ -33,8 +33,8 @@ están en [001-base-del-sistema](001-base-del-sistema/spec.md).
 Fuera de `specs/`: las decisiones técnicas en [docs/adr](../docs/adr/), las decisiones
 de producto de Carlos en [docs/decisiones-de-negocio.md](../docs/decisiones-de-negocio.md),
 el manual de publicación en [docs/operacion](../docs/operacion/), el catálogo de recetas,
-ingredientes y utensilios en `data/`, y lo que falta hacer en los
-[issues](https://github.com/carlos-illobre/cocinadas/issues).
+ingredientes y utensilios en `data/`, y lo que falta hacer en
+[proyecto/tasks.md](../proyecto/tasks.md).
 
 ## Requerimientos funcionales
 
