@@ -104,6 +104,18 @@ El tablero (<https://gratis-vnic.tail994934.ts.net:8444/>) lee `specs/README.md`
   `segunda versión`, no cuenta para el avance. Un `#19` nombra la tarea `T019` de `proyecto/tasks.md`.
 - En los YAML de `proyecto/`, un texto con ` #` o `: ` adentro va entre comillas.
 
+## Sesiones en la nube
+
+Las sesiones que programan corren en la nube; cómo está armado el entorno, en
+`docs/operacion/sesiones-en-la-nube.md`.
+
+**Si hace falta un dominio que la red no deja pasar, se le pide permiso a Carlos.** En una
+sesión en la nube, si una descarga o una conexión falla porque el dominio no está entre los
+permitidos del entorno, el agente frena esa parte y le dice a Carlos qué dominio es, para
+qué lo necesita y qué alternativa hay. Carlos decide si lo agrega al entorno. Mientras tanto
+no se busca otro camino para llegar igual (otro espejo, otro servicio, bajarlo por otro
+lado ni copiarlo al repositorio).
+
 ## Revisión al editar
 
 Después de cada edición de un archivo de código, `herramientas/revisar-al-editar.mjs` corre solo (`.claude/settings.json`,

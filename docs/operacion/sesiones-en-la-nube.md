@@ -6,6 +6,17 @@ CI publica el sitio en GitHub Pages como siempre.
 
 No trabajen a la vez dos sesiones que suban a `main`.
 
+## Dominios que no están en la lista
+
+**Si hace falta un dominio que la red no deja pasar, se le pide permiso a Carlos.** En una
+sesión en la nube, si una descarga o una conexión falla porque el dominio no está entre los
+permitidos del entorno, el agente frena esa parte y le dice a Carlos qué dominio es, para
+qué lo necesita y qué alternativa hay. Carlos decide si lo agrega al entorno. Mientras tanto
+no se busca otro camino para llegar igual (otro espejo, otro servicio, bajarlo por otro
+lado ni copiarlo al repositorio).
+
+La lista vigente es la de la sección siguiente; cuando Carlos agrega uno, se anota ahí.
+
 ## El entorno `cocinadas`
 
 Se crea una vez, con **Add cloud environment**.

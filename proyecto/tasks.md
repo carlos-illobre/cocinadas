@@ -236,3 +236,4 @@ que salió cada una, el 2026-10-13; los issues ya no se usan.
 - [x] T116 [agente] Pasar a la documentación lo que decían los issues y cerrarlos
 - [x] T117 [agente] Preparar el proyecto para sesiones de Claude Code en la nube
 - [x] T118 [agente] Revisión de tipos y linter después de cada edición
+- [x] T119 [agente] En la nube, un dominio que no está permitido se le pide a Carlos
