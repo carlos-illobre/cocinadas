@@ -104,6 +104,13 @@ El tablero (<https://gratis-vnic.tail994934.ts.net:8444/>) lee `specs/README.md`
   `segunda versión`, no cuenta para el avance. Un `#19` nombra la tarea `T019` de `proyecto/tasks.md`.
 - En los YAML de `proyecto/`, un texto con ` #` o `: ` adentro va entre comillas.
 
+## Revisión al editar
+
+Después de cada edición de un archivo de código, `herramientas/revisar-al-editar.mjs` corre solo (`.claude/settings.json`,
+PostToolUse) el control de tipos del paquete, de forma incremental, y ESLint sobre el archivo editado con las reglas de `pnpm lint`. Si hay
+errores, el agente los ve en ese momento: se corrigen los que causó la tarea antes de seguir.
+Tarda unos segundos por edición. No reemplaza las compuertas de antes de subir.
+
 ## Cómo se escribe acá
 
 - **Todo en español**: código, comentarios, commits, documentación y textos de la app,
