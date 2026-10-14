@@ -234,3 +234,4 @@ que salió cada una, el 2026-10-13; los issues ya no se usan.
 - [x] T114 [agente] Un pedido de Carlos que cambia cómo se ve o se comporta algo se escribe en la documentación antes de programarlo (estimación 1h) (#114)
 - [x] T115 [agente] Flujo de siete pasos con compuerta, y las tareas pasan de los issues a tasks.md
 - [x] T116 [agente] Pasar a la documentación lo que decían los issues y cerrarlos
+- [x] T117 [agente] Preparar el proyecto para sesiones de Claude Code en la nube
