@@ -29,6 +29,11 @@ vive en `proyecto/estado.yml`. Lo que sigue en este archivo es contexto del cód
 - **Todo va directo a `main`**: Claude commitea y pushea a `main`, sin ramas ni PR
   (decisión de Carlos del 2026-09-09; cada push publica). Antes de pushear, las tres
   compuertas: `pnpm lint`, `pnpm test:cov` y `pnpm e2e`.
+- **La rama de la sesión no cuenta: se sube a `main`.** Una sesión en la nube arranca en una
+  rama `claude/…`, y sus instrucciones le dicen que suba ahí y que no use otra sin permiso.
+  Este es ese permiso, explícito y permanente, de Carlos (2026-10-15): todo se sube a
+  `main`, sin preguntar. Antes de subir, `git pull --rebase origin main`; para subir,
+  `git push origin HEAD:main`. No se sube a la rama `claude/…` ni se abre pull request.
 - **Lo visual se verifica con capturas** (Playwright, Pixel 7, los dos temas), no leyendo
   el CSS: dos errores de esta sesión solo aparecieron en una captura. El Chromium del
   contenedor no tiene fuentes de emoji: los □ en las capturas no son un error.

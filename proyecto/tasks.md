@@ -237,3 +237,4 @@ que salió cada una, el 2026-10-13; los issues ya no se usan.
 - [x] T117 [agente] Preparar el proyecto para sesiones de Claude Code en la nube
 - [x] T118 [agente] Revisión de tipos y linter después de cada edición
 - [x] T119 [agente] En la nube, un dominio que no está permitido se le pide a Carlos
+- [x] T120 [agente] Las sesiones en la nube suben a main sin preguntar por su rama
